@@ -1,0 +1,20 @@
+# python
+*__pycache__
+*.ipynb_checkpoints
+*.pyc
+*.hypothesis
+*.mypy_cache
+*.egg-info
+
+# visuals
+*.gif
+*.png
+*.pdf
+*.mp4
+iros_figs
+
+# data
+metadata
+
+# license files
+*.lic

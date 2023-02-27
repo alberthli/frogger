@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<!--
+Values in this SDF are Panda values taken from a Franka SysID paper on the Panda: https://github.com/frankaemika/franka_ros/blob/develop/franka_description/robots/common/inertial.yaml
+
+Joint limits and friction are from: https://github.com/AndrejOrsula/panda_ign_moveit2/blob/master/panda_description/panda/model.sdf
+
+Another repo that helped me debug: https://github.com/AndrejOrsula/panda_ign_moveit2/blob/master/panda_description/panda/model.sdf
+In particular, the z offset of the fingers is computed by taking the difference
+0.1654 - 0.107 = 0.0584
+which is the prismatic joint distance relative to the 7th link minus the visual offset
+of the hand relative to the 7th link, which is lumped with the 7th link in their model.
+
+The visual geometries are OBJ/MTL file pairs converted from the original DAE files
+provided by Franka EXCEPT for link7, which is still a DAE (OBJ/MTL pair is still
+provided for completeness). The reason is that in Drake, the RenderEngine complains
+about some values being too large for a buffer or something with a cryptic error, and
+changing the format of the visual files resolved it. The reason link7 is still a DAE is
+because some of the geometry was not loading correctly when it was an OBJ, and the
+error does not appear when it is a DAE and the other links are OBJs.
+
+[NOTE] Joint limits are NOT enforced when the plant runs in continuous time!
+-->
+<sdf version="1.7">
+  <model name="fr3_hand">
+    <link name="fr3_hand_link">
+      <inertial>
+        <pose>-0.01 0 0.03 0 0 0</pose>
+        <mass>0.73</mass>
+        <inertia>
+          <ixx>0.001</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0025</iyy>
+          <iyz>0.0</iyz>
+          <izz>0.0017</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_hand_link_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://manipulation/models/fr3/visual/hand.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_hand_link_collision">
+        <geometry>
+          <mesh>
+            <uri>package://manipulation/models/fr3/collision/hand.obj</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name='fr3_left_finger_joint' type='prismatic'>
+      <pose relative_to='fr3_hand_link'>0 0 0.0584 0 0 0</pose>
+      <parent>fr3_hand_link</parent>
+      <child>fr3_left_finger</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0.04</upper>
+          <effort>20</effort>
+          <velocity>0.2</velocity>
+        </limit>
+        <dynamics>
+          <damping>3.0</damping>
+          <friction>0.4</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_left_finger">
+      <pose relative_to="fr3_left_finger_joint">0 0 0 0 0 0</pose>
+        <inertial>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>2.3749999999999997e-06</ixx>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyy>2.3749999999999997e-06</iyy>
+            <iyz>0.0</iyz>
+            <izz>7.5e-07</izz>
+          </inertia>
+        </inertial>
+        <visual name="fr3_left_finger_visual">
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>package://manipulation/models/fr3/visual/finger.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name="fr3_left_finger_collision">
+          <geometry>
+            <mesh>
+              <uri>package://manipulation/models/fr3/collision/finger.obj</uri>
+            </mesh>
+          </geometry>
+        </collision>
+    </link>
+
+    <joint name='fr3_right_finger_joint' type='prismatic'>
+      <pose relative_to='fr3_hand_link'>0 0 0.0584 0 0 0</pose>
+      <parent>fr3_hand_link</parent>
+      <child>fr3_right_finger</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0.04</upper>
+          <effort>20</effort>
+          <velocity>0.2</velocity>
+        </limit>
+        <dynamics>
+          <damping>3.0</damping>
+          <friction>0.4</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_right_finger">
+      <pose relative_to="fr3_right_finger_joint">0 0 0 0 0 0</pose>
+        <inertial>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>2.3749999999999997e-06</ixx>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyy>2.3749999999999997e-06</iyy>
+            <iyz>0.0</iyz>
+            <izz>7.5e-07</izz>
+          </inertia>
+        </inertial>
+        <visual name="fr3_right_finger_visual">
+          <pose>0 0 0 0 0 3.141592653589793</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>package://manipulation/models/fr3/visual/finger.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name="fr3_right_finger_collision">
+          <geometry>
+            <mesh>
+              <uri>package://manipulation/models/fr3/collision/finger.obj</uri>
+            </mesh>
+          </geometry>
+        </collision>
+    </link>
+  </model>
+</sdf>
