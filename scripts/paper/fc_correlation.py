@@ -108,6 +108,8 @@ correlation = np.corrcoef(fc_vals, l_vals)[0, 1]
 print(f"correlation: {correlation}")
 
 matplotlib.rcParams.update({"font.size": 16})
+matplotlib.rcParams["pdf.fonttype"] = 42
+matplotlib.rcParams["ps.fonttype"] = 42
 plt.figure(figsize=(8, 4))
 plt.scatter((model.ns * model.nc) * l_vals, fc_vals * 1e3)
 plt.title(r"$\bar{\ell}^*$ vs. $\epsilon$ Metric, $m=16$")
