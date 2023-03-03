@@ -1,6 +1,6 @@
 # FRoGGeR: A Fast Robust Grasp Generator
 
-This repository houses the code for the paper "FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric."
+This repository houses the code for the paper "[FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric](https://arxiv.org/abs/2302.13687)."
 
 ## Installation
 All code should be run on a Docker container that directly reads and writes from the mounted git directory on your local machine. We use the Drake 1.12.0 release for Ubuntu 22.04 (Jan. 12, 2022). We support Linux machines and theoretically offer MacOS support, though this functionality is currently untested. We do not currently support Windows.
