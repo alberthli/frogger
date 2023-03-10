@@ -697,7 +697,6 @@ class PickupSystem:
         quat = q_obj_f[:4]
         quat /= np.linalg.norm(quat)  # `Quaternion` complains about precision
         X_WO_f = RigidTransform(Quaternion(quat), q_obj_f[4:])
-        # p_obj_f = X_WO_f.translation()
 
         _v_obj_f = final_velocities[self.n :]
         v_obj_f = np.zeros(6)

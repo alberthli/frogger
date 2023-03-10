@@ -156,8 +156,6 @@ def sample_configuration_heuristic_partial(
     if X_WPc_des is None:
         h_obj = obj.ub_W[-1]  # height of object
 
-        # # aligning the axis of the hand with the axes of the object with
-        # # probability proportional to the square of the lengths of the obj axes
         # aligning the axis of the hand with the axes of the object with
         # probability proportional to the square of the lengths of the obj axes
         X_WO = obj.settings["X_WO"]
