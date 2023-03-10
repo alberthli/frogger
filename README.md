@@ -51,5 +51,18 @@ Other scripts used to produce figures or numerical results in the paper can be f
 
 Please direct any questions or concerns to the email of the first author, which can be found in the paper.
 
-<!-- ## Citation
-If you found our work useful (either the paper or the code), please use the following citation: INSERT_CITATION_HERE -->
+## Citation
+If you found our work useful (either the paper or the code), please use the following citation:
+
+Albert H. Li, Preston Culbertson, Joel W. Burdick, Aaron D. Ames, "FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric," arXiv:2302.13687, Feb. 2023.
+
+```
+@article{
+    li2023_frogger,
+    title={FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric},
+    author={Albert H. Li and Preston Culbertson and Joel W. Burdick and Aaron D. Ames},
+    journal={arxiv:2302.13687},
+    month={February},
+    year={2023},
+}
+```
