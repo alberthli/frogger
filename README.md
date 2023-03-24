@@ -3,7 +3,7 @@
 This repository houses the code for the paper "[FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric](https://arxiv.org/abs/2302.13687)."
 
 ## Installation
-All code should be run on a Docker container that directly reads and writes from the mounted git directory on your local machine. We use the Drake 1.12.0 release for Ubuntu 22.04 (Jan. 12, 2022). We support Linux machines and theoretically offer MacOS support, though this functionality is currently untested. We do not currently support Windows.
+All code should be run on a Docker container that directly reads and writes from the mounted git directory on your local machine. We use the Drake 1.12.0 release for Ubuntu 22.04 (Jan. 12, 2023). We support Linux machines and theoretically offer MacOS support, though this functionality is currently untested. We do not currently support Windows.
 
 #### Setup on Linux
 Install Docker by following the instructions [here](https://docs.docker.com/engine/install/ubuntu/). Make sure to also follow the instructions for [post-installation](https://docs.docker.com/engine/install/linux-postinstall/).

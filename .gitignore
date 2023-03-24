@@ -12,6 +12,7 @@
 *.pdf
 *.mp4
 iros_figs
+iros_videos
 
 # data
 metadata
