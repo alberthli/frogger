@@ -1,21 +1,5 @@
-# python
-*__pycache__
-*.ipynb_checkpoints
-*.pyc
-*.hypothesis
-*.mypy_cache
-*.egg-info
-
-# visuals
-*.gif
-*.png
-*.pdf
-*.mp4
-iros_figs
-iros_videos
-
-# data
-metadata
-
-# license files
-*.lic
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor

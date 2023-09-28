@@ -1,6 +1,0 @@
-[flake8]
-max-line-length = 88
-ignore = D100, D103, D104, D401, E203, E501, E731, E741, F401, W503
-docstring-convention = numpy
-exclude =
-    core/dex_grasp_net/*

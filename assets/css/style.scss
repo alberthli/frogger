@@ -1,0 +1,51 @@
+---
+---
+// Settings for larger screens.
+@media (min-width: 768px) {
+
+    // Make container have width 80%.
+    .container {
+        width: 75%;
+        max-width: 75%;
+    }
+}
+
+.link-clean {
+    text-decoration: none;
+    color: inherit;
+}
+
+.link-dark {
+    color: #003d3c !important;
+}
+
+.body {
+    overflow: auto;
+}
+
+.accent-green {
+    color: #289989;
+}
+
+.link-custom {
+    color: #289989;
+    font-weight: 600;
+}
+
+.accent-blue {
+    color: #003d3c;
+}
+
+.frog-icon {
+    width: 1.25em;
+    height: 1.25em;
+    max-width: 100px;
+}
+
+.grasp-fig {
+    min-height: 100%;
+}
+
+.caption {
+    font-size: 0.9em;
+}
