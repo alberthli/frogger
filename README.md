@@ -2,6 +2,20 @@
 
 This repository houses the code for the paper "[FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric](https://arxiv.org/abs/2302.13687)."
 
+## Upcoming Changes
+Post-IROS, there are some planned changes to the codebase. If you have suggestions, feel free to open an issue!
+- [ ] Update Drake to 1.21.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
+    - [ ] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
+    - [ ] Refactor dependency management onto `pyproject.toml`
+- [ ] Simplify `RobotModel` abstract API:
+    - [ ] Automatically read joint limit/torque bounds from file
+    - [ ] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
+    - [ ] Remove need to specify candidate fingertip positions, instead let the heuristic IK sampler handle this in the backend.
+    - [ ] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
+- [ ] Verify compatibility with underactuated hands (e.g., Barrett or Shadow).
+- [ ] Investigate refactoring solver from `nlopt` to Drake's SNOPT bindings.
+- [ ] Add usage examples.
+
 ## Installation
 All code should be run on a Docker container that directly reads and writes from the mounted git directory on your local machine. We use the Drake 1.12.0 release for Ubuntu 22.04 (Jan. 12, 2023). We support Linux machines and theoretically offer MacOS support, though this functionality is currently untested. We do not currently support Windows.
 
