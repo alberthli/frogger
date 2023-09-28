@@ -13,5 +13,5 @@ open3d==0.16.0
 git+https://github.com/alberthli/qpth.git#egg=qpth
 quantecon==0.6.0
 scikit-image==0.19.3
-scipy==1.9.0
+scipy==1.10.0
 torch==1.13.1
