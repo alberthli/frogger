@@ -67,7 +67,7 @@ it has a median synthesis time of **0.834s** over hundreds of experiments.
 #### Comparison with Ferrari-Canny
 
 We also study how our proposed metric $$\ell^*(q)$$ correlates with existing metrics for grasp quality. We find that our metric is well-correlated with the traditional $$\epsilon$$-ball (or "Ferrari-Canny") grasp metric,
-a a standard robustness measure for dexterous grasping.
+a standard robustness measure for dexterous grasping.
 
 </div>
 </div>
