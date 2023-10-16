@@ -7,11 +7,11 @@ import nlopt
 import numpy as np
 from pydrake.math import RigidTransform
 
-from core.grasping import ferrari_canny_L1
-from core.objects import ObjectDescription
-from core.pickup import PickupSystem
-from core.robots.robot_core import RobotModel
-from core.sampling import sample_configuration
+from frogger.grasping import ferrari_canny_L1
+from frogger.objects import ObjectDescription
+from frogger.pickup import PickupSystem
+from frogger.robots.robot_core import RobotModel
+from frogger.sampling import sample_configuration
 
 current_dir = Path(__file__)
 project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]

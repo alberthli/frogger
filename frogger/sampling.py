@@ -5,8 +5,8 @@ from pydrake.math import RigidTransform, RotationMatrix
 from pydrake.multibody.inverse_kinematics import InverseKinematics
 from pydrake.solvers import Solve
 
-from core.grasping import wedge
-from core.robots.robot_core import RobotModel
+from frogger.grasping import wedge
+from frogger.robots.robot_core import RobotModel
 
 current_dir = Path(__file__)
 project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]

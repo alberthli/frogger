@@ -16,8 +16,8 @@ from pydrake.systems.framework import DiagramBuilder, EventStatus, LeafSystem
 from pydrake.systems.primitives import StateInterpolatorWithDiscreteDerivative
 from pydrake.trajectories import PiecewisePose
 
-from core.grasping import vee
-from core.robots.robot_core import RobotModel
+from frogger.grasping import vee
+from frogger.robots.robot_core import RobotModel
 
 current_dir = Path(__file__)
 project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]

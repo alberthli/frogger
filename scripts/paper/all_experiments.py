@@ -6,9 +6,9 @@ import numpy as np
 import trimesh_fork as trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
-from core.objects import MeshObject
-from core.paper_experiments import compute_results, run_exp, summarize_all_results
-from core.robots.robots import FR3AlgrModel
+from frogger.objects import MeshObject
+from frogger.paper_experiments import compute_results, run_exp, summarize_all_results
+from frogger.robots.robots import FR3AlgrModel
 
 """
 This is the master script that runs all experiments for the paper.

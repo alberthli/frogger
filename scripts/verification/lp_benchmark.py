@@ -9,8 +9,8 @@ from numba import jit
 from pydrake.math import RigidTransform, RotationMatrix
 from quantecon.optimize.linprog_simplex import linprog_simplex as linprog
 
-from core.objects import Sphere
-from core.robots.robots import FR3AlgrModel
+from frogger.objects import Sphere
+from frogger.robots.robots import FR3AlgrModel
 
 """
 This script tests the LP and its gradient solve times.

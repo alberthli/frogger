@@ -5,8 +5,8 @@ import numpy as np
 import trimesh_fork as trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
-from core.objects import MeshObject
-from core.robots.robots import FR3AlgrModel
+from frogger.objects import MeshObject
+from frogger.robots.robots import FR3AlgrModel
 
 """
 Specific grasps for figure 4. I manually screenshotted angles for the fig.

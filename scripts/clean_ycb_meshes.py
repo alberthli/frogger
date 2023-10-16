@@ -6,7 +6,7 @@ import open3d as o3d
 import trimesh_fork as trimesh
 from trimesh_fork.interfaces.vhacd import convex_decomposition
 
-from core.sdfs.utils import to_trimesh
+from frogger.sdfs.utils import to_trimesh
 
 """
 Mesh processing script.

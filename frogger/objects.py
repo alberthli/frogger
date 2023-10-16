@@ -14,7 +14,7 @@ from pydrake.math import RigidTransform
 from skimage.measure import marching_cubes
 from trimesh_fork.interfaces.vhacd import convex_decomposition
 
-from core.sdfs.smoothing import poisson_reconstruction
+from frogger.sdfs.smoothing import poisson_reconstruction
 
 jax.config.update("jax_platform_name", "cpu")  # force everything to run on CPU
 jax.config.update("jax_enable_x64", True)

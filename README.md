@@ -2,6 +2,12 @@
 
 This repository houses the code for the paper "[FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric](https://arxiv.org/abs/2302.13687)."
 
+## Installation
+We recommend using a `conda` environment to run the code in this repo. To get the latest changes, install as an editable package in the conda environment using
+```
+pip install -e .
+```
+
 ## Upcoming Changes
 This branch is the development branch for the upcoming FRoGGeR refactor.
 
@@ -61,7 +67,7 @@ In the container, navigate to `~/manipulation` and run the command `python check
 ## Reproducing and Viewing Results
 The main results of the paper can be reproduced by running the script `all_experiments.py` in the `scripts/paper` directory. To view results for individual objects and individual experimental configurations (i.e., our method vs. the baseline), comment out the `run_exp` call in the file. To view only the aggregate results shown in the paper figure, in the container, run in the Python REPL:
 ```
-from core.paper_experiments import summarize_all_results; summarize_all_results()
+from frogger.paper_experiments import summarize_all_results; summarize_all_results()
 ```
 
 Other scripts used to produce figures or numerical results in the paper can be found in `scripts/paper`, while the script used to clean the YCB meshes is located in `scripts`.

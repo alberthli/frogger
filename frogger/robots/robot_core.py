@@ -34,13 +34,13 @@ from pydrake.systems.primitives import Adder, Demultiplexer, Multiplexer
 from qpth.qp import QPFunction
 from quantecon.optimize.linprog_simplex import linprog_simplex as linprog
 
-from core.grasping import (
+from frogger.grasping import (
     compute_gOCs,
     compute_grasp_matrix,
     compute_primitive_forces,
     wedge,
 )
-from core.objects import ObjectDescription
+from frogger.objects import ObjectDescription
 
 current_dir = Path(__file__)
 project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
