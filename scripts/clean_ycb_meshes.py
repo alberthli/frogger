@@ -3,8 +3,8 @@ from pathlib import Path
 
 import numpy as np
 import open3d as o3d
-import trimesh_fork as trimesh
-from trimesh_fork.interfaces.vhacd import convex_decomposition
+import trimesh
+from trimesh.decomposition import convex_decomposition
 
 from frogger.sdfs.utils import to_trimesh
 
@@ -271,7 +271,9 @@ for obj_name in easy_obj_names:
         print("  Generating collision geometry...")
 
         # computing accurate convex collision geometry using VHACD
-        cd_meshes = convex_decomposition(poisson_mesh, h=16, v=64)
+        cd_meshes = convex_decomposition(
+            poisson_mesh, maxConvexHulls=16, maxNumVerticesPerCH=64
+        )
         for i, m in enumerate(cd_meshes):
             pth = obj_dir + f"/collisions/{obj_name}_col_{i}.obj"
             m.export(pth)

@@ -1,6 +1,6 @@
 import numpy as np
 import open3d as o3d
-import trimesh_fork as trimesh
+import trimesh
 
 
 def to_trimesh(o3d_mesh: o3d.TriangleMesh) -> trimesh.Trimesh:

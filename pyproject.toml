@@ -26,6 +26,7 @@ dependencies = [
     "quantecon>=0.6.0",
     "scikit-image>=0.19.3",
     "scipy>=1.10.0",
+    "trimesh>=4.0.0",
 ]
 
 

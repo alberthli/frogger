@@ -1,6 +1,6 @@
 import numpy as np
 import open3d as o3d
-from trimesh_fork import Trimesh
+from trimesh import Trimesh
 
 
 def poisson_reconstruction(mesh: Trimesh) -> Trimesh:

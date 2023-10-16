@@ -6,13 +6,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import open3d as o3d
-import trimesh_fork as trimesh
+import trimesh
 from jax import hessian, jacobian, jit, vmap
 from numba import jit as numba_jit
 from pydrake.geometry import Convex, Mesh
 from pydrake.math import RigidTransform
 from skimage.measure import marching_cubes
-from trimesh_fork.interfaces.vhacd import convex_decomposition
+from trimesh.decomposition import convex_decomposition
 
 from frogger.sdfs.smoothing import poisson_reconstruction
 
@@ -408,21 +408,15 @@ class ObjectDescription(ABC):
             mesh_col = poisson_reconstruction(_mesh_viz)
 
             # perform convex decomposition of visual meshes using VHACD
-            """VHACD parameter descriptions.
-            -h <n>                  : Maximum number of output convex hulls. Default is 32
-            -r <voxelresolution>    : Total number of voxels to use. Default is 100,000
-            -e <volumeErrorPercent> : Volume error allowed as a percentage. Default is 1%. Valid range is 0.001 to 10
-            -d <maxRecursionDepth>  : Maximum recursion depth. Default value is 10.
-            -s <true/false>         : Whether or not to shrinkwrap output to source mesh. Default is true.
-            -f <fillMode>           : Fill mode. Default is 'flood', also 'surface' and 'raycast' are valid.
-            -v <maxHullVertCount>   : Maximum number of vertices in the output convex hull. Default value is 64
-            -a <true/false>         : Whether or not to run asynchronously. Default is 'true'
-            -l <minEdgeLength>      : Minimum size of a voxel edge. Default value is 2 voxels.
-            -p <true/false>         : If false, splits hulls in the middle. If true, tries to find optimal split plane location. False by default.
-            -o <obj/stl/usda>       : Export the convex hulls as a series of wavefront OBJ files, STL files, or a single USDA.
-            -g <true/false>         : If set to false, no logging will be displayed.
-            """
-            _cd_meshes = convex_decomposition(mesh_col, h=12, r=10000, e=1, v=16, d=5)
+            # for flags, see https://github.com/mikedh/trimesh/blob/e62c526306766c4c597512ed7acc60c788e19e6f/trimesh/decomposition.py
+            _cd_meshes = convex_decomposition(
+                mesh_col,
+                maxConvexHulls=12,
+                resolution=10000,
+                minimumVolumePercentErrorAllowed=1.0,
+                maxNumVerticesPerCH=16,
+                maxRecursionDepth=5,
+            )
             if not isinstance(_cd_meshes, list):  # rarely, vhacd returns only 1 body
                 cd_meshes = [_cd_meshes]
             else:

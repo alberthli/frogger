@@ -2,7 +2,7 @@ import pickle
 from pathlib import Path
 
 import numpy as np
-import trimesh_fork as trimesh
+import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
 from frogger.objects import MeshObject
