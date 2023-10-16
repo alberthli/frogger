@@ -3,6 +3,8 @@
 This repository houses the code for the paper "[FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric](https://arxiv.org/abs/2302.13687)."
 
 ## Upcoming Changes
+This branch is the development branch for the upcoming FRoGGeR refactor.
+
 Post-IROS, there are some planned changes to the codebase. If you have suggestions, feel free to open an issue!
 - [ ] Update Drake to 1.21.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
     - [ ] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
