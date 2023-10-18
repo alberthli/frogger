@@ -35,8 +35,8 @@ class FR3AlgrModel(RobotModel):
         # store a submodel of just the arm - used for end-effector control
         self.arm_plant = MultibodyPlant(time_step=0.0)
         _parser = Parser(self.arm_plant)
-        _parser.package_map().Add("manipulation", ROOT)
-        _parser.AddModelFromFile(ROOT + "/models/fr3/fr3_arm_simplified.sdf")
+        _parser.package_map().Add("frogger", ROOT)
+        _parser.AddModels(ROOT + "/models/fr3/fr3_arm_simplified.sdf")
         self.arm_plant.WeldFrames(
             self.arm_plant.world_frame(),
             self.arm_plant.GetFrameByName("fr3_link0"),
@@ -47,9 +47,9 @@ class FR3AlgrModel(RobotModel):
         hand = self.settings["hand"]
         self.arm_hand_plant = MultibodyPlant(time_step=0.001)
         _parser = Parser(self.arm_hand_plant)
-        _parser.package_map().Add("manipulation", ROOT)
-        _parser.AddModelFromFile(ROOT + "/models/fr3/fr3_arm_simplified.sdf")
-        _parser.AddModelFromFile(
+        _parser.package_map().Add("frogger", ROOT)
+        _parser.AddModels(ROOT + "/models/fr3/fr3_arm_simplified.sdf")
+        _parser.AddModels(
             ROOT + f"/models/allegro/allegro_{hand}_simplified.sdf"
         )
         self.arm_hand_plant.WeldFrames(
@@ -68,62 +68,62 @@ class FR3AlgrModel(RobotModel):
 
         super().__init__(narm, nhand, nuarm, nuhand, nc, obj, settings)
 
-    def _q_bounds(self) -> tuple[np.ndarray, np.ndarray]:
-        """Bounds on the FR3-Algr configuration.
+    # def _q_bounds(self) -> tuple[np.ndarray, np.ndarray]:
+    #     """Bounds on the FR3-Algr configuration.
 
-        Returns
-        -------
-        lb_q : np.ndarray, shape=(n,)
-            Lower bounds.
-        ub_q : np.ndarray, shape=(n,)
-            Upper bounds.
-        """
-        # manufacturer angle limits
-        lb_q_fr3 = np.array(
-            [-2.3093, -1.5133, -2.4937, -2.7478, -2.4800, 0.8521, -2.6895]
-        )
-        lb_q_imr = np.array([-0.47, -0.196, -0.174, -0.227])  # if, mf, rf
-        lb_q_th = np.array([0.263, -0.105, -0.189, -0.162])  # th
-        _q_lower = np.concatenate((lb_q_fr3, lb_q_imr, lb_q_imr, lb_q_imr, lb_q_th))
+    #     Returns
+    #     -------
+    #     lb_q : np.ndarray, shape=(n,)
+    #         Lower bounds.
+    #     ub_q : np.ndarray, shape=(n,)
+    #         Upper bounds.
+    #     """
+    #     # manufacturer angle limits
+    #     lb_q_fr3 = np.array(
+    #         [-2.3093, -1.5133, -2.4937, -2.7478, -2.4800, 0.8521, -2.6895]
+    #     )
+    #     lb_q_imr = np.array([-0.47, -0.196, -0.174, -0.227])  # if, mf, rf
+    #     lb_q_th = np.array([0.263, -0.105, -0.189, -0.162])  # th
+    #     _q_lower = np.concatenate((lb_q_fr3, lb_q_imr, lb_q_imr, lb_q_imr, lb_q_th))
 
-        ub_q_fr3 = np.array([2.3093, 1.5133, 2.4937, -0.4461, 2.4800, 4.2094, 2.6895])
-        ub_q_imr = np.array([0.47, 1.61, 1.709, 1.618])  # if, mf, rf
-        ub_q_th = np.array([1.396, 1.163, 1.644, 1.719])  # th
-        _q_upper = np.concatenate((ub_q_fr3, ub_q_imr, ub_q_imr, ub_q_imr, ub_q_th))
+    #     ub_q_fr3 = np.array([2.3093, 1.5133, 2.4937, -0.4461, 2.4800, 4.2094, 2.6895])
+    #     ub_q_imr = np.array([0.47, 1.61, 1.709, 1.618])  # if, mf, rf
+    #     ub_q_th = np.array([1.396, 1.163, 1.644, 1.719])  # th
+    #     _q_upper = np.concatenate((ub_q_fr3, ub_q_imr, ub_q_imr, ub_q_imr, ub_q_th))
 
-        _q_diff = _q_upper - _q_lower
+    #     _q_diff = _q_upper - _q_lower
 
-        # (1) constrain axial joints + FR3 joints to middle 90% of range
-        lb_q = _q_lower + 0.05 * _q_diff
-        ub_q = _q_upper - 0.05 * _q_diff
+    #     # (1) constrain axial joints + FR3 joints to middle 90% of range
+    #     lb_q = _q_lower + 0.05 * _q_diff
+    #     ub_q = _q_upper - 0.05 * _q_diff
 
-        # (2) enforce on most non-axial joints a lower limit of 0.15
-        ind_non_axial = [8, 9, 10, 12, 13, 14, 16, 17, 18, 21, 22]
-        lb_q[ind_non_axial] = 0.15
+    #     # (2) enforce on most non-axial joints a lower limit of 0.15
+    #     ind_non_axial = [8, 9, 10, 12, 13, 14, 16, 17, 18, 21, 22]
+    #     lb_q[ind_non_axial] = 0.15
 
-        # (3) thumb has custom lower bounds
-        lb_q[19] = 0.4  # thumb cmc joint
-        lb_q[20] = 0.5  # thumb axl joint
+    #     # (3) thumb has custom lower bounds
+    #     lb_q[19] = 0.4  # thumb cmc joint
+    #     lb_q[20] = 0.5  # thumb axl joint
 
-        return lb_q, ub_q
+    #     return lb_q, ub_q
 
-    def _tau_bounds(self) -> tuple[np.ndarray, np.ndarray]:
-        """Bounds on the motor torques.
+    # def _tau_bounds(self) -> tuple[np.ndarray, np.ndarray]:
+    #     """Bounds on the motor torques.
 
-        Returns
-        -------
-        lb_tau : np.ndarray, shape=(nu,)
-            Lower bounds.
-        ub_tau : np.ndarray, shape=(nu,)
-            Upper bounds.
-        """
-        lb_tau = -0.7 * np.ones(self.nu)
-        ub_tau = 0.7 * np.ones(self.nu)
-        lb_tau[:4] = -87.0
-        ub_tau[:4] = 87.0
-        lb_tau[4:7] = -12.0
-        ub_tau[4:7] = 12.0
-        return lb_tau, ub_tau
+    #     Returns
+    #     -------
+    #     lb_tau : np.ndarray, shape=(nu,)
+    #         Lower bounds.
+    #     ub_tau : np.ndarray, shape=(nu,)
+    #         Upper bounds.
+    #     """
+    #     lb_tau = -0.7 * np.ones(self.nu)
+    #     ub_tau = 0.7 * np.ones(self.nu)
+    #     lb_tau[:4] = -87.0
+    #     ub_tau[:4] = 87.0
+    #     lb_tau[4:7] = -12.0
+    #     ub_tau[4:7] = 12.0
+    #     return lb_tau, ub_tau
 
     def preload_model(self) -> None:
         """Loads the FR3-Algr description."""
@@ -133,13 +133,13 @@ class FR3AlgrModel(RobotModel):
 
         # loading the correct arm and hand model
         if simplified:
-            self.parser.AddModelFromFile(ROOT + "/models/fr3/fr3_arm_simplified.sdf")
-            self.parser.AddModelFromFile(
+            self.parser.AddModels(ROOT + "/models/fr3/fr3_arm_simplified.sdf")
+            self.parser.AddModels(
                 ROOT + f"/models/allegro/allegro_{hand}_simplified.sdf"
             )
         else:
-            self.parser.AddModelFromFile(ROOT + "/models/fr3/fr3_arm.sdf")
-            self.parser.AddModelFromFile(ROOT + f"/models/allegro/allegro_{hand}.sdf")
+            self.parser.AddModels(ROOT + "/models/fr3/fr3_arm.sdf")
+            self.parser.AddModels(ROOT + f"/models/allegro/allegro_{hand}.sdf")
 
         # welding the FR3-Algr system together and to the world frame origin
         # the Z rotation below is taken from the fr3_arm_and_hand sdf

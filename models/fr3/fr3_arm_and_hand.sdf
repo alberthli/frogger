@@ -28,14 +28,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link0.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link0.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link0_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link0.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -82,14 +82,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link1.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link1.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link1_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link1.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link1.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -136,14 +136,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link2.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link2.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link2_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link2.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link2.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -190,14 +190,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link3.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link3.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link3_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link3.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link3.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -244,14 +244,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link4.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link4.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link4_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link4.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link4.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -298,14 +298,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link5.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link5.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link5_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link5.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link5.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -352,14 +352,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link6.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link6.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link6_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link6.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link6.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -406,14 +406,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link7.dae</uri>
+            <uri>package://frogger/models/fr3/visual/link7.dae</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link7_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link7.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link7.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -443,14 +443,14 @@ the local z axis.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/hand.obj</uri>
+            <uri>package://frogger/models/fr3/visual/hand.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_hand_link_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/hand.obj</uri>
+            <uri>package://frogger/models/fr3/collision/hand.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -494,14 +494,14 @@ the local z axis.
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>package://manipulation/models/fr3/visual/finger.obj</uri>
+              <uri>package://frogger/models/fr3/visual/finger.obj</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name="fr3_left_finger_collision">
           <geometry>
             <mesh>
-              <uri>package://manipulation/models/fr3/collision/finger.obj</uri>
+              <uri>package://frogger/models/fr3/collision/finger.obj</uri>
             </mesh>
           </geometry>
         </collision>
@@ -546,14 +546,14 @@ the local z axis.
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>package://manipulation/models/fr3/visual/finger.obj</uri>
+              <uri>package://frogger/models/fr3/visual/finger.obj</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name="fr3_right_finger_collision">
           <geometry>
             <mesh>
-              <uri>package://manipulation/models/fr3/collision/finger.obj</uri>
+              <uri>package://frogger/models/fr3/collision/finger.obj</uri>
             </mesh>
           </geometry>
         </collision>

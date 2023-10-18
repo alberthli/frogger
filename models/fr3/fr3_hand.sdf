@@ -39,14 +39,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/hand.obj</uri>
+            <uri>package://frogger/models/fr3/visual/hand.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_hand_link_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/hand.obj</uri>
+            <uri>package://frogger/models/fr3/collision/hand.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -90,14 +90,14 @@ error does not appear when it is a DAE and the other links are OBJs.
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>package://manipulation/models/fr3/visual/finger.obj</uri>
+              <uri>package://frogger/models/fr3/visual/finger.obj</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name="fr3_left_finger_collision">
           <geometry>
             <mesh>
-              <uri>package://manipulation/models/fr3/collision/finger.obj</uri>
+              <uri>package://frogger/models/fr3/collision/finger.obj</uri>
             </mesh>
           </geometry>
         </collision>
@@ -142,14 +142,14 @@ error does not appear when it is a DAE and the other links are OBJs.
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>package://manipulation/models/fr3/visual/finger.obj</uri>
+              <uri>package://frogger/models/fr3/visual/finger.obj</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name="fr3_right_finger_collision">
           <geometry>
             <mesh>
-              <uri>package://manipulation/models/fr3/collision/finger.obj</uri>
+              <uri>package://frogger/models/fr3/collision/finger.obj</uri>
             </mesh>
           </geometry>
         </collision>

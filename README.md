@@ -12,12 +12,13 @@ pip install -e .
 This branch is the development branch for the upcoming FRoGGeR refactor.
 
 Post-IROS, there are some planned changes to the codebase. If you have suggestions, feel free to open an issue!
-- [x] Update Drake to 1.21.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
-    - [x] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
-    - [x] Refactor dependency management onto `pyproject.toml`
-    - [x] Significantly loosen requirements due to moving away from Docker
+- [x] Update Drake to 1.22.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
+- [x] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
+- [x] Refactor dependency management onto `pyproject.toml`
+- [x] Significantly loosen requirements due to moving away from Docker
+- [ ] Refactor to use the [SceneGraphCollisionChecker](https://drake.mit.edu/doxygen_cxx/classdrake_1_1planning_1_1_scene_graph_collision_checker.html) API for parallel checks. 
 - [ ] Simplify `RobotModel` abstract API:
-    - [ ] Automatically read joint limit/torque bounds from file
+    - [x] Automatically read joint limit/torque bounds from file
     - [ ] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
     - [ ] Remove need to specify candidate fingertip positions, instead let the heuristic IK sampler handle this in the backend.
     - [ ] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.

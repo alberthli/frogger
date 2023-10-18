@@ -132,11 +132,11 @@ class RobotModel(ABC):
             self.builder, time_step=0.001
         )
         self.parser = Parser(self.plant, self.scene_graph)
-        self.parser.package_map().Add("manipulation", ROOT)
+        self.parser.package_map().Add("frogger", ROOT)
         self.preload_model()
 
         # adding a table to the system
-        self.parser.AddModelFromFile(ROOT + "/models/station/tabletop.sdf")
+        self.parser.AddModels(ROOT + "/models/station/tabletop.sdf")
         self.plant.WeldFrames(
             self.plant.world_frame(),
             self.plant.GetFrameByName("tabletop_base"),
@@ -193,6 +193,7 @@ class RobotModel(ABC):
                 prox_properties,
             )
         self.plant.Finalize()
+        breakpoint()
 
         # constructing system diagram with gravity compensation.
         # takes in feedback torque and adds it to the feedforward gravity comp.
@@ -412,7 +413,6 @@ class RobotModel(ABC):
         b_couple = np.zeros(0)
         return A_couple, b_couple
 
-    @abstractmethod
     def _q_bounds(self) -> tuple[np.ndarray, np.ndarray]:
         """Bounds on the configuration.
 
@@ -423,8 +423,11 @@ class RobotModel(ABC):
         ub_q : np.ndarray, shape=(n,)
             Upper bounds.
         """
+        return (
+            self.plant.GetPositionLowerLimits()[:self.n],
+            self.plant.GetPositionUpperLimits()[:self.n],
+        )
 
-    @abstractmethod
     def _tau_bounds(self) -> tuple[np.ndarray, np.ndarray]:
         """Bounds on the motor torques.
 
@@ -435,6 +438,10 @@ class RobotModel(ABC):
         ub_tau : np.ndarray, shape=(nu,)
             Upper bounds.
         """
+        return (
+            self.plant.GetEffortLowerLimits(),
+            self.plant.GetEffortUpperLimits(),
+        )
 
     @abstractmethod
     def preload_model(self) -> None:

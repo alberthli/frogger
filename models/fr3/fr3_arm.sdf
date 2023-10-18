@@ -40,14 +40,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link0.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link0.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link0_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link0.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -94,14 +94,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link1.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link1.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link1_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link1.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link1.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -148,14 +148,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link2.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link2.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link2_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link2.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link2.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -202,14 +202,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link3.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link3.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link3_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link3.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link3.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -256,14 +256,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link4.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link4.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link4_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link4.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link4.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -310,14 +310,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link5.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link5.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link5_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link5.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link5.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -365,14 +365,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link6.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link6.obj</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link6_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link6.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link6.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -419,14 +419,14 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link7.dae</uri>
+            <uri>package://frogger/models/fr3/visual/link7.dae</uri>
           </mesh>
         </geometry>
       </visual>
       <collision name="fr3_link7_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/fr3/collision/link7.obj</uri>
+            <uri>package://frogger/models/fr3/collision/link7.obj</uri>
           </mesh>
         </geometry>
       </collision>

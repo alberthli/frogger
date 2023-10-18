@@ -42,7 +42,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link0.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -105,7 +105,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link1.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link1.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -179,7 +179,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link2.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link2.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -244,7 +244,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link3.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link3.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -308,7 +308,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link4.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link4.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -372,7 +372,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link5.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link5.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -445,7 +445,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link6.obj</uri>
+            <uri>package://frogger/models/fr3/visual/link6.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -509,7 +509,7 @@ The collision geometries are custom chosen by visual inspection.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/fr3/visual/link7.dae</uri>
+            <uri>package://frogger/models/fr3/visual/link7.dae</uri>
           </mesh>
         </geometry>
       </visual>

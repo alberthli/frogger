@@ -96,7 +96,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <pose>0 0 0.095 -1.5708 0 0</pose>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/base_link_left.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/base_link_left.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -105,7 +105,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/base_link_left.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/base_link_left.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -126,7 +126,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_if_bs_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_0.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -134,7 +134,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_0.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -171,7 +171,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_1.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -179,7 +179,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_1.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -215,7 +215,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_if_md_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_2.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -223,7 +223,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_2.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -259,7 +259,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_if_ds_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -267,7 +267,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
           </mesh>
         </geometry>
       </collision>
@@ -275,7 +275,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -284,7 +284,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0_tip.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -320,7 +320,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_mf_bs_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_0.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -328,7 +328,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_0.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -364,7 +364,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_mf_px_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_1.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -372,7 +372,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_1.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -408,7 +408,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_mf_md_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_2.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -416,7 +416,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_2.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -452,7 +452,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_mf_ds_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -460,7 +460,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
           </mesh>
         </geometry>
       </collision>
@@ -468,7 +468,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -477,7 +477,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0_tip.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -513,7 +513,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_rf_bs_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_0.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -521,7 +521,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_0.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -557,7 +557,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_rf_px_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_1.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -565,7 +565,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_1.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -601,7 +601,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_rf_md_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_2.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -609,7 +609,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_2.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -645,7 +645,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_rf_ds_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -653,7 +653,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
           </mesh>
         </geometry>
       </collision>
@@ -661,7 +661,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -670,7 +670,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_3.0_tip.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -707,7 +707,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <pose>0 0 0 3.14159 0 0</pose>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_12.0_left.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_12.0_left.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -716,7 +716,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_12.0_left.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_12.0_left.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -753,7 +753,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name='algr_lh_th_bs_collision'>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_13.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_13.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -761,7 +761,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_13.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_13.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -797,7 +797,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <collision name="algr_lh_th_px_collision">
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_14.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_14.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -805,7 +805,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_14.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_14.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -843,7 +843,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_15.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_15.0.obj</uri>
           </mesh>
         </geometry>
       </collision>
@@ -851,7 +851,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <pose>0 0 0.0423 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>package://manipulation/models/allegro/meshes/link_15.0_tip_tet.vtk</uri>
+            <uri>package://frogger/models/allegro/meshes/link_15.0_tip_tet.vtk</uri>
           </mesh>
         </geometry>
       </collision>
@@ -859,7 +859,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_15.0.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_15.0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -868,7 +868,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://manipulation/models/allegro/meshes/link_15.0_tip.obj</uri>
+            <uri>package://frogger/models/allegro/meshes/link_15.0_tip.obj</uri>
           </mesh>
         </geometry>
       </visual>

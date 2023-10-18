@@ -15,7 +15,7 @@ classifiers = [
 ]
 dependencies = [
     "dill>=0.3.6",
-    "drake>=1.21.0",
+    "drake>=1.22.0",
     "jax[cpu]>=0.4.1",
     "jaxlib>=0.4.1",
     "matplotlib>=3.5.2",
