@@ -6,6 +6,7 @@ import numpy as np
 import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
+from frogger import ROOT
 from frogger.objects import MeshObject
 from frogger.paper_experiments import compute_results, run_exp, summarize_all_results
 from frogger.robots.robots import FR3AlgrModel
@@ -18,9 +19,6 @@ This is the master script that runs all experiments for the paper.
 # container is used correctly
 warnings.filterwarnings("ignore", category=UserWarning)
 
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 # information of objects in the experimental suite
 obj_names = [

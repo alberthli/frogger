@@ -23,12 +23,13 @@ dependencies = [
     "numba>=0.56.4",
     "numpy>=1.23.1",
     "open3d>=0.16.0",
+    "qpth>=0.0.16",
     "quantecon>=0.6.0",
     "scikit-image>=0.19.3",
     "scipy>=1.10.0",
+    "torch>=1.13.1",
     "trimesh>=4.0.0",
 ]
-
 
 [project.optional-dependencies]
 # development-only dependencies
@@ -41,7 +42,9 @@ dev = [
 
 [options]
 dependency_links = [
-    "https://storage.googleapis.com/jax-releases/jax_releases.html"
+    "https://storage.googleapis.com/jax-releases/jax_releases.html",
+    "https://download.pytorch.org/whl/cu118",
+    "https://download.pytorch.org/whl/cu121",
 ]
 
 [tool.setuptools.packages.find]

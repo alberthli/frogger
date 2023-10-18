@@ -8,6 +8,7 @@ import numpy as np
 import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
+from frogger import ROOT
 from frogger.objects import MeshObject
 from frogger.paper_experiments import run_exp
 from frogger.robots.robots import FR3AlgrModel
@@ -18,10 +19,6 @@ This script computes the correlation between the min-weight and ferrari-canny me
 We use slightly different settings than the ones in the main experiments, but no major
 differences are worth reporting.
 """
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 # information of small subset of objects to get the idea of the trend
 obj_names = [

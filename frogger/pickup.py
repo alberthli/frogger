@@ -5,23 +5,20 @@ import scipy
 from pydrake.common.eigen_geometry import Quaternion
 from pydrake.common.value import AbstractValue
 from pydrake.geometry import MeshcatVisualizer, StartMeshcat
-from pydrake.manipulation.planner import (
+from pydrake.math import RigidTransform
+from pydrake.multibody.inverse_kinematics import (
     DifferentialInverseKinematicsIntegrator,
     DifferentialInverseKinematicsParameters,
 )
-from pydrake.math import RigidTransform
 from pydrake.solvers import MathematicalProgram, MosekSolver, SnoptSolver
 from pydrake.systems.analysis import Simulator
 from pydrake.systems.framework import DiagramBuilder, EventStatus, LeafSystem
 from pydrake.systems.primitives import StateInterpolatorWithDiscreteDerivative
 from pydrake.trajectories import PiecewisePose
 
+from frogger import ROOT
 from frogger.grasping import vee
 from frogger.robots.robot_core import RobotModel
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 
 class PickupController(LeafSystem):

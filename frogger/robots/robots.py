@@ -6,12 +6,9 @@ from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import MultibodyPlant
 from pydrake.multibody.tree import Body, Frame
 
+from frogger import ROOT
 from frogger.objects import ObjectDescription
 from frogger.robots.robot_core import RobotModel
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 
 class FR3AlgrModel(RobotModel):

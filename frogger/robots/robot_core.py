@@ -34,6 +34,7 @@ from pydrake.systems.primitives import Adder, Demultiplexer, Multiplexer
 from qpth.qp import QPFunction
 from quantecon.optimize.linprog_simplex import linprog_simplex as linprog
 
+from frogger import ROOT
 from frogger.grasping import (
     compute_gOCs,
     compute_grasp_matrix,
@@ -41,10 +42,6 @@ from frogger.grasping import (
     wedge,
 )
 from frogger.objects import ObjectDescription
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 
 class RobotModel(ABC):

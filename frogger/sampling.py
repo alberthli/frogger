@@ -5,12 +5,9 @@ from pydrake.math import RigidTransform, RotationMatrix
 from pydrake.multibody.inverse_kinematics import InverseKinematics
 from pydrake.solvers import Solve
 
+from frogger import ROOT
 from frogger.grasping import wedge
 from frogger.robots.robot_core import RobotModel
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 
 def _sdf_box(x: np.ndarray, lb: np.ndarray, ub: np.ndarray) -> float:

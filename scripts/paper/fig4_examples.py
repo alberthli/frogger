@@ -5,6 +5,7 @@ import numpy as np
 import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
+from frogger import ROOT
 from frogger.objects import MeshObject
 from frogger.robots.robots import FR3AlgrModel
 
@@ -15,10 +16,6 @@ Left: a "typical" grasp. Will pick something and then hide the object geom.
 
 Right: 8 grasps on 8 different objects.
 """
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 
 def _view_grasp(obj_name: str, num: int | list[int]) -> None:

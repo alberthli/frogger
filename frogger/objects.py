@@ -14,15 +14,12 @@ from pydrake.math import RigidTransform
 from skimage.measure import marching_cubes
 from trimesh.decomposition import convex_decomposition
 
+from frogger import ROOT
 from frogger.sdfs.smoothing import poisson_reconstruction
 
 jax.config.update("jax_platform_name", "cpu")  # force everything to run on CPU
 jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_debug_nans", True)  # errors out when encountering nans
-
-current_dir = Path(__file__)
-project_dir = [p for p in current_dir.parents if p.parts[-1] == "manipulation"][0]
-ROOT = str(project_dir)
 
 
 class ObjectDescription(ABC):
