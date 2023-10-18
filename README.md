@@ -12,10 +12,10 @@ pip install -e .
 This branch is the development branch for the upcoming FRoGGeR refactor.
 
 Post-IROS, there are some planned changes to the codebase. If you have suggestions, feel free to open an issue!
-- [ ] Update Drake to 1.21.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
-    - [ ] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
-    - [ ] Refactor dependency management onto `pyproject.toml`
-    - [ ] Significantly loosen requirements due to moving away from Docker
+- [x] Update Drake to 1.21.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
+    - [x] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
+    - [x] Refactor dependency management onto `pyproject.toml`
+    - [x] Significantly loosen requirements due to moving away from Docker
 - [ ] Simplify `RobotModel` abstract API:
     - [ ] Automatically read joint limit/torque bounds from file
     - [ ] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
