@@ -112,7 +112,7 @@ for obj_name in obj_names:
                 "d_pen": 0.003,  # allowed penetration of fingertip into object
                 "pregrasp_type": "closed",  # hand pregrasp type
                 "baseline": False,  # NOT the baseline optimizer
-                "viz": False,  # don't visualize to save time
+                "viz": True,  # don't visualize to save time
             }
             model = FR3AlgrModel(obj, model_settings)
 
@@ -144,6 +144,7 @@ for obj_name in obj_names:
             ik_type="partial",
             num_feas_samples=20,
             suffix=f"{i + 1}",
+            pick=False,  # [DEBUG] pick false during refactor
         )
 
         # computes results for each specific object and exp configuration

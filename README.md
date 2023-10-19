@@ -17,17 +17,22 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [x] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
 - [x] Refactor dependency management onto `pyproject.toml`
 - [x] Significantly loosen requirements due to moving away from Docker
-- [ ] Refactor to use the [SceneGraphCollisionChecker](https://drake.mit.edu/doxygen_cxx/classdrake_1_1planning_1_1_scene_graph_collision_checker.html) API for parallel checks.
-- [ ] Allow floating-base hands, implement Lie algebra math for the correct gradients.
+- [ ] Add ability to scale joint/torque limits from URDF default
+- [ ] Handle separately maintaining a controller plant from the sim plant with obj
+- [ ] Refactor the Wu baseline stuff out of the core `RobotModel`
 - [ ] Before pypi package release, update instructions for using the MOSEK license.
+- [X] Handle multiple collision geoms on robot AND on object for surface constraint
+- [ ] Force the user to supply a single URDF or SDF for the entire system to greatly simplify the pipeline (requires a relatively large refactor of the sim pipeline)
+- [ ] Abstract the initial condition sampler so that people can implement their own.
+    - [ ] Simplify the sampling heuristic to be something more reasonable.
 - [ ] Simplify `RobotModel` abstract API:
     - [x] Automatically read joint limit/torque bounds from file
-    - [ ] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
+    - [x] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
     - [ ] Remove need to specify candidate fingertip positions, instead let the heuristic IK sampler handle this in the backend.
     - [ ] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
 - [ ] Verify compatibility with underactuated hands (e.g., Barrett or Shadow).
 - [ ] Investigate refactoring solver from `nlopt` to Drake's SNOPT bindings.
-- [ ] Add usage examples.
+- [ ] Add usage examples + a timing script.
 
 ## Installation
 All code should be run on a Docker container that directly reads and writes from the mounted git directory on your local machine. We use the Drake 1.12.0 release for Ubuntu 22.04 (Jan. 12, 2023). We support Linux machines and theoretically offer MacOS support, though this functionality is currently untested. We do not currently support Windows.

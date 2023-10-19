@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -44,6 +45,11 @@ from frogger.grasping import (
 from frogger.objects import ObjectDescription
 
 
+@dataclass
+class RobotModelConfig:
+    """A configuration for a robot model."""
+
+
 class RobotModel(ABC):
     """Abstract class for robot models.
 
@@ -51,7 +57,7 @@ class RobotModel(ABC):
     repeated calculations are minimized.
 
     [NOTE] any geometries belonging to the fingertip that are ALLOWED to collide with
-    the object should have the substring "tip_collision" in their *.sdf file.
+    the object should have the substring "FROGGERCOL" in their *.sdf file.
     """
 
     def __init__(
@@ -193,7 +199,6 @@ class RobotModel(ABC):
                 prox_properties,
             )
         self.plant.Finalize()
-        breakpoint()
 
         # constructing system diagram with gravity compensation.
         # takes in feedback torque and adds it to the feedforward gravity comp.
@@ -306,6 +311,18 @@ class RobotModel(ABC):
         self.A_box = np.concatenate((-I, I), axis=-2)  # (2*n, n)
         self.b_box = np.concatenate((lb_q, -ub_q), axis=-1)  # (2*n,)
 
+        # all the possible hand-obj collision pairs, which are always checked
+        self.hand_obj_pairs = []
+        inspector = self.query_object.inspector()
+        col_cands = list(inspector.GetCollisionCandidates())
+        for c in col_cands:
+            id_A, id_B = c[0], c[1]
+            name_A, name_B = inspector.GetName(id_A), inspector.GetName(id_B)
+            has_tip = "FROGGERCOL" in name_A or "FROGGERCOL" in name_B
+            has_obj = "obj" in name_A or "obj" in name_B
+            if has_tip and has_obj:
+                self.hand_obj_pairs.append((id_A, id_B))
+
         # cached values. all Jacobians wrt q when unspecified.
         self.q = None  # cached value of the last unique configuration
         self.p_tips = None  # cached values of the fingertip FK and Jacobians
@@ -327,6 +344,7 @@ class RobotModel(ABC):
         self.Dl = None
         self.gid_pair_inds = {}  # dict ordering collision geometry id pairs
         self.sdp_normals = {}  # dict caching signed distance pair normal vectors
+        self.hand_obj_cols = {}  # dict recording most penetrating hand/obj collisions
 
         # [BASELINE] Wu 2022 CVAE Bilevel Optimization paper
         self._init_baseline_cons()
@@ -504,83 +522,8 @@ class RobotModel(ABC):
     # CACHED VALUE COMPUTATION #
     # ######################## #
 
-    def _compute_fk(self) -> None:
-        """Computes the forward kinematics (fingertips and Jacobians)."""
-        # computing fingertip kinematics
-        nc = self.nc
-        _p_tips = np.array(
-            [
-                self.plant.CalcPointsPositions(
-                    self.plant_context,
-                    self.contact_frames[i],
-                    self.contact_locs[i],
-                    self.plant.world_frame(),
-                )
-                for i in range(nc)
-            ]
-        )
-        self.p_tips = _p_tips.squeeze(-1)  # (nc, 3)
-        _J_tips = np.array(
-            [
-                self.plant.CalcJacobianTranslationalVelocity(
-                    self.plant_context,
-                    JacobianWrtVariable.kQDot,
-                    self.contact_frames[i],
-                    self.contact_locs[i],
-                    self.plant.world_frame(),
-                    self.plant.world_frame(),
-                )
-                for i in range(nc)
-            ]
-        )
-        self.J_tips = _J_tips[..., : self.n]  # (nc, 3, n)
-
-    def _compute_s_fk(self) -> None:
-        """Computes the composition of s with the forward kinematics and Jacobian."""
-        self.s_fk = self.obj.s_W(self.p_tips, batched=True)  # (nc,)
-        self.Ds_p = self.obj.Ds_W(self.p_tips, batched=True)  # Ds(p)
-        J_T = np.swapaxes(self.J_tips, -1, -2)  # (nc, n, 3)
-        self.Ds_fk = (J_T @ self.Ds_p[..., None]).squeeze(-1)  # (nc, n), D[s(FK)](q)
-
-    def _compute_eq_cons(self, q: np.ndarray) -> None:
-        """Computes equality constraints and their gradients."""
-        A_couple, b_couple = self.joint_coupling_constraints
-        if self.baseline:
-            # computing the value and gradient of the bilevel constraint wrt q
-            G_torch = torch.tensor(self.G)
-            feas = self._bilevel_cons(G_torch).detach().numpy()[..., None]
-            Dfeas_G = (
-                torch.autograd.functional.jacobian(
-                    self._bilevel_cons, G_torch, create_graph=True, strict=True
-                )
-                .detach()
-                .numpy()
-                .astype(np.float64)
-            )
-            DG = self.DG
-            Dfeas = (Dfeas_G.reshape(-1) @ DG.reshape((-1, DG.shape[-1])))[None, ...]
-
-            if len(b_couple) == 0:
-                self.h = np.concatenate((self.s_fk, feas))
-                self.Dh = np.concatenate((self.Ds_fk, Dfeas), axis=0)
-            else:
-                h_s_fk = self.s_fk
-                h_couple = A_couple @ q + b_couple
-                self.h = np.concatenate((h_s_fk, h_couple, feas))
-                self.Dh = np.concatenate((self.Ds_fk, A_couple, Dfeas), axis=0)
-        else:
-            # if not using the baseline, simply proceed
-            if len(b_couple) == 0:
-                self.h = self.s_fk
-                self.Dh = self.Ds_fk
-            else:
-                h_s_fk = self.s_fk
-                h_couple = A_couple @ q + b_couple
-                self.h = np.concatenate((h_s_fk, h_couple))
-                self.Dh = np.concatenate((self.Ds_fk, A_couple), axis=0)
-
-    def _compute_ineq_cons(self, q: np.ndarray) -> None:
-        """Computes inequality constraints and their gradients."""
+    def _process_collisions(self, q: np.ndarray) -> None:
+        """Computes all information related to collision constraints."""
         n = self.n
 
         # checking if first iteration
@@ -619,6 +562,18 @@ class RobotModel(ABC):
         if len(sdps) > 0:
             gidps = [(sdp.id_A.get_value(), sdp.id_B.get_value()) for sdp in sdps]
             _, sdps = zip(*sorted(zip(gidps, sdps)))  # sort sdps by gidps
+            sdps = list(sdps)  # tuple -> list
+        else:
+            gidps = []
+
+        # manually adds hand-obj collisions to the list of collision pairs
+        for ho_pair in self.hand_obj_pairs:
+            if ho_pair not in gidps:
+                sdps.append(
+                    self.query_object.ComputeSignedDistancePairClosestPoints(
+                        ho_pair[0], ho_pair[1]
+                    )
+                )
         inspector = self.query_object.inspector()  # model inspector for geometries
 
         def get_bf(gid):
@@ -632,6 +587,7 @@ class RobotModel(ABC):
         self.Dg[2 * n : (2 * n + self.n_pairs), :] = 0.0  # resetting col gradients
 
         # loop through unculled collision pairs
+        self.hand_obj_cols = {}  # reset the hand-obj dictionary
         for sdp in sdps:
             id_A = sdp.id_A  # geometry IDs
             id_B = sdp.id_B
@@ -688,18 +644,123 @@ class RobotModel(ABC):
 
             # only allow tip/obj collision w/ small penetration
             names = [inspector.GetName(id_A), inspector.GetName(id_B)]
-            has_tip = "tip_collision" in names[0] or "tip_collision" in names[1]
+            has_tip = "FROGGERCOL" in names[0] or "FROGGERCOL" in names[1]
             has_obj = "obj_collision" in names[0] or "obj_collision" in names[1]
             d_pen = self.settings.get("d_pen", 0.0)
             if has_tip and has_obj:
                 self.g[2 * n + i] = -sd - d_pen  # allow fingertip to penetrate obj
             else:
                 self.g[2 * n + i] = d_min - sd  # other pairs must respect d_min
-            self.Dg[2 * n + i, :] = -(J_A - J_B).T @ nrml
+            Dgi = -(J_A - J_B).T @ nrml
+            self.Dg[2 * n + i, :] = Dgi
 
+            # updating the most interpenetrating pairs for each link allowing collision
+            if has_tip and has_obj:
+                bA = fA.body()  # bodies associated with collision geoms
+                bB = fB.body()
+                body_name_A = bA.name()
+                body_name_B = bB.name()
+
+                if "FROGGERCOL" in names[0]:
+                    p_tip_W = self.plant.CalcPointsPositions(
+                        self.plant_context,
+                        fA,
+                        pA,
+                        self.plant.world_frame(),
+                    ).squeeze(-1)
+                    p_tip_C = pA
+                    f_tip = fA
+                    key = (body_name_A, body_name_B)
+                else:
+                    p_tip_W = self.plant.CalcPointsPositions(
+                        self.plant_context,
+                        fB,
+                        pB,
+                        self.plant.world_frame(),
+                    ).squeeze(-1)
+                    p_tip_C = pB
+                    f_tip = fB
+                    key = (body_name_B, body_name_A)
+
+                if not key in self.hand_obj_cols:
+                    self.hand_obj_cols[key] = (sd, -Dgi, p_tip_W, p_tip_C, f_tip)
+                else:
+                    if sd < self.hand_obj_cols[key][0]:
+                        self.hand_obj_cols[key] = (sd, -Dgi, p_tip_W, p_tip_C, f_tip)
+
+        # updating p_tips and J_tips
+        h_tip = []
+        Dh_tip = []
+        p_tips = []
+        J_tips = []
+        for k, v in sorted(self.hand_obj_cols.items()):
+            h_tip.append(v[0])
+            Dh_tip.append(v[1])
+            p_tips.append(v[2])
+            J_tips.append(
+                self.plant.CalcJacobianTranslationalVelocity(
+                    self.plant_context,
+                    JacobianWrtVariable.kQDot,
+                    v[4],
+                    v[3],
+                    self.plant.world_frame(),
+                    self.plant.world_frame(),
+                )[..., :self.n]
+            )
+        self.h_tip = np.array(h_tip)
+        self.Dh_tip = np.array(Dh_tip)
+        self.p_tips = np.array(p_tips)
+        self.J_tips = np.array(J_tips)
+
+    def _compute_s_fk(self) -> None:
+        """Computes the composition of s with the forward kinematics and Jacobian."""
+        self.s_fk = self.obj.s_W(self.p_tips, batched=True)  # (nc,)
+        self.Ds_p = self.obj.Ds_W(self.p_tips, batched=True)  # Ds(p)
+        J_T = np.swapaxes(self.J_tips, -1, -2)  # (nc, n, 3)
+        self.Ds_fk = (J_T @ self.Ds_p[..., None]).squeeze(-1)  # (nc, n), D[s(FK)](q)
+
+    def _compute_eq_cons(self, q: np.ndarray) -> None:
+        """Computes equality constraints and their gradients."""
+        A_couple, b_couple = self.joint_coupling_constraints
+        if self.baseline:
+            # computing the value and gradient of the bilevel constraint wrt q
+            G_torch = torch.tensor(self.G)
+            feas = self._bilevel_cons(G_torch).detach().numpy()[..., None]
+            Dfeas_G = (
+                torch.autograd.functional.jacobian(
+                    self._bilevel_cons, G_torch, create_graph=True, strict=True
+                )
+                .detach()
+                .numpy()
+                .astype(np.float64)
+            )
+            DG = self.DG
+            Dfeas = (Dfeas_G.reshape(-1) @ DG.reshape((-1, DG.shape[-1])))[None, ...]
+
+            if len(b_couple) == 0:
+                self.h = np.concatenate((self.h_tip, feas))
+                self.Dh = np.concatenate((self.Dh_tip, Dfeas), axis=0)
+            else:
+                h_s_fk = self.h_tip
+                h_couple = A_couple @ q + b_couple
+                self.h = np.concatenate((h_s_fk, h_couple, feas))
+                self.Dh = np.concatenate((self.Dh_tip, A_couple, Dfeas), axis=0)
+        else:
+            # if not using the baseline, simply proceed
+            if len(b_couple) == 0:
+                self.h = self.h_tip
+                self.Dh = self.Dh_tip
+            else:
+                h_s_fk = self.h_tip
+                h_couple = A_couple @ q + b_couple
+                self.h = np.concatenate((h_s_fk, h_couple))
+                self.Dh = np.concatenate((self.Dh_tip, A_couple), axis=0)
+
+    def _finish_ineq_cons(self) -> None:
+        """Finieshes computing inequality constraints and their gradients."""
         # force closure inequality constraint
         if not self.baseline:
-            idx_minw = self.n_pairs + 2 * n
+            idx_minw = self.n_pairs + 2 * self.n
             self.g[idx_minw] = -self.l + self.l_cutoff / (self.ns * self.nc)
             self.Dg[idx_minw, :] = -self.Dl
 
@@ -921,20 +982,13 @@ class RobotModel(ABC):
         self.f = f
         self.Df = Df
 
-    def compute_all(self, q: np.ndarray, skip_ineqs: bool = False) -> None:
+    def compute_all(self, q: np.ndarray) -> None:
         """Computes and caches calculations for the robot.
 
         Parameters
         ----------
         q : np.ndarray, shape=(n,)
             The configuration of the system.
-        skip_ineqs : bool, default=False
-            Whether to skip computation of the inequality constraints. Used during
-            pickup simulation, since there is often a strange bug thrown by FCL:
-            "The origin is outside of the polytope. This should already have been
-            identified as separating."
-            This is a bug in Drake that hasn't been resolved at the time of publishing
-            this paper.
         """
         # updating plant context
         n = self.n
@@ -945,83 +999,82 @@ class RobotModel(ABC):
         self.plant.SetPositions(self.plant_context, self.hand_instance, q_hand)
 
         # computing all cached values
-        self._compute_fk()
+        self._process_collisions(q)
         self._compute_s_fk()
         self._compute_G_and_W()
         self._compute_DG_and_DW()
         self._compute_eq_cons(q)
         self._compute_cost_func()
-        if not skip_ineqs:
-            self._compute_ineq_cons(q)
+        self._finish_ineq_cons()
 
     # ###################### #
     # CACHED VALUE RETRIEVAL #
     # ###################### #
 
-    def compute_p_tips(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_p_tips(self, q: np.ndarray) -> np.ndarray:
         """Computes the forward kinematics, p_tips."""
         if self.p_tips is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.p_tips  # (nc, 3)
 
-    def compute_J_tips(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_J_tips(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobians of the fingertips, J_tips."""
         if self.J_tips is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.J_tips  # (nc, 3, n)
 
-    def compute_g(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_g(self, q: np.ndarray) -> np.ndarray:
         """Computes the inequality constraints g."""
         if self.g is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.g  # (n_ineq_cons,)
 
-    def compute_Dg(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_Dg(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the inequality constraints, Dg."""
         if self.Dg is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.Dg  # (n_ineq_cons, n)
 
-    def compute_h(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_h(self, q: np.ndarray) -> np.ndarray:
         """Computes the equality constraints h."""
         if self.h is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.h  # (n_eq_cons,)
 
-    def compute_Dh(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_Dh(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the equality constraints, Dh."""
         if self.Dh is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.Dh  # (n_eq_cons, n)
 
-    def compute_s_fk(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_s_fk(self, q: np.ndarray) -> np.ndarray:
         """Computes the composition of s with FK, s_fk.
 
         The 0-level set of s_W is a 2D implicit surface embedded in R^3. FK is the
         forward kinematics of the robot.
         """
         if self.s_fk is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.s_fk  # (nc,)
 
-    def compute_Ds(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_Ds(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the SDF evaluated at the forward kinematics.
 
         Specifically, this computes Ds(p), where p = FK(q).
         """
         if self.Ds_p is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.Ds_p  # (nc, 3)
 
-    def compute_Ds_fk(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_Ds_fk(self, q: np.ndarray) -> np.ndarray:
         """Computes the gradient of the composition of s_W with FK wrt q, Ds_fk.
 
         The 0-level set of s_W is a 2D implicit surface embedded in R^3. FK is the
@@ -1030,70 +1083,70 @@ class RobotModel(ABC):
         Specifically, this computes D[s(FK)](q) in contrast with Ds_p above.
         """
         if self.Ds_fk is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.Ds_fk  # (nc, n)
 
-    def compute_gOCs(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_gOCs(self, q: np.ndarray) -> np.ndarray:
         """Computes the transformations from contacts to object frames."""
         if self.gOCs is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.gOCs  # (nc, 4, 4)
 
-    def compute_G(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_G(self, q: np.ndarray) -> np.ndarray:
         """Computes the grasp map, G."""
         if self.G is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.G  # (6, 3 * nc)
 
-    def compute_DG(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_DG(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the grasp map, DG."""
         if self.DG is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.DG  # (6, 3 * nc, n)
 
-    def compute_W(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_W(self, q: np.ndarray) -> np.ndarray:
         """Computes the wrench matrix whose columns are the primitive wrenches, W."""
         if self.W is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.W  # (6, ns * nc)
 
-    def compute_DW(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_DW(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the wrench matrix, Dw."""
         if self.DW is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.DW  # (6, ns * nc, n)
 
-    def compute_l(self, q: np.ndarray, skip_ineqs: bool = False) -> float:
+    def compute_l(self, q: np.ndarray) -> float:
         """Computes the optimal minimum convex weight l."""
         if self.l is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.l
 
-    def compute_Dl(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_Dl(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of l, Dl."""
         if self.Dl is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.Dl  # (n,)
 
-    def compute_f(self, q: np.ndarray, skip_ineqs: bool = False) -> float:
+    def compute_f(self, q: np.ndarray) -> float:
         """Computes the cost function f."""
         if self.f is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.f
 
-    def compute_Df(self, q: np.ndarray, skip_ineqs: bool = False) -> np.ndarray:
+    def compute_Df(self, q: np.ndarray) -> np.ndarray:
         """Computes the gradient of the cost, Df."""
         if self.Df is None or np.any(q != self.q):
-            self.compute_all(q, skip_ineqs=skip_ineqs)
+            self.compute_all(q)
             self.q = np.copy(q)
         return self.Df  # (n,)
 

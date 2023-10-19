@@ -239,7 +239,7 @@ class PickupController(LeafSystem):
 
         # computing the hand Jacobian
         # G = self.model.compute_G(q_all)  # unused grasp matrix retrieval
-        J_all = self.model.compute_J_tips(q_all, skip_ineqs=True)  # (nc, 3, n)
+        J_all = self.model.compute_J_tips(q_all)  # (nc, 3, n)
         J_hand = J_all[..., self.narm :].reshape((-1, self.nhand))  # (nc * 3, nhand)
 
         # actuation limits
@@ -345,9 +345,9 @@ class PickupController(LeafSystem):
             The stack of optimal contact forces in the WORLD FRAME.
         """
         # useful quantities
-        G = self.model.compute_G(q, skip_ineqs=True)  # grasp map
-        g_OCs = self.model.compute_gOCs(q, skip_ineqs=True)  # contact to obj frame
-        J_all = self.model.compute_J_tips(q, skip_ineqs=True)  # (nc, 3, n)
+        G = self.model.compute_G(q)  # grasp map
+        g_OCs = self.model.compute_gOCs(q)  # contact to obj frame
+        J_all = self.model.compute_J_tips(q)  # (nc, 3, n)
         J_hand = J_all[..., self.narm :].reshape((-1, self.nhand))  # (nc * 3, nhand)
 
         R_OCs = g_OCs[:, :3, :3]  # (nc, 3, 3)

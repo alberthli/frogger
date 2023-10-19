@@ -266,7 +266,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           </box>
         </geometry>
       </collision>
-      <collision name="algr_rh_if_ds_tip_collision_1">
+      <collision name="algr_rh_if_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
           <sphere>
@@ -279,8 +279,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
         </drake:proximity_properties>
       </collision>
-      <!-- <collision name="algr_rh_if_ds_tip_collision_2"> -->
-      <collision name="algr_rh_if_ds_collision_2">
+      <collision name="algr_rh_if_ds_tip_collision_2_FROGGERCOL">
         <pose>0 0 0.01335 0 0 0</pose>
         <geometry>
           <cylinder>
@@ -478,7 +477,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           </box>
         </geometry>
       </collision>
-      <collision name="algr_rh_mf_ds_tip_collision_1">
+      <collision name="algr_rh_mf_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
           <sphere>
@@ -491,8 +490,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
         </drake:proximity_properties>
       </collision>
-      <!-- <collision name="algr_rh_mf_ds_tip_collision_2"> -->
-      <collision name="algr_rh_mf_ds_collision_2">
+      <collision name="algr_rh_mf_ds_tip_collision_2_FROGGERCOL">
         <pose>0 0 0.01335 0 0 0</pose>
         <geometry>
           <cylinder>
@@ -690,7 +688,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           </box>
         </geometry>
       </collision>
-      <collision name="algr_rh_rf_ds_tip_collision_1">
+      <collision name="algr_rh_rf_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
           <sphere>
@@ -703,8 +701,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
         </drake:proximity_properties>
       </collision>
-      <!-- <collision name="algr_rh_rf_ds_tip_collision_2"> -->
-      <collision name="algr_rh_rf_ds_collision_2">
+      <collision name="algr_rh_rf_ds_tip_collision_2_FROGGERCOL">
         <pose>0 0 0.01335 0 0 0</pose>
         <geometry>
           <cylinder>
@@ -904,7 +901,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           </box>
         </geometry>
       </collision>
-      <collision name="algr_rh_th_ds_tip_collision_1">
+      <collision name="algr_rh_th_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0423 0 0 0</pose>
         <geometry>
           <sphere>
@@ -917,8 +914,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
         </drake:proximity_properties>
       </collision>
-      <!-- <collision name="algr_rh_th_ds_tip_collision_2"> -->
-      <collision name="algr_rh_th_ds_collision_2">
+      <collision name="algr_rh_th_ds_tip_collision_2_FROGGERCOL">
         <pose>0 0 0.02115 0 0 0</pose>
         <geometry>
           <cylinder>
