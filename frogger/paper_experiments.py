@@ -12,7 +12,7 @@ from frogger.grasping import ferrari_canny_L1
 from frogger.objects import ObjectDescription
 from frogger.pickup import PickupSystem
 from frogger.robots.robot_core import RobotModel
-from frogger.sampling import sample_configuration
+from frogger.sampling import HeuristicFR3AlgrICSampler
 
 
 """
@@ -124,7 +124,7 @@ def run_exp(
     n_ineq = n_joint + n_col + (1 - n_baseline)
     n_eq = n_surf + n_couple + n_baseline
 
-    tol_surf = opt_settings.get("tol_surf", 5e-4)
+    tol_surf = opt_settings.get("tol_surf", 1e-3)
     tol_couple = opt_settings.get("tol_couple", 1e-4)
     tol_joint = opt_settings.get("tol_joint", 1e-2)
     tol_col = opt_settings.get("tol_col", 1e-3)
@@ -186,6 +186,9 @@ def run_exp(
     pick_success = []
     X_WO_orig = RigidTransform(obj.X_WO)
 
+    # defining the initial condition sampler
+    sampler = HeuristicFR3AlgrICSampler(model)
+
     # running experiment
     b = 0  # the number of samples collected out of the desired batch
     seed = 0
@@ -211,13 +214,7 @@ def run_exp(
             # ############################## #
             # if a desired pose is provided and is not kinematically feasible, skip it
             t_start = time.time()
-            q0, _ik_iters = sample_configuration(
-                model,
-                X_WPc_des=None,
-                seed=seed,
-                sampler=sampler,
-                ik_type=ik_type,
-            )  # (n,)
+            q0, _ik_iters = sampler.sample_configuration()
             ik_counter = ik_counter + _ik_iters
             while q0 is None:
                 seed = seed + 1
@@ -256,6 +253,7 @@ def run_exp(
             # ################# #
             # running optimizer #
             # ################# #
+
             t_start = time.time()
             try:
                 q_star = opt.optimize(q0)

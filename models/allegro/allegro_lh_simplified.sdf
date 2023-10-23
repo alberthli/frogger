@@ -964,5 +964,15 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         thumb_base_cfg
       </drake:ignored_collision_filter_group>
     </drake:collision_filter_group>
+
+    <!-- adding frame for heuristic IK sampling -->
+    <joint name="dummy_sampling_joint" type="fixed">
+      <child>algr_rh_palm_FROGGERSAMPLE</child>
+      <parent>algr_rh_palm</parent>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+    </joint>
+    <link name="algr_rh_palm_FROGGERSAMPLE">
+      <pose>0.0 0.0 0.095 0.0 0.0 0.0</pose>
+    </link>
   </model>
 </sdf>

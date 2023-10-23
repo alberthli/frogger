@@ -23,16 +23,24 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [ ] Before pypi package release, update instructions for using the MOSEK license.
 - [X] Handle multiple collision geoms on robot AND on object for surface constraint
 - [ ] Force the user to supply a single URDF or SDF for the entire system to greatly simplify the pipeline (requires a relatively large refactor of the sim pipeline)
-- [ ] Abstract the initial condition sampler so that people can implement their own.
-    - [ ] Simplify the sampling heuristic to be something more reasonable.
+- [x] Abstract the initial condition sampler so that people can implement their own.
+- [ ] Come up with simpler sampling heuristic requiring less user tuning
 - [ ] Simplify `RobotModel` abstract API:
     - [x] Automatically read joint limit/torque bounds from file
     - [x] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
-    - [ ] Remove need to specify candidate fingertip positions, instead let the heuristic IK sampler handle this in the backend.
+    - [x] Move burden of custom implementation as much as possible to heuristic sampler.
     - [ ] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
 - [ ] Verify compatibility with underactuated hands (e.g., Barrett or Shadow).
 - [ ] Investigate refactoring solver from `nlopt` to Drake's SNOPT bindings.
 - [ ] Add usage examples + a timing script.
+
+## Usage
+To sample grasps on a custom manipulator, you need the following:
+* a description of the manipulator in URDF or SDF form,
+* a description of the object, either as a mesh or as an analytical SDF,
+* an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
+
+# Pre-refactor Info
 
 ## Installation
 All code should be run on a Docker container that directly reads and writes from the mounted git directory on your local machine. We use the Drake 1.12.0 release for Ubuntu 22.04 (Jan. 12, 2023). We support Linux machines and theoretically offer MacOS support, though this functionality is currently untested. We do not currently support Windows.

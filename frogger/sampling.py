@@ -1,14 +1,380 @@
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
 from pydrake.math import RigidTransform, RotationMatrix
 from pydrake.multibody.inverse_kinematics import InverseKinematics
+from pydrake.multibody.tree import Frame
 from pydrake.solvers import Solve
 
 from frogger import ROOT
 from frogger.grasping import wedge
 from frogger.robots.robot_core import RobotModel
+from frogger.robots.robots import FR3AlgrModel
 
+
+# ######## #
+# SAMPLERS #
+# ######## #
+
+class ICSampler(ABC):
+    """An interface for defining samplers for initial grasps q0.
+
+    Any custom samplers only need to implement the `sample_configuration` function.
+    """
+
+    def __init__(self, model: RobotModel) -> None:
+        """Initialize the sampler.
+
+        Parameters
+        ----------
+        model : RobotModel
+            The model of the robot and system.
+        """
+        self.model = model
+
+    @abstractmethod
+    def sample_configuration(self) -> np.ndarray:
+        """Samples a grasp configuration q0."""
+
+
+class HeuristicICSampler(ICSampler):
+    """Abstract heuristic sampler for general manipulators.
+
+    High-level idea: implement a way to sample a palm pose in the world frame, then
+    solve a simple inverse kinematics problem to place the palm there.
+
+    If desired, additional constraints can also be added.
+    """
+
+    def __init__(self, model: RobotModel) -> None:
+        """Initialize the heuristic sampler."""
+        super().__init__(model)
+        self.palm_frame = None  # palm frame used for sampling.
+
+    def get_palm_frame(self) -> Frame:
+        """Gets the palm frame.
+
+        This MUST be specified in the URDF/SDF by adding a dummy link with the substring
+        "FROGGERSAMPLE" in the link name. You can only have one such link.
+
+        Recommended axis conventions:
+        * The x-axis should point outwards from the palm.
+        * If the hand morphology is such that it can act like a parallel-jaw gripper,
+          then the y-axis should be perpendicular to the close/open direction.
+
+        For example, for the Allegro right hand, the x-axis points out, the y-axis
+        points to the right towards the thumb, and the z-axis points towards the
+        remaining 3 fingers.
+
+        Returns
+        -------
+        f_palm : Frame
+            The palm frame.
+
+        Raises
+        ------
+        ValueError
+            If there are 0 or multiple links identified as a sampling palm frame.
+        """
+        if self.palm_frame is None:
+            inspector = self.model.query_object.inspector()
+            frames = []
+            for fid in inspector.GetAllFrameIds():
+                body = self.model.plant.GetBodyFromFrameId(fid)
+                frame = body.body_frame()
+                name = body.name()
+                if "FROGGERSAMPLE" in name:
+                    frames.append(frame)
+            if len(frames) != 1:
+                raise ValueError("There must be exactly 1 sampling frame!")
+            self.palm_frame = frames[0]
+        return self.palm_frame
+
+    def sample_palm_pose(self) -> RigidTransform:
+        """Samples the pose of the palm in the world frame for the IK problem.
+
+        Overview of strategy:
+        (1) align the y-axis of the palm wrt the object
+        (2) align the x-axis of the palm wrt the object
+        (3) place the palm near the object
+
+        Returns
+        -------
+        X_WPalm : RigidTransform
+            The pose of the palm wrt the world.
+        """
+        obj = self.model.obj
+        X_WO = obj.X_WO  # the pose of the object in the world frame
+        X_OBB = obj.X_OBB  # the oriented bounding box expressed in the obj frame
+        axis_lengths_O = obj.ub_oriented - obj.lb_oriented
+
+        # (1) pick a direction to the align the y-axis
+        # the alignment probability is proportional to the length of the BB sides
+
+        # (1a) picking using simple CDF sampling
+        prob_1 = axis_lengths_O[0] / np.sum(axis_lengths_O)
+        prob_2 = axis_lengths_O[1] / np.sum(axis_lengths_O)
+        num = np.random.rand()
+        if num <= prob_1:
+            hand_y_axis_ind = 0
+        elif num > prob_1 and num <= prob_1 + prob_2:
+            hand_y_axis_ind = 1
+        else:
+            hand_y_axis_ind = 2
+
+        # (1b) representing the axis in the world frame
+        hand_y_axis_O = np.zeros(3)
+        hand_y_axis_O[hand_y_axis_ind] = 1.0
+        hand_y_axis_W = (X_WO @ X_OBB).rotation().matrix() @ hand_y_axis_O
+
+        # (1c) randomly choosing the direction of the axis
+        rand_sign = 1 if np.random.random() < 0.5 else -1
+        _y_hat = rand_sign * hand_y_axis_W
+        _y_hat = _y_hat / np.linalg.norm(_y_hat)
+        y_hat = np.random.vonmises(mu=_y_hat, kappa=20)  # add von mises noise
+        y_hat = y_hat / np.linalg.norm(y_hat)
+
+        # (2) picking a direction to align the x-axis
+        # the alignment probability is proportional to the length of the remaining BB
+        # sides after accounting for the one picked by the y-axis
+
+        # (2a) CDF sampling
+        ax_remaining = np.array([0, 1, 2])[np.arange(3) != hand_y_axis_ind]
+        prob = axis_lengths_O[ax_remaining[0]] / np.sum(axis_lengths_O[ax_remaining])
+        num = np.random.rand()
+        if num <= prob:
+            hand_x_axis_ind = ax_remaining[0]
+        else:
+            hand_x_axis_ind = ax_remaining[1]
+
+        # (2b) representing the axis in the world frame
+        hand_x_axis_O = np.zeros(3)
+        hand_x_axis_O[hand_x_axis_ind] = 1.0
+        hand_x_axis_W = (X_WO @ X_OBB).rotation().matrix() @ hand_x_axis_O
+
+        # (2c) randomly choosing the direction of the axis
+        rand_sign = 1 if np.random.random() < 0.5 else -1
+        _x_hat = rand_sign * hand_x_axis_W
+        _x_hat = _x_hat / np.linalg.norm(_x_hat)
+        R_pert = _rodrigues(_y_hat, y_hat)
+        x_hat = R_pert @ _x_hat
+        x_hat = x_hat - (np.inner(y_hat, x_hat) / np.inner(y_hat, y_hat)) * y_hat
+
+        # computing the rotation matrix associated with the choice of x and y-axis
+        z_hat = np.cross(x_hat, y_hat)
+        R_WPalm = np.stack((x_hat, y_hat, z_hat), axis=1)
+
+        # (3) compute a palm position by bisecting with the object bounding box
+
+        # (3a) center of object in world frame
+        lb_W = obj.lb_W
+        ub_W = obj.ub_W
+        c_W = obj.X_WO @ obj.center_mass
+
+        # (3b) bisect
+        d_offset = 0.05
+        P_WPalm = _bisect_on_box(c_W, -x_hat, d_offset, lb_W, ub_W)
+
+        # return palm pose
+        X_WPalm = RigidTransform(RotationMatrix(R_WPalm), P_WPalm)
+        return X_WPalm
+
+    def add_additional_constraints(
+        self, ik: InverseKinematics, X_WPalm_des: RigidTransform
+    ) -> None:
+        """Adds any additional constraints to the IK problem.
+
+        Useful for more involved heuristics, e.g., if fingers should also be constrained
+        somehow with respect to the object geometry. Typically, the solver is very
+        sensitive to the initial guess, so there should be more constraints than just
+        the wrist position if you want reasonable solve times.
+
+        Parameters
+        ----------
+        ik : InverseKinematics
+            The IK problem.
+        X_WPalm_des : RigidTransform
+            The desired palm pose in the world frame.
+        """
+
+    def sample_configuration(
+        self, tol_ang: float = 0.0, tol_pos: float = 0.0
+    ) -> tuple[np.ndarray, int]:
+        """Sample a grasp.
+
+        Parameters
+        ----------
+        tol_ang : float, default=0.0
+            The positive tolerance on the orientation of the palm in radians.
+        tol_pos : float, default=0.0
+            The (double-sided) tolerance on the position of the palm in meters.
+
+        Returns
+        -------
+        q_sample : np.ndarray, shape=(n,)
+            The sample of the grasp.
+        num_attempts : int
+            The number of attempts to produce a successful sample.
+        """
+        assert tol_ang >= 0.0
+        assert tol_pos >= 0.0
+        plant = self.model.plant
+
+        # repeatedly tries to solve an IK problem until a feasible sample is found
+        success = False
+        num_attempts = 0
+        while not success:
+            num_attempts += 1
+
+            # sampling a desired palm pose
+            f_palm = self.get_palm_frame()
+            X_WPalm_des = self.sample_palm_pose()
+            p_WPalm_des = X_WPalm_des.translation()
+            R_WPalm_des = X_WPalm_des.rotation()
+
+            ik = InverseKinematics(plant, self.model.plant_context)
+
+            # palm pose constraints
+            ik.AddOrientationConstraint(
+                plant.world_frame(),
+                R_WPalm_des,
+                f_palm,
+                RotationMatrix(),
+                tol_ang,
+            )  # constraint: align palm frame with desired palm frame
+            ik.AddPositionConstraint(
+                plant.world_frame(),
+                p_WPalm_des,
+                f_palm,
+                -tol_pos * np.ones(3),
+                tol_pos * np.ones(3),
+            )  # constraint: place palm frame at desired position
+
+            # restrict object state for IK, since it's free
+            q_guess = plant.GetPositions(self.model.plant_context)
+            q_obj = q_guess[-7:]  # quaternion + position of object
+            ik.get_mutable_prog().AddBoundingBoxConstraint(q_obj, q_obj, ik.q()[-7:])
+
+            # any additional constraints - if the action in this function has a chance
+            # at failing, then we catch a ValueError to allow continuation
+            try:
+                self.add_additional_constraints(ik, X_WPalm_des)
+            except ValueError:
+                continue
+
+            # solve IK
+            result = Solve(ik.prog(), q_guess)
+            if result.is_success():
+                q_sample = plant.GetPositions(ik.context())[:self.model.n]
+                return q_sample, num_attempts
+
+
+class HeuristicFR3AlgrICSampler(HeuristicICSampler):
+    """Heuristic sampler for the FR3 Allegro system."""
+
+    def __init__(self, model: FR3AlgrModel) -> None:
+        """Initialize the IC sampler."""
+        super().__init__(model)
+
+    def add_additional_constraints(
+        self, ik: InverseKinematics, X_WPalm_des: RigidTransform
+    ) -> None:
+        # set guess for hand
+        q_imr = np.array([0.0, 0.5, 0.5, 0.5])  # if, mf, rf
+        q_th = np.array([0.8, 1.0, 0.5, 0.5])  # th
+        q_hand = np.concatenate((q_imr, q_imr, q_imr, q_th))
+        q_curr = self.model.plant.GetPositions(self.model.plant_context)
+        q_curr[7:23] = q_hand
+        self.model.plant.SetPositions(self.model.plant_context, q_curr)
+
+        # getting object axis lengths
+        obj = self.model.obj
+        X_WO = obj.X_WO
+        X_OBB = obj.X_OBB
+        R_OBB = X_OBB.rotation()
+        R_WBB = X_WO.rotation() @ R_OBB
+        axis_lengths_O = obj.ub_oriented - obj.lb_oriented
+
+        # computing reasonable width of fingers
+        z_pc = X_WPalm_des.rotation().matrix()[:, -1]  # z axis of palm center
+        z_alignment = np.argmax(
+            np.abs(R_WBB.inverse() @ z_pc)
+        )  # which axis z_pc is most similar to
+        w = axis_lengths_O[z_alignment]
+        w = min(w, 0.1)  # consider a max width for feasibility reasons
+
+        # computing desired fingertip positions
+        x_pc = X_WPalm_des.rotation().matrix()[:, 0]  # x axis of palm center
+        x_alignment = np.argmax(
+            np.abs(R_WBB.inverse() @ x_pc)
+        )  # which axis x_pc is most similar to
+
+        # finger extension in the x direction (outward from palm)
+        if x_alignment == 2:
+            f_ext = min(X_WPalm_des.translation()[-1], 0.08)
+        else:
+            f_ext = 0.08
+
+        # allegro-specific heuristic for the width of the fingertips
+        assert self.model.nc == 4
+        hand = self.model.settings["hand"]
+        if hand == "rh":
+            p_if = X_WPalm_des @ np.array([f_ext, 0.04, w / 2])
+            p_mf = X_WPalm_des @ np.array([f_ext, 0.0, w / 2])
+            p_rf = X_WPalm_des @ np.array([f_ext, -0.04, w / 2])
+            p_th = X_WPalm_des @ np.array([f_ext, 0.02, -w / 2])
+        else:
+            p_if = X_WPalm_des @ np.array([f_ext, -0.04, w / 2])
+            p_mf = X_WPalm_des @ np.array([f_ext, 0.0, w / 2])
+            p_rf = X_WPalm_des @ np.array([f_ext, 0.04, w / 2])
+            p_th = X_WPalm_des @ np.array([f_ext, -0.02, -w / 2])
+        P_WFs = np.stack((p_if, p_mf, p_rf, p_th))
+
+        # defining frames and positions of initial guess for contacts
+        contact_bodies = [
+            self.model.plant.GetBodyByName(f"algr_{hand}_if_ds"),  # index
+            self.model.plant.GetBodyByName(f"algr_{hand}_mf_ds"),  # middle
+            self.model.plant.GetBodyByName(f"algr_{hand}_rf_ds"),  # ring
+            self.model.plant.GetBodyByName(f"algr_{hand}_th_ds"),  # thumb
+        ]
+        contact_frames = [
+            contact_bodies[0].body_frame(),  # index
+            contact_bodies[1].body_frame(),  # middle
+            contact_bodies[2].body_frame(),  # ring
+            contact_bodies[3].body_frame(),  # thumb
+        ]
+        th_t = np.pi / 6.0  # tilt angle
+        r_f = 0.012  # radius of fingertip
+        contact_locs = [
+            np.array([r_f * np.sin(th_t), 0.0, 0.0267 + r_f * np.cos(th_t)]),  # if
+            np.array([r_f * np.sin(th_t), 0.0, 0.0267 + r_f * np.cos(th_t)]),  # mf
+            np.array([r_f * np.sin(th_t), 0.0, 0.0267 + r_f * np.cos(th_t)]),  # rf
+            np.array([r_f * np.sin(th_t), 0.0, 0.0423 + r_f * np.cos(th_t)]),  # th
+        ]
+
+        for i in range(P_WFs.shape[0]):
+            ik.AddPositionConstraint(
+                contact_frames[i],
+                contact_locs[i],
+                self.model.plant.world_frame(),
+                P_WFs[i, :] - 1e-4,
+                P_WFs[i, :] + 1e-4,
+            )
+
+
+# ##### #
+# UTILS #
+# ##### #
+
+def _rodrigues(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    """Computes the rotation matrix from v1 to v2 using Rodrigues' formula."""
+    v = np.cross(v1, v2)
+    v_wedge = wedge(v)
+    s = np.linalg.norm(v)
+    c = np.dot(v1, v2)
+    R = np.eye(3) + v_wedge + (v_wedge @ v_wedge) * ((1 - c) / s ** 2)
+    return R
 
 def _sdf_box(x: np.ndarray, lb: np.ndarray, ub: np.ndarray) -> float:
     """The signed distance function associated with a box.
@@ -29,300 +395,66 @@ def _sdf_box(x: np.ndarray, lb: np.ndarray, ub: np.ndarray) -> float:
     y = np.abs(x - c) - l  # center x, place in the first octant, measure wrt l
     return np.linalg.norm(np.maximum(y, 0.0)) + min(np.max(y), 0.0)
 
-
-def sample_uniformly_from_S2(num_samples: int = 1, seed: int = None) -> np.ndarray:
-    """Samples num_samples points in R^3 uniformly randomly from the sphere S^2.
-
-    Parameters
-    ----------
-    num_samples : int, default=1
-        The number of samples to generate.
-    seed : int, default=None
-        Random seed.
-
-    Returns
-    -------
-    samples : np.ndarray, shape=(num_samples, 3)
-        The samples.
-    """
-    # stats.stackexchange.com/questions/7977
-    if seed is not None:
-        np.random.seed(seed)
-    z = 2 * np.random.rand(num_samples) - 1  # U[-1, 1]
-    th = 2 * np.pi * np.random.rand(num_samples) - np.pi  # U[-pi, pi]
-    x = np.sin(th) * np.sqrt(1 - z**2)
-    y = np.cos(th) * np.sqrt(1 - z**2)
-    samples = np.stack((x, y, z))
-    return samples
-
-
-def sample_configuration(
-    model: RobotModel,
-    X_WPc_des: RigidTransform | None = None,
-    seed: int = None,
-    sampler: str = "heuristic",
-    ik_type: str = "partial",
-) -> np.ndarray | None:
-    """Samples a configuration for the robot.
-
-    Will run either a "partial" or "full" IK with either "heuristic" or "full" setting.
-    * partial means that collisions and finger-to-surface constraints are not taken
-    into consideration, but a heuristic wrist position is chosen.
-    * full means that collisions and finger-to-surface constraints are taken into
-    consideration, but the wrist pose is free.
-
-    The public release of our code only supports the "heuristic" setting.
+def _bisect_on_box(
+    o: np.ndarray, d: np.ndarray, l: float, lb: np.ndarray, ub: np.ndarray
+) -> np.ndarray:
+    """Uses bisection to compute the intersection between a ray and a box level set.
 
     Parameters
     ----------
-    model : RobotModel
-        The model of the robot and system.
-    X_WPc_des : RigidTransform | None, default=None
-        Desired pose of the palm center relative to the world.
-    seed : int, default=None
-        Random seed.
-    sampler : str
-        Whether to use the "heuristic" or "cvae" sampler/IK.
-    ik_type : str
-        Whether to use "partial" or "full" IK.
+    o : np.ndarray, shape=(3,)
+        The ray origin.
+    d : np.ndarray, shape=(3,)
+        The direction of the ray.
+    l : float
+        The level of the box.
+    lb : np.ndarray, shape=(3,)
+        The lower bound of the box.
+    ub : np.ndarray, shape=(3,)
+        The upper bound of the box.
 
     Returns
     -------
-    q_sample : np.ndarray | None, shape=(n,)
-        The configuration sample. Returns None if IK was infeasible.
-    ik_counter : int
-        The number of IK calls made
+    p : np.ndarray, shape=(3,)
+        The point on the ray.
     """
-    assert ik_type in ["partial", "full"]
-    if ik_type == "partial":
-        if sampler == "heuristic":
-            return sample_configuration_heuristic_partial(
-                model, X_WPc_des=X_WPc_des, seed=seed
-            )
-        elif sampler == "cvae":
-            # not included in public release
-            raise NotImplementedError
-    elif ik_type == "full":
-        # IK used in Wu 2022 baseline. Not included in public release.
-        raise NotImplementedError
-    else:
-        raise NotImplementedError
+    # determining the bounds for the bisection
+    sdf_val_o = _sdf_box(o, lb, ub)
+    inside = sdf_val_o <= 0.0
+    gamma = 2.0
+    p1 = o + 0.01 * gamma * d
+    sdf_val_p1 = _sdf_box(p1, lb, ub)
 
+    # if d points inwards, invert it
+    if sdf_val_p1 < sdf_val_o:
+        d *= -1
 
-def sample_configuration_heuristic_partial(
-    model: RobotModel, X_WPc_des: RigidTransform | None = None, seed: int = None
-) -> np.ndarray | None:
-    """Samples a configuration for the robot (config 1).
+    # find loose upper and lower bounds with crappy line search
+    alphah = 0.01 * gamma
+    p1 = o + alphah * d
+    sdf_val_p1 = _sdf_box(p1, lb, ub)
+    while sdf_val_p1 < l:
+        alphah *= gamma
+        p1 = o + alphah * d
+        sdf_val_p1 = _sdf_box(p1, lb, ub)
 
-    Uses the "partial" IK scheme and "heuristic" sampling strategy.
+    alphal = -0.01 * gamma
+    p2 = o + alphal * d
+    sdf_val_p2 = _sdf_box(p2, lb, ub)
+    while sdf_val_p2 > l:
+        alphal *= gamma
+        p2 = o + alphal * d
+        sdf_val_p2 = _sdf_box(p2, lb, ub)
 
-    If no target pose for the palm center frame is provided, then this function
-    assumes that the frame of the palm center of the robot model has its x-axis
-    pointing out of the palm, which will be used to orient the palm with respect to
-    the object.
-
-    Otherwise, IK will try to compute a feasible sample satisfying the queried pose.
-
-    Parameters
-    ----------
-    model : RobotModel
-        The model of the robot and system.
-    X_WPc_des : RigidTransform | None, default=None
-        Desired pose of the palm center relative to the world.
-    seed : int, default=None
-        Random seed.
-
-    Returns
-    -------
-    q_sample : np.ndarray | None, shape=(n,)
-        The configuration sample. Returns None if IK was infeasible.
-    ik_counter : int
-        The number of IK calls made.
-    """
-    if seed is not None:
-        np.random.seed(seed)
-    n = model.n  # total DOFs
-    obj = model.obj
-
-    # compute a valid configuration using IK
-    plant = model.plant
-    X_BPc = model.X_BasePalmcenter  # pose of palm center wrt hand base frame
-    ik = InverseKinematics(plant)
-
-    # if no palm center pose is specified, sample one
-    if X_WPc_des is None:
-        h_obj = obj.ub_W[-1]  # height of object
-
-        # aligning the axis of the hand with the axes of the object with
-        # probability proportional to the square of the lengths of the obj axes
-        X_WO = obj.settings["X_WO"]
-
-        X_OBB = obj.X_OBB  # pose of oriented bounding box wrt O
-        axis_lengths_O = obj.ub_oriented - obj.lb_oriented
-
-        # choosing which axis to align the hand y axis with randomly with weights
-        # favoring long axis-aligned bounding box lengths
-        while True:
-            # prob_1 = axis_lengths_O[0] ** 2 / np.sum(axis_lengths_O**2)
-            # prob_2 = axis_lengths_O[1] ** 2 / np.sum(axis_lengths_O**2)
-            prob_1 = axis_lengths_O[0] / np.sum(axis_lengths_O)  # [DEBUG]
-            prob_2 = axis_lengths_O[1] / np.sum(axis_lengths_O)
-
-            num = np.random.rand()
-            if num <= prob_1:
-                hand_y_axis_ind = 0
-            elif num > prob_1 and num <= prob_1 + prob_2:
-                hand_y_axis_ind = 1
-            else:
-                hand_y_axis_ind = 2
-
-            hand_y_axis_O = np.zeros(3)
-            hand_y_axis_O[hand_y_axis_ind] = 1.0
-            hand_y_axis_W = (X_WO @ X_OBB).rotation().matrix() @ hand_y_axis_O
-            rand_sign = 1 if np.random.random() < 0.5 else -1
-            _y_hat = rand_sign * hand_y_axis_W
-            _y_hat = _y_hat / np.linalg.norm(_y_hat)
-            y_hat = np.random.vonmises(mu=_y_hat, kappa=20)  # add von mises noise
-            y_hat = y_hat / np.linalg.norm(y_hat)
-
-            # computing the rotation matrix from _y_hat to y_hat w/rodrigues
-            v = np.cross(_y_hat, y_hat)
-            v_wedge = wedge(v)
-            s = np.linalg.norm(v)
-            c = np.dot(_y_hat, y_hat)
-            R_axes = np.eye(3) + v_wedge + (v_wedge @ v_wedge) * ((1 - c) / s**2)
-
-            # choosing which axis to align the hand x axis with
-            axes_remaining = np.array([0, 1, 2])[np.arange(3) != hand_y_axis_ind]
-            # prob = axis_lengths_O[axes_remaining[0]] ** 2 / np.sum(
-            #     axis_lengths_O[axes_remaining] ** 2
-            # )
-            prob = axis_lengths_O[axes_remaining[0]] / np.sum(
-                axis_lengths_O[axes_remaining]
-            )  # [DEBUG]
-            num = np.random.rand()
-            if num <= prob:
-                hand_x_axis_ind = axes_remaining[0]
-            else:
-                hand_x_axis_ind = axes_remaining[1]
-            hand_x_axis_O = np.zeros(3)
-            hand_x_axis_O[hand_x_axis_ind] = 1.0
-            hand_x_axis_W = (X_WO @ X_OBB).rotation().matrix() @ hand_x_axis_O
-            rand_sign = 1 if np.random.random() < 0.5 else -1
-            _x_hat = rand_sign * hand_x_axis_W
-            _x_hat = _x_hat / np.linalg.norm(_x_hat)
-            x_hat = R_axes @ _x_hat
-            x_hat = x_hat - (np.inner(y_hat, x_hat) / np.inner(y_hat, y_hat)) * y_hat
-
-            # if object is short, only approach from above
-            if h_obj <= 0.1 and np.arccos(-x_hat[-1]) > np.pi / 6.0:
-                continue
-            break
-
-        ik.AddAngleBetweenVectorsConstraint(
-            plant.world_frame(),
-            y_hat,  # perpendicular to closed fingers (up to sign)
-            plant.GetBodyByName(f"{model.hand_name}_palm").body_frame(),
-            X_BPc.rotation().matrix() @ np.array([0.0, 1.0, 0.0]),  # palm yaxis
-            0.0,  # lower angle
-            0.0,  # upper angle
-        )
-
-        # we assume the object bounds are close to tight, so we place the palm outside
-        # the bounds by some amount
-        lb_W = obj.lb_W  # bounding box for the object
-        ub_W = obj.ub_W
-        c_W = obj.X_WO @ obj.center_mass  # center about which we locate the palm
-
-        # deal with very flat objects
-        if ub_W[-1] - lb_W[-1] <= 0.03:
-            d_offset = 0.07
+    # bisect in the interval
+    alpha = alphah
+    sdf_val = _sdf_box(o + alpha * d, lb, ub)
+    while np.abs(sdf_val - l) > 1e-3:
+        if sdf_val > l:
+            alphah = alpha
         else:
-            extra = max(0.1 - 0.04 - h_obj, 0)
-            d_offset = extra + 0.04
-
-        # compute the position by rough bisection w/sdf bounding box boundary
-        alpha = 1.0
-        alphah = alpha
-        alphal = 0.0
-        sdf_val = _sdf_box(c_W - alpha * x_hat, lb_W, ub_W)
-        while np.abs(sdf_val - d_offset) > 1e-3:
-            if sdf_val > d_offset:
-                alphah = alpha
-            else:
-                alphal = alpha
-            alpha = (alphal + alphah) / 2.0
-            sdf_val = _sdf_box(c_W - alpha * x_hat, lb_W, ub_W)
-        P_WPalmcenter = c_W - alpha * x_hat
-
-        ik.AddAngleBetweenVectorsConstraint(
-            plant.world_frame(),
-            x_hat,  # normal of the palm
-            plant.GetBodyByName(f"{model.hand_name}_palm").body_frame(),
-            X_BPc.rotation().matrix() @ np.array([1.0, 0.0, 0.0]),  # palm center xaxis
-            0.0,  # lower angle
-            1e-2,  # upper angle
-        )  # [DEBUG]
-        ik.AddPositionConstraint(
-            plant.GetBodyByName(f"{model.hand_name}_palm").body_frame(),
-            X_BPc.translation(),  # origin of palm center wrt palm
-            plant.world_frame(),
-            P_WPalmcenter - 1e-4,
-            P_WPalmcenter + 1e-4,
-        )
-
-    # if the palm center pose is specified (e.g. by a dataset), constrain it
-    else:
-        raise NotImplementedError  # [NOTE] this path is deprecated now
-        p_des = X_WPc_des.translation()
-        R_des = X_WPc_des.rotation()
-        ik.AddPositionConstraint(
-            plant.GetBodyByName(f"{model.hand_name}_palm").body_frame(),
-            X_BPc.translation(),  # origin of palm center wrt palm
-            plant.world_frame(),
-            p_des - 1e-4,
-            p_des + 1e-4,
-        )
-        ik.AddOrientationConstraint(
-            plant.GetBodyByName(f"{model.hand_name}_palm").body_frame(),
-            X_BPc.rotation(),
-            plant.world_frame(),
-            R_des,
-            1e-2,
-        )
-
-    # try to initialize the hand width to something reasonable using bounding boxes
-    z_hat = np.cross(x_hat, y_hat)
-    R_WPalmcenter = RotationMatrix(np.stack((x_hat, y_hat, z_hat), axis=1))
-    X_WPalmcenter = RigidTransform(R_WPalmcenter, P_WPalmcenter)
-
-    P_WFs = model.compute_candidate_fingertip_positions(obj, X_WPalmcenter)  # (nc, 3)
-    fingertip_frames, contact_locs = model.compute_fingertip_contacts()[-2:]
-    for i in range(P_WFs.shape[0]):
-        ik.AddPositionConstraint(
-            fingertip_frames[i],
-            contact_locs[i],
-            plant.world_frame(),
-            P_WFs[i, :] - 1e-4,
-            P_WFs[i, :] + 1e-4,
-        )
-
-    # initial guess for the arm-hand system
-    q_init = np.zeros(n)
-    q_hand = model.pregrasp_hand_config  # default hand config
-    q_init[-len(q_hand) :] = q_hand  # assume arm DOFs before hand DOFs  # [DEBUG]
-
-    # must append object states onto the initial guess
-    X_WO = model.obj.X_WO
-    obj_quat = X_WO.rotation().ToQuaternion().wxyz()
-    obj_pos = X_WO.translation()
-    q_obj = np.concatenate((obj_quat, obj_pos))
-    q_all = np.concatenate((q_init, q_obj))
-
-    # attempt to solve IK
-    result = Solve(ik.prog(), q_all)
-    if result.is_success():
-        q_sample = plant.GetPositions(ik.context())[: model.n]
-        return q_sample, 1
-    else:
-        return None, 1
+            alphal = alpha
+        alpha = (alphal + alphah) / 2.0
+        sdf_val = _sdf_box(o + alpha * d, lb, ub)
+    p = o + alpha * d
+    return p

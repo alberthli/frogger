@@ -300,11 +300,6 @@ class RobotModel(ABC):
         obj_set = GeometrySet(self.obj_geoms)
         cfm.Apply(CollisionFilterDeclaration().ExcludeBetween(tabletop_set, obj_set))
 
-        # contact frames and locations
-        _, self.contact_frames, self.contact_locs = self.compute_fingertip_contacts()
-        assert len(self.contact_frames) == nc
-        assert len(self.contact_locs) == nc
-
         # defining linear box constraint matrices
         lb_q, ub_q = self._q_bounds()
         I = np.eye(self.n)
@@ -471,48 +466,6 @@ class RobotModel(ABC):
         It should "face" the positive x-axis, as that is where the table extends.
         """
 
-    @abstractmethod
-    def compute_fingertip_contacts(
-        self,
-    ) -> tuple[list[Body], list[Frame], list[np.ndarray]]:
-        """Computes fixed fingertip contact locations used for grasp synthesis.
-
-        Returns
-        -------
-        contact_bodies : list[Body]
-            A list of the Body objects associated with each fingertip.
-        contact_frames : list[Frame]
-            A list of the Frames associated with each fingertip making contact.
-        contact_locs : list[np.ndarray]
-            A list of the contact locations on each finger wrt the fingertip frames.
-        """
-
-    @property
-    @abstractmethod
-    def pregrasp_hand_config(self) -> np.ndarray:
-        """A heuristically-motivated pregrasp hand configuration.
-
-        Used to help sample initial grasps by pre-shaping the hand.
-
-        Returns
-        -------
-        q_hand : np.ndarray, shape=(n_hand,)
-            The configuration of ONLY the hand pre-grasp.
-        """
-
-    @property
-    @abstractmethod
-    def X_BasePalmcenter(self) -> RigidTransform:
-        """The pose of the palm center relative to the hand base frame.
-
-        Used to help sample initial grasps by placing palm relative to the object.
-
-        Returns
-        -------
-        X_BasePalmcenter : RigidTransform
-            The pose.
-        """
-
     @property
     def query_object(self) -> QueryObject:
         """The query object."""
@@ -557,7 +510,7 @@ class RobotModel(ABC):
         # d_min is the desired safety margin, a minimum distance enforced between geoms
         d_min = self.settings.get("d_min", 0.0)
         sdps = self.query_object.ComputeSignedDistancePairwiseClosestPoints(
-            max_distance=(d_min + 0.001)
+            max_distance=(d_min + 0.005)
         )
         if len(sdps) > 0:
             gidps = [(sdp.id_A.get_value(), sdp.id_B.get_value()) for sdp in sdps]
