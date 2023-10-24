@@ -109,10 +109,55 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
 <sdf version="1.7">
   <model name="fr3_algr_lh">
 
+    <!-- ######## -->
+    <!-- TABLETOP -->
+    <!-- ######## -->
+
+    <link name="tabletop_base">
+      <pose>0.34 0.0 -0.05 0.0 0.0 0.0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>10.0</mass>
+        <inertia>
+          <ixx>3.34167</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.84167</iyy>
+          <iyz>0</iyz>
+          <izz>4.16667</izz>
+        </inertia>
+      </inertial>
+      <visual name="tabletop_visual">
+        <geometry>
+          <box>
+            <size>1 2 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <diffuse>0.859375 0.70703125 0.47265625 1.</diffuse>
+        </material>
+      </visual>
+      <collision name="tabletop_collision">
+        <geometry>
+          <box>
+            <size>1 2 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="table_weld" type="fixed">
+      <child>tabletop_base</child>
+      <parent>world</parent>
+    </joint>
+
     <!-- ######### -->
     <!-- ARM LINKS -->
     <!-- ######### -->
 
+    <joint name="arm_weld" type="fixed">
+      <child>fr3_link0</child>
+      <parent>world</parent>
+    </joint>
     <link name="fr3_link0">
       <inertial>
         <pose>-0.041018 -0.00014 0.049974 0 0 0</pose>
