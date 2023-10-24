@@ -1,0 +1,1537 @@
+<?xml version="1.0"?>
+<!--
+# ######## #
+# ARM PART #
+# ######## #
+
+Values in this SDF are Panda values taken from a Franka SysID paper on the Panda: https://github.com/frankaemika/franka_ros/blob/develop/franka_description/robots/common/inertial.yaml
+
+Joint limits are from: https://github.com/frankaemika/franka_ros/blob/develop/franka_description/robots/fr3/joint_limits.yaml
+
+Joint friction parameters are from [1]: https://github.com/marcocognetti/FrankaEmikaPandaDynModel/blob/master/pdf/RA-L_2019_PandaDynIdent_SUPPLEMENTARY_MATERIAL.pdf
+[NOTE] they use a friction model with viscous and coulomb friction but ALSO with a
+"coulomb friction offset" term, which isn't represented here but has fairly significant
+effect on the friction value. I report the values from Table III in the OSI column. 
+
+Another repo that helped me debug [2]: https://github.com/AndrejOrsula/panda_ign_moveit2/blob/master/panda_description/panda/model.sdf
+
+The visual geometries are OBJ/MTL file pairs converted from the original DAE files
+provided by Franka EXCEPT for link7, which is still a DAE (OBJ/MTL pair is still
+provided for completeness). The reason is that in Drake, the RenderEngine complains
+about some values being too large for a buffer or something with a cryptic error, and
+changing the format of the visual files resolved it. The reason link7 is still a DAE is
+because some of the geometry was not loading correctly when it was an OBJ, and the
+error does not appear when it is a DAE and the other links are OBJs.
+
+The collision geometries are custom chosen by visual inspection.
+
+# ######### #
+# HAND PART #
+# ######### #
+Modified from https://github.com/RobotLocomotion/drake/tree/master/manipulation/models/allegro_hand_description/sdf
+
+The links and joints of the model have been renamed to be more descriptive.
+
+NOTATION FOR NAMES OF SDF ELEMENTS
+* HAND: rh, lh: denotes right hand or left hand
+* FINGER: th, if, mf, rf: denotes thumb, {index, middle, ring} finger
+
+* FINGER PHALANGES: bs, px, md, ds: denotes {base, proximal, middle, distal} phalanges.
+The base phalanx is non-biological and is used to connect the non-biological axial
+joint to the finger.
+* THUMB PHALANGES: mp, bs, px, ds: denotes {metacarpal, base, proximal, distal}
+phalanges. The metacarpal phalanx is the one in the palm of the robot. Again, the base
+phalanx is non-biological.
+
+* FINGER JOINTS: axl, mcp, pip, dip: denotes {axial, metacarpophalangeal, proximal
+interphalangeal, distal interphalangeal} joints for non-thumb fingers. Axial is the
+non-biological joint that allows each finger to rotate about its axis. mcp, pip, and
+dip joints are in order from closest to farthest from the palm.
+* THUMB JOINTS: cmc, axl, mcp, ipl: denotes {carpometacarpol, axial,
+metacarpophalangeal, interphalengeal} joints for the thumb. The cmc joint is the joint
+connecting the thumb to the palm, the axial joint is the non-biological joint allowing
+the thumb to axially rotate, and the mcp and ip joints are in order as above.
+
+############################
+######## LINK NAMES ########
+############################
+| LINK |    FINGER NAME    |
+|######|###################|
+| palm |   algr_rh_palm    |
+|######|###################|
+|  0   |   algr_rh_if_bs   |
+|  1   |   algr_rh_if_px   |
+|  2   |   algr_rh_if_md   |
+|  3   |   algr_rh_if_ds   |
+|######|###################|
+|  4   |   algr_rh_mf_bs   |
+|  5   |   algr_rh_mf_px   |
+|  6   |   algr_rh_mf_md   |
+|  7   |   algr_rh_mf_ds   |
+|######|###################|
+|  8   |   algr_rh_rf_bs   |
+|  9   |   algr_rh_rf_px   |
+|  10  |   algr_rh_rf_md   |
+|  11  |   algr_rh_rf_ds   |
+|######|###################|
+|  12  |   algr_rh_th_mp   |
+|  13  |   algr_rh_th_bs   |
+|  14  |   algr_rh_th_px   |
+|  15  |   algr_rh_th_ds   |
+#######|####################
+
+##############################
+######### JOINT NAMES ########
+##############################
+| JOINT |     JOINT NAME     |
+|#######|####################|
+|   0   |   algr_rh_if_axl   |
+|   1   |   algr_rh_if_mcp   |
+|   2   |   algr_rh_if_pip   |
+|   3   |   algr_rh_if_dip   |
+|#######|####################|
+|   4   |   algr_rh_mf_axl   |
+|   5   |   algr_rh_mf_mcp   |
+|   6   |   algr_rh_mf_pip   |
+|   7   |   algr_rh_mf_dip   |
+|#######|####################|
+|   8   |   algr_rh_rf_axl   |
+|   9   |   algr_rh_rf_mcp   |
+|   10  |   algr_rh_rf_pip   |
+|   11  |   algr_rh_rf_dip   |
+|#######|####################|
+|   12  |   algr_rh_th_cmc   |
+|   13  |   algr_rh_th_axl   |
+|   14  |   algr_rh_th_mcp   |
+|   15  |   algr_rh_th_ipl   |
+##############################
+-->
+<sdf version="1.7">
+  <model name="fr3_algr_rh">
+
+    <!-- ######### -->
+    <!-- ARM LINKS -->
+    <!-- ######### -->
+
+    <link name="fr3_link0">
+      <inertial>
+        <pose>-0.041018 -0.00014 0.049974 0 0 0</pose>
+        <mass>0.629769</mass>
+        <inertia>
+          <ixx>0.00315</ixx>
+          <ixy>8.2904e-07</ixy>
+          <ixz>0.00015</ixz>
+          <iyy>0.00388</iyy>
+          <iyz>8.2299e-06</iyz>
+          <izz>0.004285</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link0_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link0_collision_1">
+        <pose>-0.043 0.0 0.05 0.0 0.0 0.0</pose>
+        <geometry>
+          <box>
+            <size>0.23 0.15 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="fr3_link0_collision_2">
+        <pose>-0.01 0.0 0.12 0.0 0.0 0.0</pose>
+        <geometry>
+          <box>
+            <size>0.14 0.12 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="fr3_joint1" type="revolute">
+      <child>fr3_link1</child>
+      <parent>fr3_link0</parent>
+      <pose relative_to="fr3_link0">0 0 0.333 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.3093</lower>
+          <upper>2.3093 </upper>
+          <effort>87.0</effort>
+          <velocity>2.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0628</damping>  <!-- # from [1] -->
+          <friction>0.2549</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link1">
+      <pose relative_to="fr3_joint1">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.003875 0.002081 -0.04762 0 0 0</pose>
+        <mass>4.970684</mass>
+        <inertia>
+          <ixx>0.70337</ixx>
+          <ixy>-0.00013900</ixy>
+          <ixz>0.0067720</ixz>
+          <iyy>0.70661</iyy>
+          <iyz>0.019169</iyz>
+          <izz>0.009117</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link1_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link1.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link1_collision_1">
+        <pose>0.0 -0.05 -0.05 0.52359877559 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.1</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+      <collision name="fr3_link1_collision_2">
+        <pose>0.0 0.0 -0.15 0.0 0.0 0.0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.12</length>
+            <radius>0.06</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name="fr3_link1_collision_3">
+        <pose>0.0 0.0 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.16</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="fr3_joint2" type="revolute">
+      <child>fr3_link2</child>
+      <parent>fr3_link1</parent>
+      <pose relative_to="fr3_link1">0 0 0 -1.57079632679 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.5133</lower>
+          <upper>1.5133</upper>
+          <effort>87.0</effort>
+          <velocity>1.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.2088</damping>  <!-- # from [1] -->
+          <friction>0.1413</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link2">
+      <pose relative_to="fr3_joint2">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>-0.003141 -0.02872  0.003495 0 0 0</pose>
+        <mass>0.646926</mass>
+        <inertia>
+          <ixx>0.0079620</ixx>
+          <ixy>-3.9250e-3</ixy>
+          <ixz>1.0254e-02</ixz>
+          <iyy>2.8110e-02</iyy>
+          <iyz>7.0400e-04</iyz>
+          <izz>2.5995e-02</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link2_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link2.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link2_collision_1">
+        <pose>0.0 -0.195 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.11</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+      <collision name="fr3_link2_collision_2">
+        <pose>0.0 -0.05 0.05 -1.0471975512 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.12</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="fr3_joint3" type="revolute">
+      <child>fr3_link3</child>
+      <parent>fr3_link2</parent>
+      <pose relative_to="fr3_link2">0 -0.316 0 1.57079632679 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.4937</lower>
+          <upper>2.4937</upper>
+          <effort>87.0</effort>
+          <velocity>1.50</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0361</damping>  <!-- # from [1] -->
+          <friction>0.1879</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link3">
+      <pose relative_to="fr3_joint3">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>2.7518e-02 3.9252e-02 -6.6502e-02 0 0 0</pose>
+        <mass>3.228604</mass>
+        <inertia>
+          <ixx>3.7242e-02</ixx>
+          <ixy>-4.7610e-03</ixy>
+          <ixz>-1.1396e-02</ixz>
+          <iyy>3.6155e-02</iyy>
+          <iyz>-1.2805e-02</iyz>
+          <izz>1.0830e-02</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link3_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link3.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link3_collision_1">
+        <pose>0.04 0.035 -0.03 0.0 0.0 0.0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.06</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <collision name="fr3_link3_collision_2">
+        <pose>0.085 0.0 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.12</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="fr3_joint4" type="revolute">
+      <child>fr3_link4</child>
+      <parent>fr3_link3</parent>
+      <pose relative_to="fr3_link3">0.0825 0 0 1.57079632679 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.7478</lower>
+          <upper>-0.4461</upper>
+          <effort>87.0</effort>
+          <velocity>1.25</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.2174</damping>  <!-- # from [1] -->
+          <friction>0.3625</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link4">
+      <pose relative_to="fr3_joint4">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>-5.317e-02 1.04419e-01 2.7454e-02 0 0 0</pose>
+        <mass>3.587895</mass>
+        <inertia>
+          <ixx>2.5853e-02</ixx>
+          <ixy>7.7960e-03</ixy>
+          <ixz>-1.3320e-03</ixz>
+          <iyy>1.9552e-02</iyy>
+          <iyz>8.6410e-03</iyz>
+          <izz>2.8323e-02</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link4_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link4.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link4_collision_1">
+        <pose>-0.08 0.11 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.1</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+      <!-- <collision name="fr3_link4_collision_2">
+        <pose>-0.035 0.03 0.04 0.0 0.0 0.0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.05</radius>
+          </sphere>
+        </geometry>
+      </collision> -->
+    </link>
+    
+    <joint name="fr3_joint5" type="revolute">
+      <child>fr3_link5</child>
+      <parent>fr3_link4</parent>
+      <pose relative_to="fr3_link4">-0.0825 0.384 0 -1.57079632679 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.4800</lower>
+          <upper>2.4800</upper>
+          <effort>12.0</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.1021</damping>  <!-- # from [1] -->
+          <friction>0.2728</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link5">
+      <pose relative_to="fr3_joint5">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>-1.1953e-02 4.1065e-02 -3.8437e-02 0 0 0</pose>
+        <mass>1.225946</mass>
+        <inertia>
+          <ixx>3.5549e-02</ixx>
+          <ixy>-2.1170e-03</ixy>
+          <ixz>-4.0370e-03</ixz>
+          <iyy>2.9474e-02</iyy>
+          <iyz>2.2900e-04</iyz>
+          <izz>8.6270e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link5_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link5.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <!-- <collision name="fr3_link5_collision_1">
+        <pose>0.0 0.033 -0.19 0.0 0.0 0.0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.055</radius>
+          </sphere>
+        </geometry>
+      </collision> -->
+      <collision name="fr3_link5_collision_2">
+        <pose>0.0 0.085 -0.1 -0.174533 0.0 0.0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.045 0.2</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="fr3_link5_collision_3">
+        <pose>0.0 0.04 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.11</length>
+            <radius>0.05</radius>
+          </capsule>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="fr3_joint6" type="revolute">
+      <child>fr3_link6</child>
+      <parent>fr3_link5</parent>
+      <pose relative_to="fr3_link5">0 0 0 1.57079632679 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0.8521</lower>
+          <upper>4.2094</upper>
+          <effort>12.0</effort>
+          <velocity>1.50</velocity>
+        </limit>
+        <dynamics>
+          <damping>1.6128e-4</damping>  <!-- # from [1] -->
+          <friction>0.1529</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link6">
+      <pose relative_to="fr3_joint6">0 0 0 0 0 1.57079632679</pose>
+      <!-- <pose relative_to="fr3_joint6">0 0 0 0 0 0</pose> -->  <!-- original -->
+      <inertial>
+        <pose>6.0149e-02 -1.4117e-02 -1.0517e-02 0 0 0</pose>
+        <mass>1.666555</mass>
+        <inertia>
+          <ixx>1.9640e-03</ixx>
+          <ixy>1.0900e-04</ixy>
+          <ixz>-1.1580e-03</ixz>
+          <iyy>4.3540e-03</iyy>
+          <iyz>3.4100e-04</iyz>
+          <izz>5.4330e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link6_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link6.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link6_collision_1">
+        <pose>0.03 0.01 0.02 0.0 0.0 0.0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.06</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <collision name="fr3_link6_collision_2">
+        <pose>0.0845 -0.01 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.105</length>
+            <radius>0.051</radius>
+          </capsule>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="fr3_joint7" type="revolute">
+      <child>fr3_link7</child>
+      <parent>fr3_link6</parent>
+      <pose relative_to="fr3_link6">0.088 0 0 1.57079632679 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.6895</lower>
+          <upper>2.6895</upper>
+          <effort>12.0</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0632</damping>  <!-- # from [1] -->
+          <friction>0.2097</friction>
+          <!-- <damping>21.75</damping>  # from [2]
+          <friction>3.48</friction> -->
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <link name="fr3_link7">
+      <pose relative_to="fr3_joint7">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>1.0517e-02 -4.252e-03 6.1597e-02 0 0 0</pose>
+        <mass>7.35522e-01</mass>
+        <inertia>
+          <ixx>1.2516e-02</ixx>
+          <ixy>-4.2800e-04</ixy>
+          <ixz>-1.1960e-03</ixz>
+          <iyy>1.0027e-02</iyy>
+          <iyz>-7.4100e-04</iyz>
+          <izz>4.8150e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="fr3_link7_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/fr3/visual/link7.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="fr3_link7_collision_1">
+        <pose>0.0275 0.027 0.087 0.0 0.0 -0.78539816339</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.1 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="fr3_link7_collision_2">
+        <pose>0.0 0.0 0.082 0.0 0.0 -0.78539816339</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.045</radius>
+            <length>0.05</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name="fr3_link7_collision_3">
+        <pose>0.0275 0.027 0.072 0.3 0.0 -0.78539816339</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.1 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    
+    <!-- ########## -->
+    <!-- HAND LINKS -->
+    <!-- ########## -->
+
+    <joint name="arm_hand_weld" type="fixed">
+      <child>algr_rh_palm</child>
+      <parent>fr3_link7</parent>
+      <pose relative_to="fr3_link7">0 0 0.12 0 0 -0.7853981633974484</pose>
+    </joint>
+
+    <link name="algr_rh_palm">
+      <pose relative_to="arm_hand_weld">0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.4154</mass>
+        <inertia>
+          <ixx>    2.089e-03</ixx>
+          <ixy>-0.003635e-03</ixy>
+          <ixz>   0.2233e-03</ixz>
+          <iyy>    1.829e-03</iyy>
+          <iyz> -0.01756e-03</iyz>
+          <izz>   0.4825e-03</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_palm_collision">
+        <pose>-0.0093 0 0.0475 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0408 0.113 0.095</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_palm_visual">
+        <pose>0 0 0.095 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/base_link_right.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name="algr_rh_if_bs">
+      <pose relative_to="arm_hand_weld">0 0.0435 0.093458 -0.087267 0 0</pose>
+      <inertial>
+        <mass>0.0119</mass>
+        <inertia>
+          <ixx>   1.954e-06</ixx>
+          <ixy>0.003034e-06</ixy>
+          <ixz> 0.08923e-06</ixz>
+          <iyy>   1.179e-06</iyy>
+          <iyz>-0.03707e-06</iyz>
+          <izz>   1.497e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_if_bs_collision">
+        <pose>0 0 0.0082 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0164</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_if_bs_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_if_axl" type="revolute">
+      <child>algr_rh_if_bs</child>
+      <parent>algr_rh_palm</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.087156 0.996195</xyz>
+        <limit>
+          <lower>-0.47</lower>
+          <upper>0.47</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_if_px">
+      <pose relative_to="arm_hand_weld">0 0.044929 0.109796 -0.087267 0 0</pose>
+      <inertial>
+        <mass>0.065</mass>
+        <inertia>
+          <ixx>  7.192e-05</ixx>
+          <ixy>          0</ixy>
+          <ixz>          0</ixz>
+          <iyy>  7.438e-05</iyy>
+          <iyz>0.07322e-05</iyz>
+          <izz> 0.5406e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_if_px_collision">
+        <pose>0 0 0.027 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_if_px_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_if_mcp" type="revolute">
+      <child>algr_rh_if_px</child>
+      <parent>algr_rh_if_bs</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 -0.087156</xyz>
+        <limit>
+          <lower>-0.196</lower>
+          <upper>1.61</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_if_md">
+      <pose relative_to="arm_hand_weld">0 0.049636 0.16359 -0.087267 0 0</pose>
+      <inertial>
+        <mass>0.0355</mass>
+        <inertia>
+          <ixx>     3.169e-05</ixx>
+          <ixy> 0.0001071e-05</ixy>
+          <ixz>-0.0004913e-05</ixz>
+          <iyy>     3.105e-05</iyy>
+          <iyz>  0.003875e-05</iyz>
+          <izz>    0.3203e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_if_md_collision">
+        <pose>0 0 0.0192 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0384</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_if_md_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_if_pip" type="revolute">
+      <child>algr_rh_if_md</child>
+      <parent>algr_rh_if_px</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 -0.087156</xyz>
+        <limit>
+          <lower>-0.174</lower>
+          <upper>1.709</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_if_ds">
+      <pose relative_to="arm_hand_weld">0 0.052983 0.201844 -0.087267 0 0</pose>
+      <inertial>
+        <mass>0.0264</mass>
+        <inertia>
+          <ixx>   1.263e-05</ixx>
+          <ixy> 0.00021e-05</ixy>
+          <ixz>-0.00098e-05</ixz>
+          <iyy>   1.182e-05</iyy>
+          <iyz> -0.0013e-05</iyz>
+          <izz>  0.2484e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_if_ds_collision_1">
+        <pose>0 0 0.00235 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0247</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="algr_rh_if_ds_tip_collision_1_FROGGERCOL">
+        <pose>0 0 0.0267 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_rh_if_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.01335 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0267</length>
+            <radius>0.012</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_if_ds_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="algr_rh_if_ds_tip_visual_1">
+        <pose>0 0 0.0267 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_if_dip" type="revolute">
+      <child>algr_rh_if_ds</child>
+      <parent>algr_rh_if_md</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 -0.087156</xyz>
+        <limit>
+          <lower>-0.227</lower>
+          <upper>1.618</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_mf_bs">
+      <pose relative_to="arm_hand_weld">0 0 0.0957 0 0 0</pose>
+      <inertial>
+        <mass>0.0119</mass>
+        <inertia>
+          <ixx>   1.954e-06</ixx>
+          <ixy>0.003034e-06</ixy>
+          <ixz> 0.08923e-06</ixz>
+          <iyy>   1.179e-06</iyy>
+          <iyz>-0.03707e-06</iyz>
+          <izz>   1.497e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_mf_bs_collision">
+        <pose>0 0 0.0082 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0164</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_mf_bs_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_mf_axl" type="revolute">
+      <child>algr_rh_mf_bs</child>
+      <parent>algr_rh_palm</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0 1</xyz>
+        <limit>
+          <lower>-0.47</lower>
+          <upper>0.47</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_mf_px">
+      <pose relative_to="arm_hand_weld">0 0 0.1121 0 0 0</pose>
+      <inertial>
+        <mass>0.065</mass>
+        <inertia>
+          <ixx>  7.192e-05</ixx>
+          <ixy>          0</ixy>
+          <ixz>          0</ixz>
+          <iyy>  7.438e-05</iyy>
+          <iyz>0.07322e-05</iyz>
+          <izz> 0.5406e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_mf_px_collision">
+        <pose>0 0 0.027 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_mf_px_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_mf_mcp" type="revolute">
+      <child>algr_rh_mf_px</child>
+      <parent>algr_rh_mf_bs</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 1 0</xyz>
+        <limit>
+          <lower>-0.196</lower>
+          <upper>1.61</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_mf_md">
+      <pose relative_to="arm_hand_weld">0 0 0.1661 0 0 0</pose>
+      <inertial>
+        <mass>0.0355</mass>
+        <inertia>
+          <ixx>     3.169e-05</ixx>
+          <ixy> 0.0001071e-05</ixy>
+          <ixz>-0.0004913e-05</ixz>
+          <iyy>     3.105e-05</iyy>
+          <iyz>  0.003875e-05</iyz>
+          <izz>    0.3203e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_mf_md_collision">
+        <pose>0 0 0.0192 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0384</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_mf_md_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_mf_pip" type="revolute">
+      <child>algr_rh_mf_md</child>
+      <parent>algr_rh_mf_px</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 1 0</xyz>
+        <limit>
+          <lower>-0.174</lower>
+          <upper>1.709</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_mf_ds">
+      <pose relative_to="arm_hand_weld">0 0 0.2045 0 0 0</pose>
+      <inertial>
+        <mass>0.0264</mass>
+        <inertia>
+          <ixx>   1.263e-05</ixx>
+          <ixy> 0.00021e-05</ixy>
+          <ixz>-0.00098e-05</ixz>
+          <iyy>   1.182e-05</iyy>
+          <iyz> -0.0013e-05</iyz>
+          <izz>  0.2484e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_mf_ds_collision_1">
+        <pose>0 0 0.00235 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0247</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="algr_rh_mf_ds_tip_collision_1_FROGGERCOL">
+        <pose>0 0 0.0267 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_rh_mf_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.01335 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0267</length>
+            <radius>0.012</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_mf_ds_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="algr_rh_mf_ds_tip_visual_1">
+        <pose>0 0 0.0267 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_mf_dip" type="revolute">
+      <child>algr_rh_mf_ds</child>
+      <parent>algr_rh_mf_md</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 1 0</xyz>
+        <limit>
+          <lower>-0.227</lower>
+          <upper>1.618</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_rf_bs">
+      <pose relative_to="arm_hand_weld">0 -0.0435 0.093458 0.087267 0 0</pose>
+      <inertial>
+        <mass>0.0119</mass>
+        <inertia>
+          <ixx>   1.954e-06</ixx>
+          <ixy>0.003034e-06</ixy>
+          <ixz> 0.08923e-06</ixz>
+          <iyy>   1.179e-06</iyy>
+          <iyz>-0.03707e-06</iyz>
+          <izz>   1.497e-06</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_rf_bs_collision">
+        <pose>0 0 0.0082 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0164</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_rf_bs_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_rf_axl" type="revolute">
+      <child>algr_rh_rf_bs</child>
+      <parent>algr_rh_palm</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 -0.087156 0.996195</xyz>
+        <limit>
+          <lower>-0.47</lower>
+          <upper>0.47</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_rf_px">
+      <pose relative_to="arm_hand_weld">0 -0.044929 0.109796 0.087267 0 0</pose>
+      <inertial>
+        <mass>0.065</mass>
+        <inertia>
+          <ixx>  7.192e-05</ixx>
+          <ixy>          0</ixy>
+          <ixz>          0</ixz>
+          <iyy>  7.438e-05</iyy>
+          <iyz>0.07322e-05</iyz>
+          <izz> 0.5406e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_rf_px_collision">
+        <pose>0 0 0.027 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_rf_px_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_rf_mcp" type="revolute">
+      <child>algr_rh_rf_px</child>
+      <parent>algr_rh_rf_bs</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 0.087156</xyz>
+        <limit>
+          <lower>-0.196</lower>
+          <upper>1.61</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_rf_md">
+      <pose relative_to="arm_hand_weld">0 -0.049636 0.16359 0.087267 0 0</pose>
+      <inertial>
+        <mass>0.0355</mass>
+        <inertia>
+          <ixx>     3.169e-05</ixx>
+          <ixy> 0.0001071e-05</ixy>
+          <ixz>-0.0004913e-05</ixz>
+          <iyy>     3.105e-05</iyy>
+          <iyz>  0.003875e-05</iyz>
+          <izz>    0.3203e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_rf_md_collision">
+        <pose>0 0 0.0192 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0384</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_rf_md_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_rf_pip" type="revolute">
+      <child>algr_rh_rf_md</child>
+      <parent>algr_rh_rf_px</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 0.087156</xyz>
+        <limit>
+          <lower>-0.174</lower>
+          <upper>1.709</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_rf_ds">
+      <pose relative_to="arm_hand_weld">0 -0.052983 0.201844 0.087267 0 0</pose>
+      <inertial>
+        <mass>0.0264</mass>
+        <inertia>
+          <ixx>   1.263e-05</ixx>
+          <ixy> 0.00021e-05</ixy>
+          <ixz>-0.00098e-05</ixz>
+          <iyy>   1.182e-05</iyy>
+          <iyz> -0.0013e-05</iyz>
+          <izz>  0.2484e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_rf_ds_collision_1">
+        <pose>0 0 0.00235 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0247</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="algr_rh_rf_ds_tip_collision_1_FROGGERCOL">
+        <pose>0 0 0.0267 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_rh_rf_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.01335 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0267</length>
+            <radius>0.012</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_rf_ds_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="algr_rh_rf_ds_tip_visual_1">
+        <pose>0 0 0.0267 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_3.0_tip.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_rf_dip" type="revolute">
+      <child>algr_rh_rf_ds</child>
+      <parent>algr_rh_rf_md</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 0.087156</xyz>
+        <limit>
+          <lower>-0.227</lower>
+          <upper>1.618</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_th_mp">
+      <pose relative_to="arm_hand_weld">-0.0182 0.019333 0.049013 3.14159 -1.48353 1.5708</pose>
+      <inertial>
+        <mass>0.0176</mass>
+        <inertia>
+          <ixx> 0.8139e-05</ixx>
+          <ixy> 0.2552e-05</ixy>
+          <ixz> 0.3899e-05</ixz>
+          <iyy>  1.314e-05</iyy>
+          <iyz>-0.1463e-05</iyz>
+          <izz>  1.002e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_th_mp_collision">
+        <pose>-0.0179 0.009 0.0145 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0358 0.034 0.0455</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_th_mp_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_12.0_right.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_th_cmc" type="revolute">
+      <child>algr_rh_th_mp</child>
+      <parent>algr_rh_palm</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 -0.087156 -0.996195</xyz>
+        <limit>
+          <lower>0.263</lower>
+          <upper>1.396</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_th_bs">
+      <pose relative_to="arm_hand_weld">-0.0132 0.056728 0.018638 3.14159 -1.48353 1.5708</pose>
+      <inertial>
+        <mass>0.0119</mass>
+        <inertia>
+          <ixx>   1.926e-06</ixx>
+          <ixy> 0.00305e-06</ixy>
+          <ixz> 0.08866e-06</ixz>
+          <iyy>   1.153e-06</iyy>
+          <iyz>-0.03645e-06</iyz>
+          <izz>   1.496e-06</izz>
+        </inertia>
+      </inertial>
+      <!-- [NOTE] this collision geometry caused problems for the Drake team -->
+      <collision name='algr_rh_th_bs_collision'>
+        <pose>0 0 0.00885 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0177</size>
+          </box>
+        </geometry>
+      </collision>  
+      <visual name="algr_rh_th_bs_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_13.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_th_axl" type="revolute">
+      <child>algr_rh_th_bs</child>
+      <parent>algr_rh_th_mp</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">0 0.996195 -0.087156</xyz>
+        <limit>
+          <lower>-0.105</lower>
+          <upper>1.163</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_th_px">
+      <pose relative_to="arm_hand_weld">-0.0132 0.074361 0.017096 3.14159 -1.48353 1.5708</pose>
+      <inertial>
+        <mass>0.038</mass>
+        <inertia>
+          <ixx>  3.670e-05</ixx>
+          <ixy> 0.0001e-05</ixy>
+          <ixz>0.01485e-05</ixz>
+          <iyy>  3.540e-05</iyy>
+          <iyz>-0.0037e-05</iyz>
+          <izz> 0.3633e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_th_px_collision">
+        <pose>0 0 0.0257 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0514</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_th_px_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_14.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_th_mcp" type="revolute">
+      <child>algr_rh_th_px</child>
+      <parent>algr_rh_th_bs</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">1 0 0</xyz>
+        <limit>
+          <lower>-0.189</lower>
+          <upper>1.644</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="algr_rh_th_ds">
+      <pose relative_to="arm_hand_weld">-0.0132 0.125565 0.012616 3.14159 -1.48353 1.5708</pose>
+      <inertial>
+        <pose>0 0 0.012781 0 0 0</pose>
+        <mass>0.0556</mass>
+        <inertia>
+          <ixx>  7.054e-05</ixx>
+          <ixy>          0</ixy>
+          <ixz>          0</ixz>
+          <iyy>  6.564e-05</iyy>
+          <iyz>-0.0033e-05</iyz>
+          <izz>  1.954e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="algr_rh_th_ds_collision_1">
+        <pose>0 0 0.01015 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0196 0.0275 0.0403</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="algr_rh_th_ds_tip_collision_1_FROGGERCOL">
+        <pose>0 0 0.0423 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_rh_th_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.02115 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0423</length>
+            <radius>0.012</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="algr_rh_th_ds_visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_15.0.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="algr_rh_th_ds_tip_visual_1">
+        <pose>0 0 0.0423 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://frogger/models/allegro/meshes/link_15.0_tip.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="algr_rh_th_ipl" type="revolute">
+      <child>algr_rh_th_ds</child>
+      <parent>algr_rh_th_px</parent>
+      <axis>
+        <xyz expressed_in="arm_hand_weld">1 0 0</xyz>
+        <limit>
+          <lower>-0.162</lower>
+          <upper>1.719</upper>
+          <effort>0.7</effort>
+        </limit>
+        <dynamics>
+          <damping>1.5e-2</damping>
+        </dynamics>
+      </axis>
+    </joint>
+    <drake:collision_filter_group name="thumb_base_cfg">
+      <drake:member>algr_rh_th_bs</drake:member>
+      <drake:member>algr_rh_palm</drake:member>
+      <drake:ignored_collision_filter_group>
+        thumb_base_cfg
+      </drake:ignored_collision_filter_group>
+    </drake:collision_filter_group>
+
+    <!-- adding frame for heuristic IK sampling -->
+    <joint name="dummy_sampling_joint" type="fixed">
+      <child>algr_rh_palm_FROGGERSAMPLE</child>
+      <parent>algr_rh_palm</parent>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+    </joint>
+    <link name="algr_rh_palm_FROGGERSAMPLE">
+      <pose>0.0 0.0 0.095 0.0 0.0 0.0</pose>
+    </link>
+
+  </model>
+</sdf>
