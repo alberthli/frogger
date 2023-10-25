@@ -65,8 +65,6 @@ def run_exp(
     obj: ObjectDescription,
     model: RobotModel,
     opt_settings: dict,
-    sampler: str,
-    ik_type: str,
     num_feas_samples: int = 20,
     suffix: str = "",
     pick: bool = True,
@@ -84,11 +82,6 @@ def run_exp(
         A model of the robot that performs cached computation.
     opt_settings : dict
         A dictionary of optimizer settings. See make_optimizer().
-    sampler : str
-        Whether to use the "heuristic" or "cvae" sampler/IK. CVAE unused in public
-        release.
-    ik_type : str
-        Whether to use "partial" or "full" IK.
     num_feas_samples : int, default=20
         The number of feasible samples to compute for this object.
     suffix : str, default=""
@@ -98,45 +91,35 @@ def run_exp(
     timeout : float, default=60.0
         Amount of time before a sample is labeled a failure in seconds.
     """
-    assert sampler in ["heuristic", "cvae"]
-    assert ik_type in ["partial", "full"]
-
     # making constraint functions
     f, g, h = _make_fgh(model)
 
     # relevant info from the model
     n = model.n
     nc = model.nc  # number of contacts
-    mu = model.settings["mu"]
-    ns = model.settings["ns"]
+    mu = model.mu
+    ns = model.ns
 
     # number of each constraint type
     n_joint = 2 * n
     n_col = len(model.query_object.inspector().GetCollisionCandidates())
-
     n_surf = nc
-    n_couple = len(model.joint_coupling_constraints[1])
 
     # tolerances for each constraint type
     # if baseline, the force closure constraint is an equality constraint.
     # otherwise, it is an inequality constraint.
-    n_baseline = 1 if model.baseline else 0
-    n_ineq = n_joint + n_col + (1 - n_baseline)
-    n_eq = n_surf + n_couple + n_baseline
+    n_ineq = n_joint + n_col + 1
+    n_eq = n_surf
 
     tol_surf = opt_settings.get("tol_surf", 1e-3)
-    tol_couple = opt_settings.get("tol_couple", 1e-4)
     tol_joint = opt_settings.get("tol_joint", 1e-2)
     tol_col = opt_settings.get("tol_col", 1e-3)
-    tol_fclosure = 1e-5  # we check loose satisfaction here for numerical error
+    tol_fclosure = opt_settings.get("tol_fclosure", 1e-5)
 
     tol_eq = tol_surf * np.ones(n_eq)  # surface constraint tolerances
-    tol_eq[n_surf : (n_surf + n_couple)] = tol_couple  # joint coupling constraints tol
-    tol_eq[(n_surf + n_couple) : (n_surf + n_couple + n_baseline)] = tol_fclosure  # bl
     tol_ineq = tol_col * np.ones(n_ineq)  # collision constraint tolerances
     tol_ineq[:n_joint] = tol_joint  # joint limit constraint tolerances
-    if not model.baseline:
-        tol_ineq[n_joint + n_col] = tol_fclosure  # fclosure constraint tolerance
+    tol_ineq[n_joint + n_col] = tol_fclosure  # fclosure constraint tolerance
 
     # making the optimizer
     alg = opt_settings.get("alg", nlopt.LD_SLSQP)
@@ -151,15 +134,15 @@ def run_exp(
         opt.set_maxtime(opt_settings["maxtime"])
 
     # initializing the PickupSystem for simulating picks
-    if pick:
-        pickup_system = PickupSystem(
-            model,
-            t_lift=0.2,  # start the pick at 0.2 seconds
-            hold_duration=1.5,  # hold for 1.5 seconds post-pick
-            lift_duration=1.0,  # lift for 1.0 seconds
-            lift_height=0.1,  # lift to 10cm
-            visualize=False,  # [NOTE] turn this on to view the pick
-        )
+    # if pick:
+    #     pickup_system = PickupSystem(
+    #         model,
+    #         t_lift=0.2,  # start the pick at 0.2 seconds
+    #         hold_duration=1.5,  # hold for 1.5 seconds post-pick
+    #         lift_duration=1.0,  # lift for 1.0 seconds
+    #         lift_height=0.1,  # lift to 10cm
+    #         visualize=False,  # [NOTE] turn this on to view the pick
+    #     )
 
     # values computed during the benchmark
     sample_times = []  # sampling time
@@ -175,7 +158,7 @@ def run_exp(
     q_star_seeds = []
 
     surf_cons_vio = []  # constraint violations
-    couple_cons_vio = []
+    # couple_cons_vio = []
     joint_cons_vio = []
     col_cons_vio = []
     fclosure_cons_vio = []
@@ -214,35 +197,8 @@ def run_exp(
             # ############################## #
             # if a desired pose is provided and is not kinematically feasible, skip it
             t_start = time.time()
-            q0, _ik_iters = sampler.sample_configuration()
+            q0, _ik_iters = sampler.sample_configuration(seed=seed)
             ik_counter = ik_counter + _ik_iters
-            while q0 is None:
-                seed = seed + 1
-
-                # [NOTE] seeds that cause segfaults for certain items that I can't fix
-                # due to an FCL bug
-                #######################################################################
-                if obj.name == "065-d_cups" and seed == 574:
-                    continue
-
-                if obj.name == "012_strawberry" and seed == 20375:
-                    continue
-
-                if obj.name == "016_pear" and seed == 949:
-                    continue
-
-                if obj.name == "065-c_cups" and seed == 10309:
-                    continue
-                #######################################################################
-
-                q0, _ik_iters = sample_configuration(
-                    model,
-                    X_WPc_des=None,
-                    seed=seed,
-                    sampler=sampler,
-                    ik_type=ik_type,
-                )
-                ik_counter = ik_counter + _ik_iters
 
             t_end = time.time()
             sample_times.append(t_end - t_start)
@@ -282,22 +238,18 @@ def run_exp(
                 h(h_val, q_star, np.zeros(0))
 
                 surf_vio = np.max(np.abs(h_val[:n_surf]))
-                if n_couple > 0:
-                    couple_vio = np.max(np.abs(h_val[n_surf:]))
-                else:
-                    couple_vio = 0.0
+                # if n_couple > 0:
+                #     couple_vio = np.max(np.abs(h_val[n_surf:]))
+                # else:
+                #     couple_vio = 0.0
                 joint_vio = max(np.max(g_val[:n_joint]), 0.0)
-                if not model.baseline:
-                    col_vio = max(np.max(g_val[n_joint:-1]), 0.0)
-                    fclosure_vio = max(g_val[-1], 0.0)
-                else:
-                    col_vio = max(np.max(g_val[n_joint:]), 0.0)
-                    fclosure_vio = np.max(np.abs(h_val[(n_surf + n_couple) :]))
+                col_vio = max(np.max(g_val[n_joint:-1]), 0.0)
+                fclosure_vio = max(g_val[-1], 0.0)
 
                 # setting the feasibility flag
                 feas = (
                     surf_vio <= tol_surf
-                    and couple_vio <= tol_couple
+                    # and couple_vio <= tol_couple
                     and joint_vio <= tol_joint
                     and col_vio <= tol_col
                     and fclosure_vio <= tol_fclosure
@@ -327,7 +279,7 @@ def run_exp(
             q_star_seeds.append(np.nan)
             l_stars.append(np.nan)
             surf_cons_vio.append(np.nan)
-            couple_cons_vio.append(np.nan)
+            # couple_cons_vio.append(np.nan)
             joint_cons_vio.append(np.nan)
             col_cons_vio.append(np.nan)
             fclosure_cons_vio.append(np.nan)
@@ -336,16 +288,10 @@ def run_exp(
             f_stars.append(f_val)
             q_stars.append(q_star)
             q_star_seeds.append(seed)
-            if not model.baseline:
-                l_stars.append(model.compute_l(q_star))
-            else:
-                model.compute_all(q_star)
-                model._compute_l()
-                l_star = model.l
-                l_stars.append(l_star)
+            l_stars.append(model.compute_l(q_star))
 
             surf_cons_vio.append(surf_vio)
-            couple_cons_vio.append(couple_vio)
+            # couple_cons_vio.append(couple_vio)
             joint_cons_vio.append(joint_vio)
             col_cons_vio.append(col_vio)
             fclosure_cons_vio.append(fclosure_vio)
@@ -359,19 +305,19 @@ def run_exp(
             fc_stars.append(fcl1)
 
         # simulate feasible (past quality threshold) picks
-        if pick and not timed_out:
-            try:
-                print("      Simulating...")  # [DEBUG]
-                success = pickup_system.simulate(q_star, X_WO_0=X_WO_orig)[-1]
-            except RuntimeError:
-                # catches "MultibodyPlant's discrete update solver failed to converge"
-                success = False
-        else:
-            success = np.nan
-        pick_success.append(success)
+        # if pick and not timed_out:
+        #     try:
+        #         print("      Simulating...")  # [DEBUG]
+        #         success = pickup_system.simulate(q_star, X_WO_0=X_WO_orig)[-1]
+        #     except RuntimeError:
+        #         # catches "MultibodyPlant's discrete update solver failed to converge"
+        #         success = False
+        # else:
+        #     success = np.nan
+        # pick_success.append(success)
 
     # saving the benchmark results
-    model.obj.settings["X_WO"] = X_WO_orig  # resetting pickled pose
+    model.obj.X_WO = X_WO_orig  # resetting pickled pose
     results = {
         "solve_times": np.stack(solve_times),
         "sample_times": np.stack(sample_times),
@@ -386,17 +332,17 @@ def run_exp(
         "q_star_seeds": np.stack(q_star_seeds),
         "l_stars": np.stack(l_stars),
         "surf_cons_vio": np.stack(surf_cons_vio),
-        "couple_cons_vio": np.stack(couple_cons_vio),
+        # "couple_cons_vio": np.stack(couple_cons_vio),
         "joint_cons_vio": np.stack(joint_cons_vio),
         "col_cons_vio": np.stack(col_cons_vio),
         "fclosure_cons_vio": np.stack(fclosure_cons_vio),
-        "pick_success": np.stack(pick_success),
-        "model_settings": model.settings,  # also pickle settings
-        "obj_settings": model.obj.settings,
+        # "pick_success": np.stack(pick_success),
+        "model_settings": model.cfg,  # also pickle settings
+        "obj_settings": obj.cfg,
         "opt_settings": opt_settings,
     }
-    obj_name = model.obj.settings["name"]
-    model_name = model.settings["name"]
+    obj_name = model.obj.name
+    model_name = model.name
 
     if len(suffix) > 0:
         exp_name = f"exp_{obj_name}_{model_name}_{suffix}"
@@ -420,8 +366,8 @@ def compute_results(model: RobotModel, suffix: str = "") -> None:
         denote which experimental configuration was run.
     """
     # loading experiment data
-    obj_name = model.obj.settings["name"]
-    model_name = model.settings["name"]
+    obj_name = model.obj.name
+    model_name = model.name
     if len(suffix) > 0:
         exp_name = f"exp_{obj_name}_{model_name}_{suffix}"
     else:
@@ -457,7 +403,7 @@ def compute_results(model: RobotModel, suffix: str = "") -> None:
     # col_cons_vio = results["col_cons_vio"]
     # fclosure_cons_vio = results["fclosure_cons_vio"]
 
-    pick_success = results["pick_success"]
+    # pick_success = results["pick_success"]
 
     # obj_settings = results["obj_settings"]
     # model_settings = results["model_settings"]
@@ -474,7 +420,7 @@ def compute_results(model: RobotModel, suffix: str = "") -> None:
     f_stars = f_stars[~np.isnan(f_stars)]
     fc_stars = fc_stars[~np.isnan(fc_stars)]
     l_stars = l_stars[~np.isnan(l_stars)]
-    pick_success = pick_success[~np.isnan(pick_success)]
+    # pick_success = pick_success[~np.isnan(pick_success)]
 
     # printing relevant results
     # results will be formatted as "MEDIAN (QUANTILE25, QUANTILE75)".
@@ -522,7 +468,7 @@ def compute_results(model: RobotModel, suffix: str = "") -> None:
         print(f"  NORMALIZED MIN-WEIGHT METRIC: {med} ({q25}, {q75})")
 
     # pick successes
-    print(f"  PICK SUCCESSES: {np.sum(pick_success.astype(int))}/{B}")
+    # print(f"  PICK SUCCESSES: {np.sum(pick_success.astype(int))}/{B}")
     print(f"  NUM TIMEOUTS: {num_timeouts}")
 
 
@@ -596,7 +542,7 @@ def summarize_all_results() -> None:
         else:
             print("RESULTS: BASELINE")
 
-        pick_successes_all = []
+        # pick_successes_all = []
         fc_vals_all = []
         normalized_ls_all = []
         solve_times_all = []
@@ -607,7 +553,7 @@ def summarize_all_results() -> None:
         # looping through all object categories and aggregating statistics
         for j, obj_name_list in enumerate(obj_names_list):
 
-            pick_successes_cat = []
+            # pick_successes_cat = []
             fc_vals_cat = []
             normalized_ls_cat = []
             solve_times_cat = []
@@ -634,17 +580,17 @@ def summarize_all_results() -> None:
                 num_solves = results["num_solves"]
                 fc_stars = results["fc_stars"]
                 l_stars = results["l_stars"]
-                pick_success = results["pick_success"]
+                # pick_success = results["pick_success"]
 
                 # checking for timeouts, excluding from stat computation
-                num_timeouts_cat += np.sum(np.isnan(pick_success))
+                # num_timeouts_cat += np.sum(np.isnan(pick_success))
                 total_times = total_times[~np.isnan(total_times)]
                 fc_stars = fc_stars[~np.isnan(fc_stars)]
                 l_stars = l_stars[~np.isnan(l_stars)]
-                pick_success = pick_success[~np.isnan(pick_success)]
+                # pick_success = pick_success[~np.isnan(pick_success)]
 
                 # aggregating results
-                pick_successes_cat.append(pick_success.astype(int))
+                # pick_successes_cat.append(pick_success.astype(int))
                 fc_vals_cat.append(fc_stars)
                 m = 16
                 normalized_ls_cat.append(l_stars * m)
@@ -653,7 +599,7 @@ def summarize_all_results() -> None:
                 total_times_cat.append(total_times)
 
             # computing aggregated statistics per-category
-            pick_successes_cat = np.concatenate(pick_successes_cat)
+            # pick_successes_cat = np.concatenate(pick_successes_cat)
             fc_vals_cat = np.concatenate(fc_vals_cat)
             normalized_ls_cat = np.concatenate(normalized_ls_cat)
             solve_times_cat = np.concatenate(solve_times_cat)
@@ -666,9 +612,9 @@ def summarize_all_results() -> None:
                 print("  BOXES/CYLINDERS/BOTTLES")
             elif j == 2:
                 print("  ADVERSARIAL OBJECTS")
-            print(
-                f"    PICK SUCCESS: {np.sum(pick_successes_cat)}/{len(pick_successes_cat)}"
-            )
+            # print(
+            #     f"    PICK SUCCESS: {np.sum(pick_successes_cat)}/{len(pick_successes_cat)}"
+            # )
             print(
                 f"    FERRARI-CANNY (median + IQR): {np.median(fc_vals_cat)} ({np.quantile(fc_vals_cat, 0.25)}, {np.quantile(fc_vals_cat, 0.75)})"
             )
@@ -701,7 +647,7 @@ def summarize_all_results() -> None:
             )
             print(f"    NUM TIMEOUTS: {num_timeouts_cat}")
 
-            pick_successes_all.append(pick_successes_cat)
+            # pick_successes_all.append(pick_successes_cat)
             fc_vals_all.append(fc_vals_cat)
             normalized_ls_all.append(normalized_ls_cat)
             solve_times_all.append(solve_times_cat)
@@ -710,16 +656,16 @@ def summarize_all_results() -> None:
             num_timeouts_all += num_timeouts_cat
 
         # computing aggregated total results
-        pick_successes_all = np.concatenate(pick_successes_all)
+        # pick_successes_all = np.concatenate(pick_successes_all)
         fc_vals_all = np.concatenate(fc_vals_all)
         normalized_ls_all = np.concatenate(normalized_ls_all)
         solve_times_all = np.concatenate(solve_times_all)
         num_solves_all = np.concatenate(num_solves_all)
         total_times_all = np.concatenate(total_times_all)
         print("  TOTAL")
-        print(
-            f"    PICK SUCCESS: {np.sum(pick_successes_all)}/{len(pick_successes_all)}"
-        )
+        # print(
+        #     f"    PICK SUCCESS: {np.sum(pick_successes_all)}/{len(pick_successes_all)}"
+        # )
         print(
             f"    FERRARI-CANNY (median + IQR): {np.median(fc_vals_all)} ({np.quantile(fc_vals_all, 0.25)}, {np.quantile(fc_vals_all, 0.75)})"
         )

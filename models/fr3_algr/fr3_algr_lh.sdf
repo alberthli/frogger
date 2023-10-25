@@ -1576,7 +1576,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
     </joint>
     <link name="algr_lh_palm_FROGGERSAMPLE">
-      <pose>0.0 0.0 0.095 0.0 0.0 0.0</pose>
+      <pose relative_to="arm_hand_weld">0.0 0.0 0.095 0.0 0.0 0.0</pose>
     </link>
 
   </model>

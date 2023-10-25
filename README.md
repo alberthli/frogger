@@ -22,14 +22,15 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [ ] Refactor the Wu baseline stuff out of the core `RobotModel`
 - [ ] Before pypi package release, update instructions for using the MOSEK license.
 - [X] Handle multiple collision geoms on robot AND on object for surface constraint
-- [ ] Force the user to supply a single URDF or SDF for the entire system to greatly simplify the pipeline (requires a relatively large refactor of the sim pipeline)
+- [x] Force the user to supply a single URDF or SDF for the entire system to greatly simplify the pipeline (requires a relatively large refactor of the sim pipeline)
 - [x] Abstract the initial condition sampler so that people can implement their own.
 - [ ] Come up with simpler sampling heuristic requiring less user tuning
-- [ ] Simplify `RobotModel` abstract API:
+- [ ] Refactor from `numba` to `jax`
+- [x] Simplify `RobotModel` abstract API:
     - [x] Automatically read joint limit/torque bounds from file
     - [x] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
     - [x] Move burden of custom implementation as much as possible to heuristic sampler.
-    - [ ] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
+    - [x] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
 - [ ] Verify compatibility with underactuated hands (e.g., Barrett or Shadow).
 - [ ] Investigate refactoring solver from `nlopt` to Drake's SNOPT bindings.
 - [ ] Add usage examples + a timing script.
@@ -37,6 +38,8 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 ## Usage
 To sample grasps on a custom manipulator, you need the following:
 * a description of the manipulator in URDF or SDF form,
+    * in the description, you must specify which collision geoms are allowed to touch the object. If a body has any geoms of this type, then those bodies MUST touch it
+    * additionally, if using the provided heuristic IK sampler, a canonical dummy "palm" frame must be specified, which the sampler will look for
 * a description of the object, either as a mesh or as an analytical SDF,
 * an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
 

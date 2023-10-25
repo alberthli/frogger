@@ -23,12 +23,14 @@ dependencies = [
     "numba>=0.56.4",
     "numpy>=1.23.1",
     "open3d>=0.16.0",
+    "pyvhacd>=0.0.2",
     "qpth>=0.0.16",
     "quantecon>=0.6.0",
     "scikit-image>=0.19.3",
     "scipy>=1.10.0",
     "torch>=1.13.1",
     "trimesh>=4.0.0",
+    "vhacdx>=0.0.4",
 ]
 
 [project.optional-dependencies]

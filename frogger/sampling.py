@@ -199,7 +199,7 @@ class HeuristicICSampler(ICSampler):
         """
 
     def sample_configuration(
-        self, tol_ang: float = 0.0, tol_pos: float = 0.0
+        self, tol_ang: float = 0.0, tol_pos: float = 0.0, seed: int | None = None
     ) -> tuple[np.ndarray, int]:
         """Sample a grasp.
 
@@ -209,6 +209,8 @@ class HeuristicICSampler(ICSampler):
             The positive tolerance on the orientation of the palm in radians.
         tol_pos : float, default=0.0
             The (double-sided) tolerance on the position of the palm in meters.
+        seed : int | None, default=None
+            Random seed.
 
         Returns
         -------
@@ -219,6 +221,8 @@ class HeuristicICSampler(ICSampler):
         """
         assert tol_ang >= 0.0
         assert tol_pos >= 0.0
+        if seed is not None:
+            np.random.seed(seed)
         plant = self.model.plant
 
         # repeatedly tries to solve an IK problem until a feasible sample is found
@@ -318,7 +322,7 @@ class HeuristicFR3AlgrICSampler(HeuristicICSampler):
 
         # allegro-specific heuristic for the width of the fingertips
         assert self.model.nc == 4
-        hand = self.model.settings["hand"]
+        hand = self.model.hand
         if hand == "rh":
             p_if = X_WPalm_des @ np.array([f_ext, 0.04, w / 2])
             p_mf = X_WPalm_des @ np.array([f_ext, 0.0, w / 2])
@@ -360,7 +364,7 @@ class HeuristicFR3AlgrICSampler(HeuristicICSampler):
                 self.model.plant.world_frame(),
                 P_WFs[i, :] - 1e-4,
                 P_WFs[i, :] + 1e-4,
-            )
+            ) 
 
 
 # ##### #

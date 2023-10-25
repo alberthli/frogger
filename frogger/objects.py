@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
+from typing import Callable
 
 import jax
 import jax.numpy as jnp
@@ -12,7 +14,6 @@ from numba import jit as numba_jit
 from pydrake.geometry import Convex, Mesh
 from pydrake.math import RigidTransform
 from skimage.measure import marching_cubes
-from trimesh.decomposition import convex_decomposition
 
 from frogger import ROOT
 from frogger.sdfs.smoothing import poisson_reconstruction
@@ -22,34 +23,54 @@ jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_debug_nans", True)  # errors out when encountering nans
 
 
+@dataclass(kw_only=True)
+class ObjectDescriptionConfig:
+    """A configuration for an object description.
+
+    Attributes
+    ----------
+    X_WO : RigidTransform
+        The pose of the object with respect to the world frame.
+    lb_O : np.ndarray | None, shape=(3,), default=None
+        Lower bounds of the object in the object frame. Defaults to None.
+    ub_O : np.ndarray | None, shape=(3,), default=None
+        Upper bounds of the object in the object frame. Defaults to None.
+    mass : float | None, default=None
+        A known mass of the object.
+    name : str, default="abstract"
+        The name of the object.
+    """
+    X_WO: RigidTransform
+    lb_O: np.ndarray | None = None
+    ub_O: np.ndarray | None = None
+    mass: float | None = None
+
+    # fields with overridden defaults in child classes
+    name: str | None = None
+
+    def __post_init__(self):
+        """Used to handle overridden defaults."""
+        if self.name is None:
+            self.name = "abstract"
+
 class ObjectDescription(ABC):
     """Abstract class for describing an object to manipulate."""
 
-    def __init__(self, obj_settings: dict) -> None:
+    def __init__(self, cfg: ObjectDescriptionConfig) -> None:
         """Initialize the object description.
 
         Parameters
         ----------
-        obj_settings : dict
-            A dictionary containing all the info necessary to construct the object.
-            Key/value pairs:
-            [REQUIRED]
-            * "X_WO" : RigidTransform
-              A Drake RigidTransform object representing the pose of the object with
-              respect to the world frame.
-
-            [OPTIONAL]
-            * "name" : str
-              The name of the object. Defaults to "abstract".
-            * "lb_O" : np.ndarray, shape=(3,)
-              Lower bounds of the object in the object frame. Defaults to None.
-            * "ub_O" : np.ndarray, shape=(3,)
-              Upper bounds of the object in the object frame. Defaults to None.
+        cfg : ObjectDescriptionConfig
+            The configuration of the ObjectDescription.
         """
-        assert "X_WO" in obj_settings
-        self.settings = obj_settings
-        self.X_WO = obj_settings["X_WO"]
-        self.name = obj_settings.get("name", "abstract")
+        # unpacking config
+        self.cfg = cfg
+        self.X_WO = cfg.X_WO
+        self.lb_O = cfg.lb_O
+        self.ub_O = cfg.ub_O
+        self.mass = cfg.mass
+        self.name = cfg.name
 
         # mesh objects compute the SDF and its gradients differently
         if not isinstance(self, MeshObject):
@@ -65,8 +86,6 @@ class ObjectDescription(ABC):
             self._compute_functions_O()
 
         # bounds of the object
-        self.lb_O = obj_settings.get("lb_O", None)
-        self.ub_O = obj_settings.get("ub_O", None)
         if self.lb_O is not None and self.ub_O is not None:
             assert self.lb_O.shape == (3,) and self.ub_O.shape == (3,)
             self.lb_W = self.lb_O + self.X_WO.translation()
@@ -77,7 +96,6 @@ class ObjectDescription(ABC):
             self.ub_W = None
             self.shape_visual = None
             self.shape_collision_list = None
-            self.pcd = None
 
     @abstractmethod
     def _s_O_jax(self, p: jnp.ndarray) -> jnp.ndarray:
@@ -219,27 +237,27 @@ class ObjectDescription(ABC):
     def _compute_functions_O(self) -> None:
         """Computes functions, Jacobians, and Hessians and compiles them in O frame."""
         # jitting Ds, and D2s
-        s_O_jit = jit(self._s_O_jax)  # should already be jitted, but just making sure
+        s_O_jit = jit(self._s_O_jax)
 
         @jit
         def Ds_jit(p):
-            return jacobian(s_O_jit)(p)
+            return jacobian(self._s_O_jax)(p)
 
         @jit
         def D2s_jit(p):
-            return hessian(s_O_jit)(p)
+            return hessian(self._s_O_jax)(p)
 
         @jit
         def s_jit_batched(p):
-            return vmap(s_O_jit)(p)
+            return vmap(self._s_O_jax)(p)
 
         @jit
         def Ds_jit_batched(p):
-            return vmap(Ds_jit)(p)
+            return vmap(jacobian(self._s_O_jax))(p)
 
         @jit
         def D2s_jit_batched(p):
-            return vmap(D2s_jit)(p)
+            return vmap(hessian(self._s_O_jax))(p)
 
         # ensure functions can return numpy arrays
         def _s_O(p, jax_out=False, batched=False):
@@ -281,18 +299,6 @@ class ObjectDescription(ABC):
         self._s_O = _s_O
         self._Ds_O = _Ds_O
         self._D2s_O = _D2s_O
-
-        # compiling the jitted functions by running them once
-        print("JIT compiling object internals...")
-        _p = np.random.rand(3)
-        self._s_O(_p)
-        self._Ds_O(_p)
-        self._D2s_O(_p)
-
-        _p_b = np.random.rand(5, 3)
-        self._s_O(_p_b, batched=True)
-        self._Ds_O(_p_b, batched=True)
-        self._D2s_O(_p_b, batched=True)
 
     def _compute_functions_W(self) -> None:
         """Computes functions, Jacobians, and Hessians and compiles them in W frame."""
@@ -337,7 +343,7 @@ class ObjectDescription(ABC):
         self.X_WO = RigidTransform(X_WO)
         self._compute_functions_W()
 
-    def compute_mesh(self, verbose: bool = False) -> None:
+    def compute_mesh(self) -> None:
         """Computes a coarse mesh with the object's functional description.
 
         `shape_visual` will be a Mesh object representing the visual geometry in Drake.
@@ -345,14 +351,12 @@ class ObjectDescription(ABC):
         decomposition of the object used for fast collision detection.
         All geometries will be represented in the world frame.
         """
-        if verbose:
-            print("Computing object visual and collision geometries...")
         lb = self.lb_O  # upper and lower bounds of the object
         ub = self.ub_O
 
         # if MeshObject, we already have a visual geometry
         if isinstance(self, MeshObject):
-            _mesh_viz = self.settings["mesh"]
+            _mesh_viz = self.mesh
 
         # use marching cubes to compute a mesh from the 0-level set of s approximately
         else:
@@ -406,7 +410,7 @@ class ObjectDescription(ABC):
 
             # perform convex decomposition of visual meshes using VHACD
             # for flags, see https://github.com/mikedh/trimesh/blob/e62c526306766c4c597512ed7acc60c788e19e6f/trimesh/decomposition.py
-            _cd_meshes = convex_decomposition(
+            _cd_meshes = trimesh.Trimesh.convex_decomposition(
                 mesh_col,
                 maxConvexHulls=12,
                 resolution=10000,
@@ -420,7 +424,7 @@ class ObjectDescription(ABC):
                 cd_meshes = _cd_meshes
 
             # create Mesh drake object for the visual geometry
-            # mesh files are generated in /tmp, which is localized to container
+            # mesh files are generated in /tmp
             pth = "/tmp/mesh_viz.obj"
             _mesh_viz.export(pth)
             mesh_viz = Mesh(pth)
@@ -434,17 +438,14 @@ class ObjectDescription(ABC):
 
         # use the clean mesh to compute the mass + inertia tensor of the object
         # density set to 150 kg/m^3, https://arxiv.org/pdf/2011.09584.pdf
-        if "mass" not in self.settings:
+        if self.mass is None:
             mesh_col.density = 150.0
-            self.settings["mass"] = mesh_col.mass
-            self.settings["inertia"] = mesh_col.moment_inertia
-            self.mass = self.settings["mass"]
+            self.mass = mesh_col.mass
+            self.inertia = mesh_col.moment_inertia
         else:
-            self.mass = self.settings["mass"]
             vol = mesh_col.volume
             mesh_col.density = self.mass / vol
-            self.settings["inertia"] = mesh_col.mass_properties["inertia"]
-        self.inertia = self.settings["inertia"]
+            self.inertia = mesh_col.mass_properties["inertia"]
         self.center_mass = _mesh_viz.center_mass
 
         # use the visual mesh to compute an oriented bounding box
@@ -453,121 +454,38 @@ class ObjectDescription(ABC):
         self.lb_oriented = -extents / 2.0
         self.ub_oriented = extents / 2.0
 
+@dataclass(kw_only=True)
+class MeshObjectConfig(ObjectDescriptionConfig):
+    """A configuration class for MeshObjects.
 
-class Capsule(ObjectDescription):
-    """A capsule."""
+    Parameters
+    ----------
+    mesh : trimesh.Trimesh
+        The mesh object. Must be watertight.
+    name : str | None, default="mesh"
+        The name of the object.
+    clean : bool, default=False
+        Whether to clean the input mesh.
+    """
+    mesh: trimesh.Trimesh
+    clean: bool = False
 
-    def __init__(self, obj_settings: dict) -> None:
-        """Initialize a capsule.
+    def __post_init__(self):
+        """Post initialization ops: overridden defaults + mesh bounds."""
+        # overriding defaults
+        if self.name is None:
+            self.name = "mesh"
 
-        The z-axis is pointed along the length of the capsule. The origin of the
-        capsule is located in the center of the object (so it is radially symmetric
-        about the z-axis).
+        # cleaning mesh
+        if self.clean:
+            # repair the mesh with poisson reconstruction
+            print("Cleaning input mesh...")
+            self.mesh = poisson_reconstruction(self.mesh)
 
-        Parameters
-        ----------
-        obj_settings : dict
-            A dictionary containing all the info necessary to construct the object.
-            Key/value pairs:
-            [REQUIRED]
-            * "X_WO" : RigidTransform
-              A Drake RigidTransform object representing the pose of the object with
-              respect to the world frame.
-            * "l" : float
-              The length of the line defining the capsule. The capsule's total length
-              along the z-axis will be l + 2r.
-            * "r" : float
-              The radius of the capsule.
-        """
-        assert "X_WO" in obj_settings
-        assert "l" in obj_settings
-        assert "r" in obj_settings
-        self.l = obj_settings["l"]
-        self.r = obj_settings["r"]
-        obj_settings["name"] = "capsule"
-        obj_settings["lb_O"] = np.array([-self.r, -self.r, -self.l / 2.0 - self.r])
-        obj_settings["ub_O"] = np.array([self.r, self.r, self.l / 2.0 + self.r])
-        super().__init__(obj_settings)
-
-    @partial(jit, static_argnums=(0,))
-    def _s_O_jax(self, p: jnp.ndarray) -> jnp.ndarray:
-        """The differentiable description of the capsule."""
-        l = self.l
-        r = self.r
-        sub = jnp.array([0.0, 0.0, jnp.clip(p.at[2].get(), -l / 2.0, l / 2.0)])
-        return jnp.linalg.norm(p - sub, axis=-1) - r
-
-
-class Sphere(ObjectDescription):
-    """A sphere."""
-
-    def __init__(self, obj_settings: dict) -> None:
-        """Initialize a sphere.
-
-        Parameters
-        ----------
-        obj_settings : dict
-            A dictionary containing all the info necessary to construct the object.
-            Key/value pairs:
-            [REQUIRED]
-            * "X_WO" : RigidTransform
-              A Drake RigidTransform object representing the pose of the object with
-              respect to the world frame.
-            * "r" : float
-              The radius of the sphere in meters.
-        """
-        assert "X_WO" in obj_settings
-        assert "r" in obj_settings
-        self.r = obj_settings["r"]
-        obj_settings["name"] = "sphere"
-        obj_settings["lb_O"] = -self.r * np.ones(3)
-        obj_settings["ub_O"] = self.r * np.ones(3)
-        super().__init__(obj_settings)
-
-    @partial(jit, static_argnums=(0,))
-    def _s_O_jax(self, p: jnp.ndarray) -> jnp.ndarray:
-        """The differentiable description of the sphere."""
-        return jnp.linalg.norm(p) - self.r
-
-
-class Torus(ObjectDescription):
-    """A torus."""
-
-    def __init__(self, obj_settings: dict) -> None:
-        """Initialize a torus.
-
-        Parameters
-        ----------
-        obj_settings : dict
-            A dictionary containing all the info necessary to construct the object.
-            Key/value pairs:
-            [REQUIRED]
-            * "X_WO" : RigidTransform
-              A Drake RigidTransform object representing the pose of the object with
-              respect to the world frame.
-            * "r" : float
-              The radius of the tube.
-            * "R" : float
-              The distance from the center of the tube to the center of the torus.
-        """
-        assert "X_WO" in obj_settings
-        assert "r" in obj_settings
-        assert "R" in obj_settings
-        self.r = obj_settings["r"]
-        self.R = obj_settings["R"]
-        obj_settings["name"] = "torus"
-        rR = self.r + self.R
-        obj_settings["lb_O"] = np.array([-rR, -rR, -self.r])
-        obj_settings["ub_O"] = np.array([rR, rR, self.r])
-        super().__init__(obj_settings)
-
-    @partial(jit, static_argnums=(0,))
-    def _s_O_jax(self, p: jnp.ndarray) -> jnp.ndarray:
-        """The differentiable description of the torus."""
-        p_xz = jnp.array([p[0], p[2]])
-        q = jnp.array([jnp.linalg.norm(p_xz) - self.R, p[1]])
-        return jnp.linalg.norm(q) - self.r
-
+        # compute object bounds from the mesh
+        bounds = self.mesh.bounds  # (2, 3) bounds
+        self.lb_O = bounds[0, :]
+        self.ub_O = bounds[1, :]
 
 class MeshObject(ObjectDescription):
     """An object represented entirely as a mesh.
@@ -576,66 +494,33 @@ class MeshObject(ObjectDescription):
     instead of Jax.
     """
 
-    def __init__(self, obj_settings: dict, reclean: bool = False) -> None:
+    def __init__(self, cfg: MeshObjectConfig) -> None:
         """Initialize a mesh object. See ObjectDescription for parameter description.
 
         Parameters
         ----------
-        obj_settings : dict
-            A dictionary containing all the info necessary to construct the object.
-            Key/value pairs:
-            [REQUIRED]
-            * "X_WO" : RigidTransform
-              A Drake RigidTransform object representing the pose of the object with
-              respect to the world frame.
-            * "mesh" : Trimesh
-              A trimesh Trimesh representation of the object.
-
-            [OPTIONAL]
-            * "name" : str
-              The name of the object. Defaults to "custom".
-        reclean : bool, default=False
-            Whether to reclean the mesh or to just accept an existing mesh.
+        cfg : MeshObjectConfig
+            The configuration of the MeshObject.
         """
-        assert "X_WO" in obj_settings
-        assert "mesh" in obj_settings
-        if "name" not in obj_settings:
-            obj_settings["name"] = "mesh"
-
-        if reclean:
-            # repair the mesh with poisson reconstruction
-            print("Cleaning input mesh...")
-            _mesh = obj_settings["mesh"]
-            mesh = poisson_reconstruction(_mesh)
-            obj_settings["mesh"] = mesh
-        else:
-            mesh = obj_settings["mesh"]
-
-        # compute object bounds from the mesh
-        bounds = mesh.bounds  # (2, 3) bounds
-        obj_settings["lb_O"] = bounds[0, :]
-        obj_settings["ub_O"] = bounds[1, :]
+        self.mesh = cfg.mesh
 
         # MeshObject-specific cached values for efficient computation
         self.scene = o3d.t.geometry.RaycastingScene()  # scene for sdf computation
         self.scene.add_triangles(
-            mesh=o3d.t.geometry.TriangleMesh.from_legacy(mesh.as_open3d)
+            mesh=o3d.t.geometry.TriangleMesh.from_legacy(self.mesh.as_open3d)
         )
 
         self.p = None  # cached value of query point
         self.s_p = None  # cached values of SDF eval'd at p and its gradient
         self.Ds_p = None  # [NOTE] very coarse numerical estimate
 
-        super().__init__(obj_settings)
-        obj_settings.pop("mesh")  # remove mesh from settings, can't pickle it
+        super().__init__(cfg)
 
     def _s_O_jax(self, p: jnp.ndarray) -> None:
         """Overwritten for API compliance."""
         return None
 
-    def compute_all(
-        self, p: np.ndarray, batched: bool, compute_curvature: bool = False
-    ) -> None:
+    def compute_all(self, p: np.ndarray, batched: bool) -> None:
         """Computes and caches the signed distance, its gradient, and hessian.
 
         Parameters
@@ -645,8 +530,6 @@ class MeshObject(ObjectDescription):
         batched : bool
             Whether the points are batched or not. This is explicit just so the user is
             conscious about how they're calling the functions here.
-        compute_curvature : bool, default=False
-            Whether to compute and cache curvature computations. Usually doesn't compute this because it can add unnecessary computation.
         """
         # converting to open3d expected format
         if not batched:
@@ -707,23 +590,7 @@ class MeshObject(ObjectDescription):
     @staticmethod
     @numba_jit(nopython=True, fastmath=True, cache=True)
     def compiled_full_solve(A: np.ndarray, B: np.ndarray) -> np.ndarray:
-        """Solves the 3x3 inverse problem and symmetrizes the result.
-
-        Specifically, solves
-            A @ X = B
-        for X, then computes
-            X' = (X + X.T) / 2.
-
-        Parameters
-        ----------
-        A : np.ndarray, shape=(3, 3)
-        B : np.ndarray, shape=(3, 3)
-
-        Returns
-        -------
-        X' : np.ndarray, shape=(3, 3)
-            The symmetric part of X solving A @ X = B.
-        """
+        """Solves the 3x3 inverse problem and symmetrizes the result."""
         # solving, symmetrizing, and ensuring positive definiteness
         _X = np.linalg.solve(A, B)
         X = (_X + _X.T) / 2
@@ -849,42 +716,38 @@ class MeshObject(ObjectDescription):
             self.D2s_p = R.T @ self.D2s_p @ R
         return self.D2s_p
 
+@dataclass
+class CustomObjectConfig(ObjectDescriptionConfig):
+    """A configuration class for CustomObjects.
+
+    Parameters
+    ----------
+    s_O_jax : Callable[[jnp.ndarray], jnp.ndarray]
+        The SDF of the object in jax.
+    name : str | None, default="custom"
+        The name of the object.
+    """
+    s_O_jax: Callable[[jnp.ndarray], jnp.ndarray]
+
+    def __post_init__(self):
+        """Post initialization ops: overridden defaults + mesh bounds."""
+        # overriding defaults
+        if self.name is None:
+            self.name = "custom"
 
 class CustomObject(ObjectDescription):
     """A custom object defined by a user-provided Jax function."""
 
-    def __init__(self, obj_settings: dict) -> None:
+    def __init__(self, cfg: CustomObjectConfig) -> None:
         """Initialize a custom object. See ObjectDescription for parameter description.
 
         Parameters
         ----------
-        obj_settings : dict
-            A dictionary containing all the info necessary to construct the object.
-            Key/value pairs:
-            [REQUIRED]
-            * "s_O_jax" : Callable[[jnp.array], jnp.array]
-                A user-provided function implemented in Jax. Must take in a point p in
-                R^3 and return a flat output of shape ().
-            * "X_WO" : RigidTransform
-              A Drake RigidTransform object representing the pose of the object with
-              respect to the world frame.
-            * "lb_O" : np.ndarray, shape=(3,)
-              Lower bounds of the object in the object frame.
-            * "ub_O" : np.ndarray, shape=(3,)
-              Upper bounds of the object in the object frame.
-
-            [OPTIONAL]
-            * "name" : str
-              The name of the object. Defaults to "custom".
+        cfg : CustomObjectConfig
+            The configuration of the CustomObject.
         """
-        assert "s_O_jax" in obj_settings
-        assert "X_WO" in obj_settings
-        assert "lb_O" in obj_settings
-        assert "ub_O" in obj_settings
-        self.s_O_jax = obj_settings["s_O_jax"]
-        if "name" not in obj_settings:
-            obj_settings["name"] = "custom"
-        super().__init__(obj_settings)
+        self.s_O_jax = cfg.s_O_jax
+        super().__init__(cfg)
 
     @partial(jit, static_argnums=(0,))
     def _s_O_jax(self, p: jnp.ndarray) -> jnp.ndarray:
