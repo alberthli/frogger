@@ -9,6 +9,16 @@ pip install -e .
 ```
 If you have a MOSEK license and would like to activate the MOSEK solver in `Drake`, then place the license file `mosek.lic` in the repository root and 
 
+## Usage
+TODO: add examples
+
+To sample grasps on a custom manipulator, you need the following:
+* a description of the manipulator in URDF or SDF form,
+    * in the description, you must specify which collision geoms are allowed to touch the object. If a body has any geoms of this type, then those bodies MUST touch it
+    * additionally, if using the provided heuristic IK sampler, a canonical dummy "palm" frame must be specified, which the sampler will look for
+* a description of the object, either as a mesh or as an analytical SDF,
+* an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
+
 ## Upcoming Changes
 This branch is the development branch for the upcoming FRoGGeR refactor.
 
@@ -35,13 +45,27 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [ ] Investigate refactoring solver from `nlopt` to Drake's SNOPT bindings.
 - [ ] Add usage examples + a timing script.
 
-## Usage
-To sample grasps on a custom manipulator, you need the following:
-* a description of the manipulator in URDF or SDF form,
-    * in the description, you must specify which collision geoms are allowed to touch the object. If a body has any geoms of this type, then those bodies MUST touch it
-    * additionally, if using the provided heuristic IK sampler, a canonical dummy "palm" frame must be specified, which the sampler will look for
-* a description of the object, either as a mesh or as an analytical SDF,
-* an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
+## Reproducibility
+This code has been refactored from the original paper implementation to emphasize usability for custom robots. However, the original code can be found on the branch `iros-release`.
+
+## Citation
+If you found our work useful (either the paper or the code), please use the following citation:
+
+```
+Albert H. Li, Preston Culbertson, Joel W. Burdick, Aaron D. Ames, "FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric," arXiv:2302.13687, Feb. 2023.
+```
+
+```
+@article{
+    li2023_frogger,
+    title={FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric},
+    author={Albert H. Li and Preston Culbertson and Joel W. Burdick and Aaron D. Ames},
+    journal={arxiv:2302.13687},
+    month={February},
+    year={2023},
+}
+```
+
 
 # Pre-refactor Info
 

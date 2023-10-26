@@ -51,3 +51,24 @@ class FR3AlgrModel(RobotModel):
         tabletop_set = GeometrySet(tabletop_geom)
         obj_set = GeometrySet(self.obj_geoms)
         cfm.Apply(CollisionFilterDeclaration().ExcludeBetween(tabletop_set, obj_set))
+
+@dataclass(kw_only=True)
+class AlgrModelConfig(RobotModelConfig):
+    """Configuration of the Algr robot model."""
+    hand: str = "rh"
+
+    def __post_init__(self) -> None:
+        """Post-initialization checks."""
+        assert self.hand in ["lh", "rh"]
+        self.model_path = f"allegro/allegro_{self.hand}.sdf"
+        if self.name is None:
+            self.name = f"algr_{self.hand}"
+
+class AlgrModel(RobotModel):
+    """The Allegro model."""
+
+    def __init__(self, cfg: AlgrModelConfig) -> None:
+        """Initialize the Allegro model."""
+        self.cfg = cfg
+        self.hand = cfg.hand
+        super().__init__(cfg)

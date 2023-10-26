@@ -79,7 +79,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
 ##############################
 -->
 <sdf version="1.7">
-  <model name="algr_lh">
+  <model name="algr_lh_simplified">
     <link name="algr_lh_palm">
       <inertial>
         <mass>0.4154</mass>
@@ -93,11 +93,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_palm_collision">
-        <pose>0 0 0.095 -1.5708 0 0</pose>
+        <pose>-0.0093 0 0.0475 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/base_link_left.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0408 0.113 0.095</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_palm_visual">
@@ -124,10 +124,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_if_bs_collision">
+        <pose>0 0 0.0082 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0164</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_if_bs_visual">
@@ -168,11 +169,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_if_px_collision">
+        <pose>0 0 0.027 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.054</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_if_px_visual">
@@ -213,10 +214,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_if_md_collision">
+        <pose>0 0 0.0192 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0384</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_if_md_visual">
@@ -256,19 +258,34 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <izz>  0.2484e-05</izz>
         </inertia>
       </inertial>
-      <collision name="algr_lh_if_ds_collision">
+      <collision name="algr_lh_if_ds_collision_1">
+        <pose>0 0 0.00235 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0247</size>
+          </box>
         </geometry>
       </collision>
-      <collision name="algr_lh_if_ds_tip_collision_1">
+      <collision name="algr_lh_if_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
-          </mesh>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_lh_if_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.01335 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0267</length>
+            <radius>0.012</radius>
+          </cylinder>
         </geometry>
       </collision>
       <visual name="algr_lh_if_ds_visual">
@@ -318,10 +335,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_mf_bs_collision">
+        <pose>0 0 0.0082 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0164</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_mf_bs_visual">
@@ -362,10 +380,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_mf_px_collision">
+        <pose>0 0 0.027 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.054</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_mf_px_visual">
@@ -406,10 +425,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_mf_md_collision">
+        <pose>0 0 0.0192 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0384</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_mf_md_visual">
@@ -449,19 +469,34 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <izz>  0.2484e-05</izz>
         </inertia>
       </inertial>
-      <collision name="algr_lh_mf_ds_collision">
+      <collision name="algr_lh_mf_ds_collision_1">
+        <pose>0 0 0.00235 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0247</size>
+          </box>
         </geometry>
       </collision>
-      <collision name="algr_lh_mf_ds_tip_collision_1">
+      <collision name="algr_lh_mf_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
-          </mesh>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_lh_mf_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.01335 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0267</length>
+            <radius>0.012</radius>
+          </cylinder>
         </geometry>
       </collision>
       <visual name="algr_lh_mf_ds_visual">
@@ -511,10 +546,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_rf_bs_collision">
+        <pose>0 0 0.0082 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_0.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0164</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_rf_bs_visual">
@@ -555,10 +591,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_rf_px_collision">
+        <pose>0 0 0.027 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_1.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.054</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_rf_px_visual">
@@ -599,10 +636,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_rf_md_collision">
+        <pose>0 0 0.0192 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_2.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0384</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_rf_md_visual">
@@ -642,19 +680,34 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <izz>  0.2484e-05</izz>
         </inertia>
       </inertial>
-      <collision name="algr_lh_rf_ds_collision">
+      <collision name="algr_lh_rf_ds_collision_1">
+        <pose>0 0 0.00235 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_3.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0247</size>
+          </box>
         </geometry>
       </collision>
-      <collision name="algr_lh_rf_ds_tip_collision_1">
+      <collision name="algr_lh_rf_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0267 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_3.0_tip_tet.vtk</uri>
-          </mesh>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_lh_rf_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.01335 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0267</length>
+            <radius>0.012</radius>
+          </cylinder>
         </geometry>
       </collision>
       <visual name="algr_lh_rf_ds_visual">
@@ -704,11 +757,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_th_mp_collision">
-        <pose>0 0 0 3.14159 0 0</pose>
+        <pose>-0.0179 0.009 0.0145 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_12.0_left.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0358 0.034 0.0455</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_th_mp_visual">
@@ -751,10 +804,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
       </inertial>
       <!-- [NOTE] this collision geometry caused problems for the Drake team -->
       <collision name='algr_lh_th_bs_collision'>
+        <pose>0 0 0.00885 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_13.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0177</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_th_bs_visual">
@@ -795,10 +849,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="algr_lh_th_px_collision">
+        <pose>0 0 0.0257 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_14.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0514</size>
+          </box>
         </geometry>
       </collision>
       <visual name="algr_lh_th_px_visual">
@@ -839,20 +894,34 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <izz>  1.954e-05</izz>
         </inertia>
       </inertial>
-      <collision name="algr_lh_th_ds_collision">
+      <collision name="algr_lh_th_ds_collision_1">
+        <pose>0 0 0.01015 0 0 0</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>package://frogger/models/allegro/meshes/link_15.0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.0196 0.0275 0.0403</size>
+          </box>
         </geometry>
       </collision>
-      <collision name="algr_lh_th_ds_tip_collision_1">
+      <collision name="algr_lh_th_ds_tip_collision_1_FROGGERCOL">
         <pose>0 0 0.0423 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/allegro/meshes/link_15.0_tip_tet.vtk</uri>
-          </mesh>
+          <sphere>
+            <radius>0.012</radius>
+          </sphere>
+        </geometry>
+        <drake:proximity_properties>
+          <drake:rigid_hydroelastic/>
+          <drake:mesh_resolution_hint>0.1</drake:mesh_resolution_hint>
+          <drake:hunt_crossley_dissipation>1.0</drake:hunt_crossley_dissipation>
+        </drake:proximity_properties>
+      </collision>
+      <collision name="algr_lh_th_ds_tip_collision_2_FROGGERCOL">
+        <pose>0 0 0.02115 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.0423</length>
+            <radius>0.012</radius>
+          </cylinder>
         </geometry>
       </collision>
       <visual name="algr_lh_th_ds_visual">
@@ -895,5 +964,15 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         thumb_base_cfg
       </drake:ignored_collision_filter_group>
     </drake:collision_filter_group>
+
+    <!-- adding frame for heuristic IK sampling -->
+    <joint name="dummy_sampling_joint" type="fixed">
+      <child>algr_rh_palm_FROGGERSAMPLE</child>
+      <parent>algr_rh_palm</parent>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+    </joint>
+    <link name="algr_rh_palm_FROGGERSAMPLE">
+      <pose>0.0 0.0 0.095 0.0 0.0 0.0</pose>
+    </link>
   </model>
 </sdf>

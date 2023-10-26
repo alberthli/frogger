@@ -106,8 +106,6 @@ def run_exp(
     n_surf = nc
 
     # tolerances for each constraint type
-    # if baseline, the force closure constraint is an equality constraint.
-    # otherwise, it is an inequality constraint.
     n_ineq = n_joint + n_col + 1
     n_eq = n_surf
 
@@ -195,6 +193,7 @@ def run_exp(
             # ############################## #
             # sampling initial configuration #
             # ############################## #
+
             # if a desired pose is provided and is not kinematically feasible, skip it
             t_start = time.time()
             q0, _ik_iters = sampler.sample_configuration(seed=seed)

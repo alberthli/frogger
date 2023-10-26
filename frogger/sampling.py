@@ -10,12 +10,12 @@ from pydrake.solvers import Solve
 from frogger import ROOT
 from frogger.grasping import wedge
 from frogger.robots.robot_core import RobotModel
-from frogger.robots.robots import FR3AlgrModel
+from frogger.robots.robots import AlgrModel, FR3AlgrModel
 
 
-# ######## #
-# SAMPLERS #
-# ######## #
+# ########### #
+# IC SAMPLERS #
+# ########### #
 
 class ICSampler(ABC):
     """An interface for defining samplers for initial grasps q0.
@@ -366,6 +366,15 @@ class HeuristicFR3AlgrICSampler(HeuristicICSampler):
                 P_WFs[i, :] + 1e-4,
             ) 
 
+class HeuristicAlgrICSampler(HeuristicFR3AlgrICSampler):
+    """Convenience class for sampling with the disembodied Allegro hand.
+
+    The implementation turns out to be identical to the FR3-Allegro sampler.
+    """
+
+    def __init__(self, model: AlgrModel) -> None:
+        """Initialize the IC sampler."""
+        super().__init__(model)
 
 # ##### #
 # UTILS #

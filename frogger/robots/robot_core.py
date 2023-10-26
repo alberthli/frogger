@@ -150,14 +150,6 @@ class RobotModel:
         # setting initial object pose
         self.plant.SetFreeBodyPose(self.plant_context, self.obj_body, self.obj.X_WO)
 
-        # A and b matrices for bounding box constraints on states
-        self.n = self.plant.num_positions() - 7  # exclude the object pose states
-        lb_q, ub_q = self.q_bounds
-        I = np.eye(self.n)
-        self.A_box = np.concatenate((-I, I), axis=-2)  # (2 * n, n)
-        self.b_box = np.concatenate((lb_q, -ub_q), axis=-1)  # (2 * n,)
-        self.F = compute_primitive_forces(self.ns, self.mu)  # primitive force matrix
-
         # all the possible hand-obj collision pairs, which are always checked
         _robot_collision_bodies = []
         self.hand_obj_pairs = []
@@ -177,7 +169,14 @@ class RobotModel:
                 robot_body = self.plant.GetBodyFromFrameId(fid).body_frame().body()
                 if robot_body not in _robot_collision_bodies:
                     _robot_collision_bodies.append(robot_body)
+
+        # internal dimensions
         self.nc = len(_robot_collision_bodies)  # number of contact points
+        self.n = self.plant.num_positions() - 7  # exclude the object pose states
+
+        # additional setup for constraints
+        self._create_bound_cons()
+        self.F = compute_primitive_forces(self.ns, self.mu)  # primitive force matrix
 
         # cached values. all Jacobians wrt q when unspecified
         self.q = None  # cached value of the last unique configuration
@@ -252,6 +251,21 @@ class RobotModel:
                 prox_properties,
             )
 
+    def _create_bound_cons(self) -> None:
+        """Creates the lower and upper bound constraints."""
+        lb_q, ub_q = self.q_bounds
+        lb_inds = ~np.isinf(lb_q)  # finite lower and upper bounds
+        ub_inds = ~np.isinf(ub_q)
+        self.n_bounds = np.sum(lb_inds) + np.sum(ub_inds)
+        _A_box_lb = np.diag(lb_inds).astype(float)
+        _A_box_ub = np.diag(ub_inds).astype(float)
+        A_box_lb = _A_box_lb[~np.all(_A_box_lb == 0.0, axis=1)]
+        A_box_ub = _A_box_ub[~np.all(_A_box_ub == 0.0, axis=1)]
+        b_box_lb = lb_q[lb_inds]
+        b_box_ub = ub_q[ub_inds]
+        self.A_box = np.concatenate((-A_box_lb, A_box_ub))
+        self.b_box = np.concatenate((b_box_lb, -b_box_ub))
+
     def _init_ineq_cons(self) -> None:
         """Initializes the inequality constraint data structures."""
         n = self.n
@@ -265,9 +279,9 @@ class RobotModel:
         # the first 2n constraints are box constraints, followed by collision
         # constraints, and minimum min-weight metric value
         self.n_pairs = len(col_cands)
-        self.g = np.zeros(2 * n + self.n_pairs + 1)
-        self.Dg = np.zeros((2 * n + self.n_pairs + 1, n))
-        self.Dg[: (2 * n), :] = self.A_box
+        self.g = np.zeros(self.n_bounds + self.n_pairs + 1)
+        self.Dg = np.zeros((self.n_bounds + self.n_pairs + 1, n))
+        self.Dg[: self.n_bounds, :] = self.A_box
 
         # initializing a dictionary that orders gid pairs
         # this lets us update specific signed distances in a well-ordered way
@@ -332,7 +346,7 @@ class RobotModel:
             self._init_ineq_cons()
 
         # update joint limit constraint values
-        self.g[: (2 * n)] = self.A_box @ q + self.b_box
+        self.g[: self.n_bounds] = self.A_box @ q + self.b_box
 
         # collisions get computed conditionally after culling w/max_distance.
         # everything sufficiently far away we ignore and set the gradient to 0
@@ -417,11 +431,11 @@ class RobotModel:
             has_obj = "obj_collision" in names[0] or "obj_collision" in names[1]
             d_pen = self.d_pen
             if has_tip and has_obj:
-                self.g[2 * n + i] = -sd - d_pen  # allow fingertip to penetrate obj
+                self.g[self.n_bounds + i] = -sd - d_pen  # allow tips to penetrate obj
             else:
-                self.g[2 * n + i] = d_min - sd  # other pairs must respect d_min
+                self.g[self.n_bounds + i] = d_min - sd  # other pairs must respect d_min
             Dgi = -(J_A - J_B).T @ nrml
-            self.Dg[2 * n + i, :] = Dgi
+            self.Dg[self.n_bounds + i, :] = Dgi
 
             # updating the most interpenetrating pairs for each link allowing collision
             if has_tip and has_obj:
@@ -479,7 +493,7 @@ class RobotModel:
     def _finish_ineq_cons(self) -> None:
         """Finishes computing inequality constraints and their gradients."""
         # force closure inequality constraint
-        idx_minw = self.n_pairs + 2 * self.n
+        idx_minw = self.n_pairs + self.n_bounds
         self.g[idx_minw] = -self.l + self.l_bar_cutoff / (self.ns * self.nc)
         self.Dg[idx_minw, :] = -self.Dl
 
