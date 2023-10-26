@@ -39,6 +39,8 @@ from frogger.objects import ObjectDescription
 class RobotModelConfig:
     """A configuration for a robot model.
 
+    [TODO] finish the docstring
+
     Parameters
     ----------
     model_path : str
