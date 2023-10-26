@@ -1,0 +1,374 @@
+<?xml version="1.0"?>
+<robot name="bhand">
+  <!-- HAND BASE (RED) -->
+  <link name="bh_palm">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/>
+      </geometry>
+        <color rgba="0.75 0.75 0.75 1.0"/>
+    </visual>
+    <collision name="bh_palm_collision_1">
+      <origin rpy="0 0 0" xyz="0 0 0.033"/>
+      <geometry>
+        <cylinder length="0.066" radius="0.045"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+    <collision name="bh_palm_collision_2">
+      <origin rpy="0 0 0" xyz="0 0 0.07275"/>
+      <geometry>
+        <box size="0.09 0.052 0.0135"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+    <collision name="bh_palm_collision_3">
+      <origin rpy="0 0 0" xyz="0 -0.0275 0.05375"/>
+      <geometry>
+        <box size="0.025 0.075 0.0245"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+    <collision name="bh_palm_collision_4">
+      <origin rpy="0 1.57079632679 0" xyz="0 -0.05 0.0755"/>
+      <geometry>
+        <cylinder length="0.025" radius="0.015"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- finger 3 -->
+  <!-- finger 32 link -->
+  <link name="bh_finger_32">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj">
+          <drake:declare_convex/>
+        </mesh>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_32_collision">
+      <!-- <geometry>
+        <box size="0.025 0.075 0.02"/>
+      </geometry> -->
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_finger_31 and BH_finger_32 -->
+  <joint name="bh_j32_joint" type="revolute">
+    <parent link="bh_palm"/>
+    <child link="bh_finger_32"/>
+    <origin rpy="1.5708 0 1.5708" xyz="0 -0.05 0.0754"/>
+    <axis xyz="0 0 -1"/>
+    <limit effort="30.0" lower="0.0" upper="2.44" velocity="2.0"/>
+  </joint>
+  <transmission name="bh_j32_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bh_j32_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="bh_j32">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <motorTorqueConstant>1</motorTorqueConstant>
+    </actuator>
+  </transmission>
+  <!-- finger 33 link -->
+  <link name="bh_finger_33">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj">
+          <drake:declare_convex/>
+        </mesh>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_33_collision_FROGGERCOL">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_finger_32 and BH_finger_33 -->
+  <joint name="bh_j33_joint" type="revolute">
+    <parent link="bh_finger_32"/>
+    <child link="bh_finger_33"/>
+    <origin rpy="0 0 0" xyz="-0.069936 0.003 0"/>
+    <axis xyz="0 0 -1"/>
+    <mimic joint="bh_j32_joint" multiplier="0.3442622950819672"/>
+    <limit effort="30.0" lower="0.0" upper="0.84" velocity="2.0"/>
+  </joint>
+  <!-- finger 1 -->
+  <!-- finger 11 link -->
+  <link name="bh_finger_11">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="-0.046 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/knuckle.obj"/>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_11_collision_1">
+      <origin rpy="0 0 1.57079632679" xyz="-0.0275 0 0.01225"/>
+      <geometry>
+        <!-- <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/> -->
+        <box size="0.025 0.075 0.0245"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+    <collision name="bh_finger_11_collision_2">
+      <origin rpy="0 1.57079632679 1.57079632679" xyz="-0.05 0 0.034"/>
+      <geometry>
+        <!-- <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/> -->
+        <cylinder length="0.025" radius="0.015"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_palm and BH_finger_11 -->
+  <joint name="bh_j11_joint" type="revolute">
+    <parent link="bh_palm"/>
+    <child link="bh_finger_11"/>
+    <origin rpy="0 0 -1.5708" xyz="0.025 0 0.0415"/>
+    <axis xyz="0 0 -1"/>
+    <limit effort="30.0" lower="0" upper="3.1416" velocity="2.0"/>
+  </joint>
+  <transmission name="bh_j11_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bh_j11_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="bh_j11">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <motorTorqueConstant>1</motorTorqueConstant>
+    </actuator>
+  </transmission>
+  <!-- finger 12 link -->
+  <link name="bh_finger_12">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj">
+          <drake:declare_convex/>
+        </mesh>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_12_collision">
+      <!-- <geometry>
+        <box size="0.025 0.075 0.02"/>
+      </geometry> -->
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_finger_11 and BH_finger_12 -->
+  <joint name="bh_j12_joint" type="revolute">
+    <parent link="bh_finger_11"/>
+    <child link="bh_finger_12"/>
+    <origin rpy="1.5708 0 0" xyz="-0.05 0 0.0339"/>
+    <axis xyz="0 0 -1"/>
+    <limit effort="30.0" lower="0.0" upper="2.44" velocity="2.0"/>
+  </joint>
+  <transmission name="bh_j12_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bh_j12_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="bh_j12">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <motorTorqueConstant>1</motorTorqueConstant>
+    </actuator>
+  </transmission>
+  <!-- finger 13 link -->
+  <link name="bh_finger_13">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj">
+          <drake:declare_convex/>
+        </mesh>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_13_collision_FROGGERCOL">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_finger_12 and BH_finger_13 -->
+  <joint name="bh_j13_joint" type="revolute">
+    <parent link="bh_finger_12"/>
+    <child link="bh_finger_13"/>
+    <origin rpy="0 0 0" xyz="-0.069936 0.003 0"/>
+    <axis xyz="0 0 -1"/>
+    <mimic joint="bh_j12_joint" multiplier="0.3442622950819672"/>
+    <limit effort="30.0" lower="0.0" upper="0.84" velocity="2.0"/>
+  </joint>
+  <!-- finger 2 -->
+  <!-- finger 21 link -->
+  <link name="bh_finger_21">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="-0.046 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/knuckle.obj"/>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_21_collision_1">
+      <origin rpy="0 0 1.57079632679" xyz="-0.0275 0 0.01225"/>
+      <geometry>
+        <box size="0.025 0.075 0.0245"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+    <collision name="bh_finger_21_collision_2">
+      <origin rpy="0 1.57079632679 1.57079632679" xyz="-0.05 0 0.034"/>
+      <geometry>
+        <!-- <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/> -->
+        <cylinder length="0.025" radius="0.015"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_palm and BH_finger_21 -->
+  <joint name="bh_j21_joint" type="revolute">
+    <parent link="bh_palm"/>
+    <child link="bh_finger_21"/>
+    <origin rpy="0 0 -1.5708" xyz="-0.025 0 0.0415"/>
+    <axis xyz="0 0 1"/>
+    <mimic joint="bh_j11_joint" multiplier="1"/>
+    <limit effort="30.0" lower="0" upper="3.1416" velocity="2.0"/>
+  </joint>
+  <!-- finger 12 link -->
+  <link name="bh_finger_22">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj">
+          <drake:declare_convex/>
+        </mesh>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_22_collision">
+      <!-- <geometry>
+        <box size="0.025 0.075 0.02"/>
+      </geometry> -->
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_finger_21 and BH_finger_22 -->
+  <joint name="bh_j22_joint" type="revolute">
+    <parent link="bh_finger_21"/>
+    <child link="bh_finger_22"/>
+    <origin rpy="1.5708 -8.8281E-17 0" xyz="-0.05 0 0.0339"/>
+    <axis xyz="0 0 -1"/>
+    <limit effort="30.0" lower="0.0" upper="2.44" velocity="2.0"/>
+  </joint>
+  <transmission name="bh_j22_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="bh_j22_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="bh_j22">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <motorTorqueConstant>1</motorTorqueConstant>
+    </actuator>
+  </transmission>
+  <!-- finger 23 link -->
+  <link name="bh_finger_23">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj">
+          <drake:declare_convex/>
+        </mesh>
+      </geometry>
+    </visual>
+    <collision name="bh_finger_23_collision_FROGGERCOL">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj"/>
+      </geometry>
+      <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
+    </collision>
+  </link>
+  <!-- joint between BH_finger_22 and BH_finger_23 -->
+  <joint name="bh_j23_joint" type="revolute">
+    <parent link="bh_finger_22"/>
+    <child link="bh_finger_23"/>
+    <origin rpy="0 0 0" xyz="-0.069936 0.003 0"/>
+    <axis xyz="0 0 -1"/>
+    <mimic joint="bh_j22_joint" multiplier="0.3442622950819672"/>
+    <limit effort="30.0" lower="0.0" upper="0.84" velocity="2.0"/>
+  </joint>
+  <!-- adding frame for heuristic IK sampling -->
+  <joint name="dummy_sampling_joint" type="fixed">
+    <child link="bh_palm_FROGGERSAMPLE"/>
+    <parent link="bh_palm"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+  <!-- 79.5mm from base to palm: https://web.barrett.com/support/BarrettHand_Documentation/BH8-280_Datasheet.pdf -->
+  <link name="bh_palm_FROGGERSAMPLE">
+    <origin rpy="0 0 0.0795" xyz="0 0 0"/>
+  </link>
+</robot>
