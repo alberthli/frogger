@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install --upgrade --upgrade-strategy eager -e .[all]
+          pip install --upgrade --upgrade-strategy eager -e .[dev]
       - name: Run black
         run: black --check .
       - name: Run flake8
