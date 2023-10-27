@@ -62,13 +62,7 @@ class ObjectDescription(ABC):
     """Abstract class for describing an object to manipulate."""
 
     def __init__(self, cfg: ObjectDescriptionConfig) -> None:
-        """Initialize the object description.
-
-        Parameters
-        ----------
-        cfg : ObjectDescriptionConfig
-            The configuration of the ObjectDescription.
-        """
+        """Initialize the object description."""
         # unpacking config
         self.cfg = cfg
         self.X_WO = cfg.X_WO
@@ -105,6 +99,11 @@ class ObjectDescription(ABC):
     @abstractmethod
     def _s_O_jax(self, p: jnp.ndarray) -> jnp.ndarray:
         """The differentiable description of the object written in Jax.
+
+        Parameters
+        ----------
+        p : jnp.ndarray, shape=(3,)
+            A point in the object frame.
 
         Returns
         -------
@@ -505,13 +504,7 @@ class MeshObject(ObjectDescription):
     """
 
     def __init__(self, cfg: MeshObjectConfig) -> None:
-        """Initialize a mesh object. See ObjectDescription for parameter description.
-
-        Parameters
-        ----------
-        cfg : MeshObjectConfig
-            The configuration of the MeshObject.
-        """
+        """Initialize a mesh object. See ObjectDescription for parameter description."""
         self.mesh = cfg.mesh
 
         # MeshObject-specific cached values for efficient computation
@@ -531,7 +524,7 @@ class MeshObject(ObjectDescription):
         return None
 
     def compute_all(self, p: np.ndarray, batched: bool) -> None:
-        """Computes and caches the signed distance, its gradient, and hessian.
+        """Computes and caches the signed distance, its gradient, and Hessian.
 
         Parameters
         ----------
@@ -730,12 +723,10 @@ class MeshObject(ObjectDescription):
 class CustomObjectConfig(ObjectDescriptionConfig):
     """A configuration class for CustomObjects.
 
-    Parameters
+    Attributes
     ----------
     s_O_jax : Callable[[jnp.ndarray], jnp.ndarray]
         The SDF of the object in jax.
-    name : str | None, default="custom"
-        The name of the object.
     """
     s_O_jax: Callable[[jnp.ndarray], jnp.ndarray]
 
@@ -754,13 +745,7 @@ class CustomObject(ObjectDescription):
     """A custom object defined by a user-provided Jax function."""
 
     def __init__(self, cfg: CustomObjectConfig) -> None:
-        """Initialize a custom object. See ObjectDescription for parameter description.
-
-        Parameters
-        ----------
-        cfg : CustomObjectConfig
-            The configuration of the CustomObject.
-        """
+        """Initialize a custom object. See ObjectDescription."""
         self.s_O_jax = cfg.s_O_jax
         super().__init__(cfg)
 

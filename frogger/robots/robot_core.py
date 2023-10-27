@@ -237,7 +237,7 @@ class RobotModel:
         """Convenience method to warm start the compilation.
 
         If you want to warm start the system, this must be manually called after it is
-        initialized!
+        initialized OR the create function will automatically call it.
         """
         self.compute_l(self.plant.GetPositions(self.plant_context, self.robot_instance))
 
@@ -368,9 +368,6 @@ class RobotModel:
         """Sets the robot state."""
         assert len(q) == self.n
         self.plant.SetPositions(self.plant_context, self.robot_instance, q)
-
-    def reset(self) -> None:
-        """Resets any internal variables."""
 
     # ######################## #
     # CACHED VALUE COMPUTATION #

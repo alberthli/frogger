@@ -20,6 +20,8 @@ To sample grasps on a custom manipulator, you need the following:
 * a description of the object, either as a mesh or as an analytical SDF,
 * an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
 
+## FAQ
+
 ## Upcoming Changes
 This branch is the development branch for the upcoming FRoGGeR refactor.
 
@@ -39,12 +41,13 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [x] Add compatibility with underactuated hands + Barrett Hand example.
 - [x] Add factory methods to config dataclasses to simplify user implementation more.
 - [x] Clean up unused scripts and files.
-- [ ] Clean up docstrings.
+- [x] Clean up docstrings.
 - [x] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
 - [x] Clean up `fr3` models.
 - [ ] Check inertias of models before finalizing branch.
 - [ ] Add usage examples + a timing script.
 - [ ] Add code tooling to help set up contributions.
+- [ ] FAQ + sharp bits in README
 - [ ] Before pypi package release, update instructions for using the MOSEK license.
 
 ### Later Changes

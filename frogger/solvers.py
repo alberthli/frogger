@@ -10,7 +10,33 @@ from frogger.sampling import ICSampler
 
 @dataclass
 class FroggerConfig:
-    """Configuration for the Frogger solver."""
+    """Configuration for the Frogger solver.
+
+    Attributes
+    ----------
+    model : RobotModel
+        The robot model.
+    sampler : ICSampler
+        The initial configuration sampler.
+    tol_surf : float, default=1e-3
+        Tolerance for the surface constraints.
+    tol_joint : float, default=1e-2
+        Tolerance for the joint limit constraints.
+    tol_col : float, default=1e-3
+        Tolerance for the collision constraints.
+    tol_fclosure : float, default=1e-5
+        Tolerance for the force closure (normalized min-weight) constraint.
+    tol_couple : float, default=1e-6
+        Tolerance for the couple constraint.
+    xtol_rel : float, default=1e-6
+        Relative tolerance for the optimization in nlopt.
+    xtol_abs : float, default=1e-6
+        Absolute tolerance for the optimization in nlopt.
+    maxeval : int, default=1000
+        Maximum number of evaluations for the optimization in nlopt.
+    maxtime : float, default=60.0
+        Maximum time for the optimization in nlopt.
+    """
     model: RobotModel
     sampler: ICSampler
     tol_surf: float = 1e-3
@@ -34,6 +60,7 @@ class Frogger:
         """Initializes the solver."""
         # model parameters
         model = cfg.model
+        self.model = model
         n = model.n
         nc = model.nc  # number of contacts
         mu = model.mu
@@ -67,7 +94,7 @@ class Frogger:
         tol_ineq[n_joint + n_col] = tol_fclosure  # fclosure constraint tolerance
 
         # setting up the solver
-        f, g, h = self._make_fgh(model)
+        f, g, h = self._make_fgh()
         opt = nlopt.opt(nlopt.LD_SLSQP, model.n)
         opt.set_xtol_rel(xtol_rel)
         opt.set_xtol_abs(xtol_abs)
@@ -80,7 +107,6 @@ class Frogger:
 
         # setting attributes
         self.opt = opt
-        self.model = model
         self.sampler = cfg.sampler
         self.f, self.g, self.h = f, g, h
         self.n_ineq, self.n_eq = n_ineq, n_eq
@@ -91,7 +117,7 @@ class Frogger:
         self.tol_fclosure = tol_fclosure
         self.tol_couple = tol_couple
 
-    def _make_fgh(self, model) -> tuple[Callable, Callable, Callable]:
+    def _make_fgh(self) -> tuple[Callable, Callable, Callable]:
         """Returns f, g, and h suitable for use in NLOPT.
 
         We do not use the Drake NLOPT wrapper because of the overhead required to
@@ -110,23 +136,29 @@ class Frogger:
         """
         def f(q, grad):
             if grad.size > 0:
-                grad[:] = model.compute_Df(q)
-            return model.compute_f(q)
+                grad[:] = self.model.compute_Df(q)
+            return self.model.compute_f(q)
 
         def g(result, q, grad):
             if grad.size > 0:
-                grad[:] = model.compute_Dg(q)
-            result[:] = model.compute_g(q)
+                grad[:] = self.model.compute_Dg(q)
+            result[:] = self.model.compute_g(q)
 
         def h(result, q, grad):
             if grad.size > 0:
-                grad[:] = model.compute_Dh(q)
-            result[:] = model.compute_h(q)
+                grad[:] = self.model.compute_Dh(q)
+            result[:] = self.model.compute_h(q)
 
         return f, g, h
 
     def generate_grasp(self) -> np.ndarray:
-        """Generates a grasp."""
+        """Generates a grasp.
+
+        Returns
+        -------
+        q_star : np.ndarray, shape=(n,)
+            The optimized grasp configuration.
+        """
         success = False
         while not success:
             # sample initial guess

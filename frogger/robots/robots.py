@@ -15,7 +15,13 @@ from frogger.robots.robot_core import RobotModel, RobotModelConfig
 
 @dataclass(kw_only=True)
 class FR3AlgrModelConfig(RobotModelConfig):
-    """Configuration of the FR3Algr robot model."""
+    """Configuration of the FR3Algr robot model.
+
+    Attributes
+    ----------
+    hand : str, default="rh"
+        The hand to use. Can be "rh" or "lh".
+    """
     hand: str = "rh"
 
     def __post_init__(self) -> None:
@@ -62,7 +68,13 @@ class FR3AlgrModel(RobotModel):
 
 @dataclass(kw_only=True)
 class AlgrModelConfig(RobotModelConfig):
-    """Configuration of the Algr robot model."""
+    """Configuration of the Algr robot model.
+
+    Attributes
+    ----------
+    hand : str, default="rh"
+        The hand to use. Can be "rh" or "lh".
+    """
     hand: str = "rh"
 
     def __post_init__(self) -> None:
@@ -89,7 +101,14 @@ class AlgrModel(RobotModel):
 
 @dataclass(kw_only=True)
 class BH280ModelConfig(RobotModelConfig):
-    """Configuration of the Barrett Hand robot model."""
+    """Configuration of the Barrett Hand robot model.
+
+    Attributes
+    ----------
+    n_couple : int, default=4
+        The number of coupling constraints to add manually. Note: must actually be 4,
+        this value is only specified here to overwrite the value in the parent class.
+    """
 
     n_couple: int = 4
 

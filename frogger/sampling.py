@@ -35,7 +35,13 @@ class ICSampler(ABC):
 
     @abstractmethod
     def sample_configuration(self) -> np.ndarray:
-        """Samples a grasp configuration q0."""
+        """Samples a grasp configuration q0.
+
+        Returns
+        -------
+        q_star : np.ndarray, shape=(n,)
+            The optimized grasp configuration.
+        """
 
 
 class HeuristicICSampler(ICSampler):
@@ -48,7 +54,13 @@ class HeuristicICSampler(ICSampler):
     """
 
     def __init__(self, model: RobotModel) -> None:
-        """Initialize the heuristic sampler."""
+        """Initialize the heuristic sampler.
+
+        Parameters
+        ----------
+        model : RobotModel
+            The model of the robot and system.
+        """
         super().__init__(model)
         self.palm_frame = None  # palm frame used for sampling.
 
@@ -255,7 +267,7 @@ class HeuristicICSampler(ICSampler):
                 tol_pos * np.ones(3),
             )  # constraint: place palm frame at desired position
 
-            # restrict object state for IK, since it's free
+            # restrict object state for IK, since it's a free body
             q_guess = plant.GetPositions(self.model.plant_context)
             q_obj = q_guess[-7:]  # quaternion + position of object
             ik.get_mutable_prog().AddBoundingBoxConstraint(q_obj, q_obj, ik.q()[-7:])
@@ -275,7 +287,12 @@ class HeuristicICSampler(ICSampler):
 
 
 class HeuristicFR3AlgrICSampler(HeuristicICSampler):
-    """Heuristic sampler for the FR3 Allegro system."""
+    """Heuristic sampler for the FR3 Allegro system.
+
+    The heuristic operates by sampling a palm pose in the world frame, then solving an
+    inverse kinematics problem to place the palm there. Based on the width of the
+    object, the fingers are heuristically placed to determine the initial guess.
+    """
 
     def __init__(self, model: FR3AlgrModel) -> None:
         """Initialize the IC sampler."""
@@ -284,6 +301,15 @@ class HeuristicFR3AlgrICSampler(HeuristicICSampler):
     def add_additional_constraints(
         self, ik: InverseKinematics, X_WPalm_des: RigidTransform
     ) -> None:
+        """Adds additional constraints.
+
+        Parameters
+        ----------
+        ik : InverseKinematics
+            The IK problem.
+        X_WPalm_des : RigidTransform
+            The desired palm pose in the world frame.
+        """
         # set guess for hand
         q_imr = np.array([0.0, 0.5, 0.5, 0.5])  # if, mf, rf
         q_th = np.array([0.8, 1.0, 0.5, 0.5])  # th
@@ -377,7 +403,10 @@ class HeuristicAlgrICSampler(HeuristicFR3AlgrICSampler):
         super().__init__(model)
 
 class HeuristicBHICSampler(HeuristicFR3AlgrICSampler):
-    """Convenience class for sampling with the disembodied Barrett Hand."""
+    """Heuristic sampler for the disembodied Barrett Hand.
+
+    See description in HeuristicFR3AlgrICSampler.
+    """
 
     def __init__(self, model: BH280Model) -> None:
         """Initialize the IC sampler."""
@@ -386,7 +415,15 @@ class HeuristicBHICSampler(HeuristicFR3AlgrICSampler):
     def add_additional_constraints(
         self, ik: InverseKinematics, X_WPalm_des: RigidTransform
     ) -> None:
-        """Adds additional constraints."""
+        """Adds additional constraints.
+
+        Parameters
+        ----------
+        ik : InverseKinematics
+            The IK problem.
+        X_WPalm_des : RigidTransform
+            The desired palm pose in the world frame.
+        """
         # set guess for hand
         q_32 = 0.5
         q_33 = 0.3442622950819672 * q_32
