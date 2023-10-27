@@ -46,7 +46,7 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [x] Clean up `fr3` models.
 - [ ] Check inertias of models before finalizing branch.
 - [ ] Add usage examples + a timing script.
-- [ ] Add code tooling to help set up contributions.
+- [x] Add code tooling to help set up contributions.
 - [ ] FAQ + sharp bits in README
 - [ ] Before pypi package release, update instructions for using the MOSEK license.
 

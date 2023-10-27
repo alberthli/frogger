@@ -4,16 +4,13 @@ from pydrake.math import RigidTransform, RotationMatrix
 
 from frogger import ROOT
 from frogger.objects import MeshObject, MeshObjectConfig
-from frogger.robots.robots import (
-    AlgrModelConfig,
-    BH280ModelConfig,
-    FR3AlgrModelConfig,
-)
+from frogger.robots.robots import AlgrModelConfig, BH280ModelConfig, FR3AlgrModelConfig
 from frogger.sampling import (
-    HeuristicAlgrICSampler, HeuristicBHICSampler, HeuristicFR3AlgrICSampler
+    HeuristicAlgrICSampler,
+    HeuristicBHICSampler,
+    HeuristicFR3AlgrICSampler,
 )
 from frogger.solvers import Frogger, FroggerConfig
-
 
 # obj_names = [
 #     "001_chips_can",

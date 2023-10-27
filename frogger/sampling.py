@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 
 import numpy as np
 from pydrake.math import RigidTransform, RotationMatrix
@@ -12,10 +11,10 @@ from frogger.grasping import wedge
 from frogger.robots.robot_core import RobotModel
 from frogger.robots.robots import AlgrModel, BH280Model, FR3AlgrModel
 
-
 # ########### #
 # IC SAMPLERS #
 # ########### #
+
 
 class ICSampler(ABC):
     """An interface for defining samplers for initial grasps q0.
@@ -282,7 +281,7 @@ class HeuristicICSampler(ICSampler):
             # solve IK
             result = Solve(ik.prog(), q_guess)
             if result.is_success():
-                q_sample = plant.GetPositions(ik.context())[:self.model.n]
+                q_sample = plant.GetPositions(ik.context())[: self.model.n]
                 return q_sample, num_attempts
 
 
@@ -390,7 +389,8 @@ class HeuristicFR3AlgrICSampler(HeuristicICSampler):
                 self.model.plant.world_frame(),
                 P_WFs[i, :] - 1e-4,
                 P_WFs[i, :] + 1e-4,
-            ) 
+            )
+
 
 class HeuristicAlgrICSampler(HeuristicFR3AlgrICSampler):
     """Convenience class for sampling with the disembodied Allegro hand.
@@ -401,6 +401,7 @@ class HeuristicAlgrICSampler(HeuristicFR3AlgrICSampler):
     def __init__(self, model: AlgrModel) -> None:
         """Initialize the IC sampler."""
         super().__init__(model)
+
 
 class HeuristicBHICSampler(HeuristicFR3AlgrICSampler):
     """Heuristic sampler for the disembodied Barrett Hand.
@@ -475,9 +476,9 @@ class HeuristicBHICSampler(HeuristicFR3AlgrICSampler):
 
         # defining frames and positions of initial guess for contacts
         contact_bodies = [
-            self.model.plant.GetBodyByName(f"bh_finger_13"),
-            self.model.plant.GetBodyByName(f"bh_finger_23"),
-            self.model.plant.GetBodyByName(f"bh_finger_33"),
+            self.model.plant.GetBodyByName("bh_finger_13"),
+            self.model.plant.GetBodyByName("bh_finger_23"),
+            self.model.plant.GetBodyByName("bh_finger_33"),
         ]
         contact_frames = [
             contact_bodies[0].body_frame(),
@@ -503,12 +504,14 @@ class HeuristicBHICSampler(HeuristicFR3AlgrICSampler):
         ik.get_mutable_prog().AddLinearEqualityConstraint(
             self.model.A_couple,
             -self.model.b_couple,
-            ik.q()[:self.model.n],
+            ik.q()[: self.model.n],
         )
+
 
 # ##### #
 # UTILS #
 # ##### #
+
 
 def _rodrigues(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     """Computes the rotation matrix from v1 to v2 using Rodrigues' formula."""
@@ -516,8 +519,9 @@ def _rodrigues(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     v_wedge = wedge(v)
     s = np.linalg.norm(v)
     c = np.dot(v1, v2)
-    R = np.eye(3) + v_wedge + (v_wedge @ v_wedge) * ((1 - c) / s ** 2)
+    R = np.eye(3) + v_wedge + (v_wedge @ v_wedge) * ((1 - c) / s**2)
     return R
+
 
 def _sdf_box(x: np.ndarray, lb: np.ndarray, ub: np.ndarray) -> float:
     """The signed distance function associated with a box.
@@ -537,6 +541,7 @@ def _sdf_box(x: np.ndarray, lb: np.ndarray, ub: np.ndarray) -> float:
     l = (ub - lb) / 2.0  # the half side lengths of the box
     y = np.abs(x - c) - l  # center x, place in the first octant, measure wrt l
     return np.linalg.norm(np.maximum(y, 0.0)) + min(np.max(y), 0.0)
+
 
 def _bisect_on_box(
     o: np.ndarray, d: np.ndarray, l: float, lb: np.ndarray, ub: np.ndarray
@@ -563,7 +568,6 @@ def _bisect_on_box(
     """
     # determining the bounds for the bisection
     sdf_val_o = _sdf_box(o, lb, ub)
-    inside = sdf_val_o <= 0.0
     gamma = 2.0
     p1 = o + 0.01 * gamma * d
     sdf_val_p1 = _sdf_box(p1, lb, ub)

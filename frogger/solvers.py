@@ -37,6 +37,7 @@ class FroggerConfig:
     maxtime : float, default=60.0
         Maximum time for the optimization in nlopt.
     """
+
     model: RobotModel
     sampler: ICSampler
     tol_surf: float = 1e-3
@@ -53,6 +54,7 @@ class FroggerConfig:
         """Creates the solver."""
         return Frogger(self)
 
+
 class Frogger:
     """The FRoGGeR solver."""
 
@@ -61,11 +63,6 @@ class Frogger:
         # model parameters
         model = cfg.model
         self.model = model
-        n = model.n
-        nc = model.nc  # number of contacts
-        mu = model.mu
-        ns = model.ns
-        n_bounds = model.n_bounds
         n_couple = model.n_couple
 
         # solver settings
@@ -82,13 +79,13 @@ class Frogger:
         # constraint setup
         n_joint = model.n_bounds
         n_col = len(model.query_object.inspector().GetCollisionCandidates())
-        n_surf = nc
+        n_surf = model.nc
 
         n_ineq = n_joint + n_col + 1
         n_eq = n_surf + n_couple
 
         tol_eq = tol_surf * np.ones(n_eq)  # surface constraint tolerances
-        tol_eq[n_surf:(n_surf + n_couple)] = tol_couple
+        tol_eq[n_surf : (n_surf + n_couple)] = tol_couple
         tol_ineq = tol_col * np.ones(n_ineq)  # collision constraint tolerances
         tol_ineq[:n_joint] = tol_joint  # joint limit constraint tolerances
         tol_ineq[n_joint + n_col] = tol_fclosure  # fclosure constraint tolerance
@@ -134,6 +131,7 @@ class Frogger:
         h : Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]
             Vector equality constraints.
         """
+
         def f(q, grad):
             if grad.size > 0:
                 grad[:] = self.model.compute_Df(q)
@@ -182,22 +180,22 @@ class Frogger:
                 continue  # nan means an error - resample
             else:
                 # computing f, g, h at q_star
-                f_val = self.f(q_star, np.zeros(0))
+                # f_val = self.f(q_star, np.zeros(0))
                 g_val = np.zeros(self.n_ineq)
                 self.g(g_val, q_star, np.zeros(0))
                 h_val = np.zeros(self.n_eq)
                 self.h(h_val, q_star, np.zeros(0))
 
                 # checking whether the computed solution is feasible
-                surf_vio = np.max(np.abs(h_val[:self.n_surf]))
+                surf_vio = np.max(np.abs(h_val[: self.n_surf]))
                 if self.model.n_couple > 0:
                     couple_vio = np.max(
-                        np.abs(h_val[self.n_surf:(self.n_surf + self.n_couple)])
+                        np.abs(h_val[self.n_surf : (self.n_surf + self.n_couple)])
                     )
                 else:
                     couple_vio = 0.0
-                joint_vio = max(np.max(g_val[:self.model.n_bounds]), 0.0)
-                col_vio = max(np.max(g_val[self.model.n_bounds:-1]), 0.0)
+                joint_vio = max(np.max(g_val[: self.model.n_bounds]), 0.0)
+                col_vio = max(np.max(g_val[self.model.n_bounds : -1]), 0.0)
                 fclosure_vio = max(g_val[-1], 0.0)
 
                 # setting the feasibility flag

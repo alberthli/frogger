@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 from pydrake.geometry import CollisionFilterDeclaration, GeometrySet
@@ -22,6 +21,7 @@ class FR3AlgrModelConfig(RobotModelConfig):
     hand : str, default="rh"
         The hand to use. Can be "rh" or "lh".
     """
+
     hand: str = "rh"
 
     def __post_init__(self) -> None:
@@ -35,6 +35,7 @@ class FR3AlgrModelConfig(RobotModelConfig):
         """Creates the model."""
         model = FR3AlgrModel(self)
         return model
+
 
 class FR3AlgrModel(RobotModel):
     """The FR3-Allegro model.
@@ -66,6 +67,7 @@ class FR3AlgrModel(RobotModel):
         obj_set = GeometrySet(self.obj_geoms)
         cfm.Apply(CollisionFilterDeclaration().ExcludeBetween(tabletop_set, obj_set))
 
+
 @dataclass(kw_only=True)
 class AlgrModelConfig(RobotModelConfig):
     """Configuration of the Algr robot model.
@@ -75,6 +77,7 @@ class AlgrModelConfig(RobotModelConfig):
     hand : str, default="rh"
         The hand to use. Can be "rh" or "lh".
     """
+
     hand: str = "rh"
 
     def __post_init__(self) -> None:
@@ -90,6 +93,7 @@ class AlgrModelConfig(RobotModelConfig):
         model.warm_start()
         return model
 
+
 class AlgrModel(RobotModel):
     """The Allegro model."""
 
@@ -98,6 +102,7 @@ class AlgrModel(RobotModel):
         self.cfg = cfg
         self.hand = cfg.hand
         super().__init__(cfg)
+
 
 @dataclass(kw_only=True)
 class BH280ModelConfig(RobotModelConfig):
@@ -114,16 +119,17 @@ class BH280ModelConfig(RobotModelConfig):
 
     def __post_init__(self) -> None:
         """Post-initialization checks."""
-        self.model_path = f"barrett_hand/bh280.urdf"
+        self.model_path = "barrett_hand/bh280.urdf"
         assert self.n_couple == 4
         if self.name is None:
-            self.name = f"bh280"
+            self.name = "bh280"
 
     def create(self) -> "BH280Model":
         """Creates the model."""
         model = BH280Model(self)
         model.warm_start()
         return model
+
 
 class BH280Model(RobotModel):
     """The Barrett Hand model."""
@@ -139,13 +145,14 @@ class BH280Model(RobotModel):
         In Drake 1.22.0, these are not automatically enforced as kinematic constraints.
         """
         names = self.plant.GetPositionNames()
+
         def get_index(name):
             return [i for (i, _name) in enumerate(names) if name in _name][0]
 
         # linear equality constraint: A_couple @ q + b_couple == 0
         A_couple = []
         self.b_couple = np.zeros(4)
-        
+
         # coupling joint 32 and 33
         # q_33 = 0.3442622950819672 * q_32
         i_32 = get_index("bh_j32_joint")

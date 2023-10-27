@@ -17,13 +17,11 @@ from pydrake.math import RigidTransform
 from pydrake.multibody.meshcat import JointSliders
 from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import (
-    AddMultibodyPlantSceneGraph, CoulombFriction, DiscreteContactSolver
+    AddMultibodyPlantSceneGraph,
+    CoulombFriction,
+    DiscreteContactSolver,
 )
-from pydrake.multibody.tree import (
-    JacobianWrtVariable,
-    SpatialInertia,
-    UnitInertia,
-)
+from pydrake.multibody.tree import JacobianWrtVariable, SpatialInertia, UnitInertia
 from pydrake.systems.framework import DiagramBuilder
 from quantecon.optimize.linprog_simplex import linprog_simplex as linprog
 
@@ -60,6 +58,7 @@ class RobotModelConfig:
     name : str | None, default=None
         The name of the robot.
     """
+
     # required
     model_path: str | None = None
     obj: ObjectDescription | None = None
@@ -87,9 +86,11 @@ class RobotModelConfig:
             self.name = "robot"
 
     def create(self) -> "RobotModel":
+        """Creates the robot model."""
         model = RobotModel(self)
         model.warm_start()
         return model
+
 
 class RobotModel:
     """Base class for robot models.
@@ -174,7 +175,9 @@ class RobotModel:
 
         self.diag_context = self.diagram.CreateDefaultContext()
         self.plant_context = self.plant.GetMyMutableContextFromRoot(self.diag_context)
-        self.sg_context = self.scene_graph.GetMyMutableContextFromRoot(self.diag_context)
+        self.sg_context = self.scene_graph.GetMyMutableContextFromRoot(
+            self.diag_context
+        )
         self._qo_port = self.scene_graph.get_query_output_port()
 
         # setting initial object pose
@@ -346,8 +349,8 @@ class RobotModel:
             Upper bounds.
         """
         return (
-            self.plant.GetPositionLowerLimits()[:self.n],
-            self.plant.GetPositionUpperLimits()[:self.n],
+            self.plant.GetPositionLowerLimits()[: self.n],
+            self.plant.GetPositionUpperLimits()[: self.n],
         )
 
     @property
@@ -500,7 +503,7 @@ class RobotModel:
                     f_tip = fB
                     key = (body_name_B, body_name_A)
 
-                if not key in self.hand_obj_cols or sd < self.hand_obj_cols[key][0]:
+                if key not in self.hand_obj_cols or sd < self.hand_obj_cols[key][0]:
                     self.hand_obj_cols[key] = (sd, -Dgi, p_tip_W, p_tip_C, f_tip)
 
         # updating p_tips and J_tips
@@ -508,7 +511,7 @@ class RobotModel:
         Dh = []
         p_tips = []
         J_tips = []
-        for k, v in sorted(self.hand_obj_cols.items()):
+        for _, v in sorted(self.hand_obj_cols.items()):
             h.append(v[0])
             Dh.append(v[1])
             p_tips.append(v[2])
@@ -520,7 +523,7 @@ class RobotModel:
                     v[3],
                     self.plant.world_frame(),
                     self.plant.world_frame(),
-                )[..., :self.n]
+                )[..., : self.n]
             )
         self.h_tip = np.array(h)
         self.Dh_tip = np.array(Dh)

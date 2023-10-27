@@ -40,6 +40,7 @@ class ObjectDescriptionConfig:
     name : str, default="abstract"
         The name of the object.
     """
+
     X_WO: RigidTransform
     lb_O: np.ndarray | None = None
     ub_O: np.ndarray | None = None
@@ -57,6 +58,7 @@ class ObjectDescriptionConfig:
         """Creates the object description."""
         obj = ObjectDescription(self)
         return obj
+
 
 class ObjectDescription(ABC):
     """Abstract class for describing an object to manipulate."""
@@ -458,6 +460,7 @@ class ObjectDescription(ABC):
         self.lb_oriented = -extents / 2.0
         self.ub_oriented = extents / 2.0
 
+
 @dataclass(kw_only=True)
 class MeshObjectConfig(ObjectDescriptionConfig):
     """A configuration class for MeshObjects.
@@ -471,6 +474,7 @@ class MeshObjectConfig(ObjectDescriptionConfig):
     clean : bool, default=False
         Whether to clean the input mesh.
     """
+
     mesh: trimesh.Trimesh
     clean: bool = False
 
@@ -495,6 +499,7 @@ class MeshObjectConfig(ObjectDescriptionConfig):
         """Creates the MeshObject."""
         obj = MeshObject(self)
         return obj
+
 
 class MeshObject(ObjectDescription):
     """An object represented entirely as a mesh.
@@ -719,6 +724,7 @@ class MeshObject(ObjectDescription):
             self.D2s_p = R.T @ self.D2s_p @ R
         return self.D2s_p
 
+
 @dataclass
 class CustomObjectConfig(ObjectDescriptionConfig):
     """A configuration class for CustomObjects.
@@ -728,6 +734,7 @@ class CustomObjectConfig(ObjectDescriptionConfig):
     s_O_jax : Callable[[jnp.ndarray], jnp.ndarray]
         The SDF of the object in jax.
     """
+
     s_O_jax: Callable[[jnp.ndarray], jnp.ndarray]
 
     def __post_init__(self):
@@ -740,6 +747,7 @@ class CustomObjectConfig(ObjectDescriptionConfig):
         """Creates the CustomObject."""
         obj = CustomObject(self)
         return obj
+
 
 class CustomObject(ObjectDescription):
     """A custom object defined by a user-provided Jax function."""

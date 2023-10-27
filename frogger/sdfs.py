@@ -37,6 +37,7 @@ def poisson_reconstruction(mesh: Trimesh) -> Trimesh:
     poisson_mesh = Trimesh(vertices, faces, normals)
     return poisson_mesh
 
+
 def to_trimesh(o3d_mesh: o3d.geometry.TriangleMesh) -> trimesh.Trimesh:
     """Converts an open3d mesh to a trimesh.Trimesh mesh."""
     vertices = np.array(o3d_mesh.vertices)
