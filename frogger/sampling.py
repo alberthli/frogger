@@ -10,7 +10,7 @@ from pydrake.solvers import Solve
 from frogger import ROOT
 from frogger.grasping import wedge
 from frogger.robots.robot_core import RobotModel
-from frogger.robots.robots import AlgrModel, FR3AlgrModel
+from frogger.robots.robots import AlgrModel, BH280Model, FR3AlgrModel
 
 
 # ########### #
@@ -375,6 +375,99 @@ class HeuristicAlgrICSampler(HeuristicFR3AlgrICSampler):
     def __init__(self, model: AlgrModel) -> None:
         """Initialize the IC sampler."""
         super().__init__(model)
+
+class HeuristicBHICSampler(HeuristicFR3AlgrICSampler):
+    """Convenience class for sampling with the disembodied Barrett Hand."""
+
+    def __init__(self, model: BH280Model) -> None:
+        """Initialize the IC sampler."""
+        super().__init__(model)
+
+    def add_additional_constraints(
+        self, ik: InverseKinematics, X_WPalm_des: RigidTransform
+    ) -> None:
+        """Adds additional constraints."""
+        # set guess for hand
+        q_32 = 0.5
+        q_33 = 0.3442622950819672 * q_32
+        q_11 = 0.0
+        q_12 = 0.5
+        q_13 = 0.3442622950819672 * q_12
+        q_21 = 0.0
+        q_22 = 0.5
+        q_23 = 0.3442622950819672 * q_22
+        q_hand = np.array([q_32, q_33, q_11, q_12, q_13, q_21, q_22, q_23])
+        q_curr = self.model.plant.GetPositions(self.model.plant_context)
+        q_curr[7:15] = q_hand
+        self.model.plant.SetPositions(self.model.plant_context, q_curr)
+
+        # getting object axis lengths
+        obj = self.model.obj
+        X_WO = obj.X_WO
+        X_OBB = obj.X_OBB
+        R_OBB = X_OBB.rotation()
+        R_WBB = X_WO.rotation() @ R_OBB
+        axis_lengths_O = obj.ub_oriented - obj.lb_oriented
+
+        # computing reasonable width of fingers
+        z_pc = X_WPalm_des.rotation().matrix()[:, -1]  # z axis of palm center
+        z_alignment = np.argmax(
+            np.abs(R_WBB.inverse() @ z_pc)
+        )  # which axis z_pc is most similar to
+        w = axis_lengths_O[z_alignment]
+        w = min(w, 0.1)  # consider a max width for feasibility reasons
+
+        # computing desired fingertip positions
+        x_pc = X_WPalm_des.rotation().matrix()[:, 0]  # x axis of palm center
+        x_alignment = np.argmax(
+            np.abs(R_WBB.inverse() @ x_pc)
+        )  # which axis x_pc is most similar to
+
+        # finger extension in the x direction (outward from palm)
+        if x_alignment == 2:
+            f_ext = min(X_WPalm_des.translation()[-1], 0.08)
+        else:
+            f_ext = 0.08
+
+        # [TODO] barrett-specific heuristic for the width of the fingertips
+        assert self.model.nc == 3
+        p1 = X_WPalm_des @ np.array([f_ext, 0.025, w / 2])
+        p2 = X_WPalm_des @ np.array([f_ext, -0.025, w / 2])
+        p3 = X_WPalm_des @ np.array([f_ext, 0.0, -w / 2])
+        P_WFs = np.stack((p1, p2, p3))
+
+        # defining frames and positions of initial guess for contacts
+        contact_bodies = [
+            self.model.plant.GetBodyByName(f"bh_finger_13"),
+            self.model.plant.GetBodyByName(f"bh_finger_23"),
+            self.model.plant.GetBodyByName(f"bh_finger_33"),
+        ]
+        contact_frames = [
+            contact_bodies[0].body_frame(),
+            contact_bodies[1].body_frame(),
+            contact_bodies[2].body_frame(),
+        ]
+        contact_locs = [
+            np.array([-0.0375, 0.04, 0.0]),
+            np.array([-0.0375, 0.04, 0.0]),
+            np.array([-0.0375, 0.04, 0.0]),
+        ]
+
+        for i in range(P_WFs.shape[0]):
+            ik.AddPositionCost(
+                contact_frames[i],
+                contact_locs[i],
+                self.model.plant.world_frame(),
+                P_WFs[i, :],
+                np.eye(3),
+            )
+
+        # adding coupling constraints
+        ik.get_mutable_prog().AddLinearEqualityConstraint(
+            self.model.A_couple,
+            -self.model.b_couple,
+            ik.q()[:self.model.n],
+        )
 
 # ##### #
 # UTILS #

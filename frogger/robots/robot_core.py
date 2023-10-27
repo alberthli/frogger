@@ -16,7 +16,9 @@ from pydrake.geometry import (
 from pydrake.math import RigidTransform
 from pydrake.multibody.meshcat import JointSliders
 from pydrake.multibody.parsing import Parser
-from pydrake.multibody.plant import AddMultibodyPlantSceneGraph, CoulombFriction
+from pydrake.multibody.plant import (
+    AddMultibodyPlantSceneGraph, CoulombFriction, DiscreteContactSolver
+)
 from pydrake.multibody.tree import (
     JacobianWrtVariable,
     SpatialInertia,
@@ -39,12 +41,24 @@ from frogger.objects import ObjectDescription
 class RobotModelConfig:
     """A configuration for a robot model.
 
-    [TODO] finish the docstring
-
     Parameters
     ----------
     model_path : str
         The path of the description relative to the ROOT/models directory in the repo.
+    obj : ObjectDescription
+        The description of the object.
+    ns : int, default=4
+        The number of sides of the pyramidal friction cone approximation.
+    mu : float, default=0.7
+        The coefficient of friction.
+    d_min : float, default=0.001
+        The minimum distance between any two collision geometries.
+    d_pen : float, default=0.001
+        The allowable penetration between the fingertips and the object.
+    l_bar_cutoff : float, default=1e-6
+        The minimum allowable value of l_bar.
+    name : str | None, default=None
+        The name of the robot.
     """
     # required
     model_path: str | None = None
@@ -56,6 +70,7 @@ class RobotModelConfig:
     d_min: float = 0.001
     d_pen: float = 0.001
     l_bar_cutoff: float = 1e-6
+    n_couple: int | None = None
     name: str | None = None
 
     def __post_init__(self) -> None:
@@ -70,6 +85,8 @@ class RobotModelConfig:
         # handling default values manually, since derived classes have different ones
         if self.name is None:
             self.name = "robot"
+        if self.n_couple is None:
+            self.n_couple = 0
 
 class RobotModel:
     """Base class for robot models.
@@ -110,11 +127,19 @@ class RobotModel:
         self.parser = Parser(self.plant, self.scene_graph)
         self.parser.package_map().Add("frogger", ROOT)
 
-        # adding robot + object + finalizing
+        # adding robot + object
         self.robot_instance = self.parser.AddModels(f"{ROOT}/models/{model_path}")[0]
         self._load_object()
-        self.plant.Finalize()
 
+        # [Oct. 26, 2023] setting discrete contact solver to SAP to enable mimic joints
+        # during sim. Hopefully, this gets patched eventually and we don't need to
+        # specify this.
+        self.plant.set_discrete_contact_solver(DiscreteContactSolver.kSap)
+
+        # additional plant setup - if you want additional modifications to plants in
+        # derived classes, overwrite this method
+        self._plant_additions()
+        self.plant.Finalize()
 
         # visualization settings
         self.meshcat = StartMeshcat()
@@ -175,10 +200,12 @@ class RobotModel:
         # internal dimensions
         self.nc = len(_robot_collision_bodies)  # number of contact points
         self.n = self.plant.num_positions() - 7  # exclude the object pose states
+        self.n_couple = cfg.n_couple
 
         # additional setup for constraints
         self._create_bound_cons()
         self.F = compute_primitive_forces(self.ns, self.mu)  # primitive force matrix
+        self._add_coupling_constraints()
 
         # cached values. all Jacobians wrt q when unspecified
         self.q = None  # cached value of the last unique configuration
@@ -208,6 +235,12 @@ class RobotModel:
         initialized!
         """
         self.compute_l(self.plant.GetPositions(self.plant_context, self.robot_instance))
+
+    def _plant_additions(self) -> None:
+        """Additional modifications to the plant in derived classes."""
+
+    def _add_coupling_constraints(self) -> None:
+        """Adds coupling constraints in derived classes."""
 
     def _load_object(self) -> None:
         """Loads the object into the plant."""
@@ -298,7 +331,7 @@ class RobotModel:
 
     @property
     def q_bounds(self) -> tuple[np.ndarray, np.ndarray]:
-        """Bounds on the configuration.
+        """Bounds on the configuration from the description file.
 
         Returns
         -------
@@ -487,8 +520,8 @@ class RobotModel:
                     self.plant.world_frame(),
                 )[..., :self.n]
             )
-        self.h = np.array(h)
-        self.Dh = np.array(Dh)
+        self.h_tip = np.array(h)
+        self.Dh_tip = np.array(Dh)
         self.p_tips = np.array(p_tips)
         self.J_tips = np.array(J_tips)
 
@@ -705,6 +738,17 @@ class RobotModel:
         self.f = -self.l
         self.Df = -self.Dl
 
+    def _compute_eq_cons(self, q: np.ndarray) -> None:
+        """Computes the equality constraints."""
+        if self.n_couple != 0:
+            h_couple = self.A_couple @ q + self.b_couple
+            Dh_couple = self.A_couple
+            self.h = np.concatenate((self.h_tip, h_couple))
+            self.Dh = np.concatenate((self.Dh_tip, Dh_couple), axis=0)
+        else:
+            self.h = self.h_tip
+            self.Dh = self.Dh_tip
+
     def compute_all(self, q: np.ndarray) -> None:
         """Computes and caches calculations for the robot.
 
@@ -725,6 +769,7 @@ class RobotModel:
         self._compute_l()
         self._compute_cost_func()
         self._finish_ineq_cons()
+        self._compute_eq_cons(q)
 
     # ###################### #
     # CACHED VALUE RETRIEVAL #

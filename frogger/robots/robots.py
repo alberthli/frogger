@@ -26,7 +26,10 @@ class FR3AlgrModelConfig(RobotModelConfig):
             self.name = f"fr3_algr_{self.hand}"
 
 class FR3AlgrModel(RobotModel):
-    """The FR3-Allegro model."""
+    """The FR3-Allegro model.
+
+    [NOTE] This model comes with a fixed table.
+    """
 
     def __init__(self, cfg: FR3AlgrModelConfig) -> None:
         """Initialize the FR3-Allegro model."""
@@ -72,3 +75,75 @@ class AlgrModel(RobotModel):
         self.cfg = cfg
         self.hand = cfg.hand
         super().__init__(cfg)
+
+@dataclass(kw_only=True)
+class BH280ModelConfig(RobotModelConfig):
+    """Configuration of the Barrett Hand robot model."""
+
+    n_couple: int = 4
+
+    def __post_init__(self) -> None:
+        """Post-initialization checks."""
+        self.model_path = f"barrett_hand/bh280.urdf"
+        assert self.n_couple == 4
+        if self.name is None:
+            self.name = f"bh280"
+
+class BH280Model(RobotModel):
+    """The Barrett Hand model."""
+
+    def __init__(self, cfg: BH280ModelConfig) -> None:
+        """Initialize the Barrett Hand model."""
+        self.cfg = cfg
+        super().__init__(cfg)
+
+    def _add_coupling_constraints(self) -> None:
+        """Adds coupler constraints manually for the mimic joints.
+
+        In Drake 1.22.0, these are not automatically enforced as kinematic constraints.
+        """
+        names = self.plant.GetPositionNames()
+        def get_index(name):
+            return [i for (i, _name) in enumerate(names) if name in _name][0]
+
+        # linear equality constraint: A_couple @ q + b_couple == 0
+        A_couple = []
+        self.b_couple = np.zeros(4)
+        
+        # coupling joint 32 and 33
+        # q_33 = 0.3442622950819672 * q_32
+        i_32 = get_index("bh_j32_joint")
+        i_33 = get_index("bh_j33_joint")
+        row = np.zeros(self.n)
+        row[i_32] = 0.3442622950819672
+        row[i_33] = -1.0
+        A_couple.append(row)
+
+        # coupling joint 12 and 13
+        # q_13 = 0.3442622950819672 * q_12
+        i_12 = get_index("bh_j12_joint")
+        i_13 = get_index("bh_j13_joint")
+        row = np.zeros(self.n)
+        row[i_12] = 0.3442622950819672
+        row[i_13] = -1.0
+        A_couple.append(row)
+
+        # coupling joint 22 and 23
+        # q_23 = 0.3442622950819672 * q_22
+        i_22 = get_index("bh_j22_joint")
+        i_23 = get_index("bh_j23_joint")
+        row = np.zeros(self.n)
+        row[i_22] = 0.3442622950819672
+        row[i_23] = -1.0
+        A_couple.append(row)
+
+        # coupling joint 11 and 21
+        # q_11 = q_21
+        i_11 = get_index("bh_j11_joint")
+        i_21 = get_index("bh_j21_joint")
+        row = np.zeros(self.n)
+        row[i_11] = 1.0
+        row[i_21] = -1.0
+        A_couple.append(row)
+
+        self.A_couple = np.array(A_couple)

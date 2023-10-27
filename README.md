@@ -15,7 +15,8 @@ TODO: add examples
 To sample grasps on a custom manipulator, you need the following:
 * a description of the manipulator in URDF or SDF form,
     * in the description, you must specify which collision geoms are allowed to touch the object. If a body has any geoms of this type, then those bodies MUST touch it
-    * additionally, if using the provided heuristic IK sampler, a canonical dummy "palm" frame must be specified, which the sampler will look for
+    * additionally, if using the provided heuristic IK sampler, a canonical dummy "palm" frame must be specified, which the sampler will look for to help place the hand. this frame should be roughly located in the middle of the surface of the palm.
+    * if you're making custom collision geometries from meshes, remember to add the `drake:convex` tag to the URDF
 * a description of the object, either as a mesh or as an analytical SDF,
 * an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
 
@@ -27,8 +28,6 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [x] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
 - [x] Refactor dependency management onto `pyproject.toml`
 - [x] Significantly loosen requirements due to moving away from Docker
-- [ ] Add ability to scale joint/torque limits from URDF default
-- [ ] Before pypi package release, update instructions for using the MOSEK license.
 - [X] Handle multiple collision geoms on robot AND on object for surface constraint
 - [x] Force the user to supply a single URDF or SDF for the entire system to greatly simplify the pipeline (requires a relatively large refactor of the sim pipeline)
 - [x] Abstract the initial condition sampler so that people can implement their own.
@@ -37,9 +36,15 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
     - [x] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
     - [x] Move burden of custom implementation as much as possible to heuristic sampler.
     - [x] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
-- [ ] Add compatibility with underactuated hands (e.g., Barrett or Shadow).
+- [x] Add compatibility with underactuated hands + Barrett Hand example.
+- [ ] Add factory methods to config dataclasses to simplify user implementation more.
 - [ ] Add usage examples + a timing script.
 - [ ] Clean up unused scripts and files.
+- [ ] Clean up docstrings.
+- [ ] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
+- [ ] Clean up `fr3` models.
+- [ ] Check inertias of models before finalizing branch.
+- [ ] Before pypi package release, update instructions for using the MOSEK license.
 
 ### Later Changes
 There are a few changes that won't be immediately addressed, but are on the radar:

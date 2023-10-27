@@ -60,9 +60,6 @@
       </geometry>
     </visual>
     <collision name="bh_finger_32_collision">
-      <!-- <geometry>
-        <box size="0.025 0.075 0.02"/>
-      </geometry> -->
       <geometry>
         <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
       </geometry>
@@ -137,7 +134,6 @@
     <collision name="bh_finger_11_collision_1">
       <origin rpy="0 0 1.57079632679" xyz="-0.0275 0 0.01225"/>
       <geometry>
-        <!-- <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/> -->
         <box size="0.025 0.075 0.0245"/>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
@@ -145,7 +141,6 @@
     <collision name="bh_finger_11_collision_2">
       <origin rpy="0 1.57079632679 1.57079632679" xyz="-0.05 0 0.034"/>
       <geometry>
-        <!-- <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/> -->
         <cylinder length="0.025" radius="0.015"/>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
@@ -186,9 +181,6 @@
       </geometry>
     </visual>
     <collision name="bh_finger_12_collision">
-      <!-- <geometry>
-        <box size="0.025 0.075 0.02"/>
-      </geometry> -->
       <geometry>
         <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
       </geometry>
@@ -270,7 +262,6 @@
     <collision name="bh_finger_21_collision_2">
       <origin rpy="0 1.57079632679 1.57079632679" xyz="-0.05 0 0.034"/>
       <geometry>
-        <!-- <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/> -->
         <cylinder length="0.025" radius="0.015"/>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
@@ -301,9 +292,6 @@
       </geometry>
     </visual>
     <collision name="bh_finger_22_collision">
-      <!-- <geometry>
-        <box size="0.025 0.075 0.02"/>
-      </geometry> -->
       <geometry>
         <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
       </geometry>
@@ -362,13 +350,13 @@
     <limit effort="30.0" lower="0.0" upper="0.84" velocity="2.0"/>
   </joint>
   <!-- adding frame for heuristic IK sampling -->
+  <!-- 79.5mm from base to palm: https://web.barrett.com/support/BarrettHand_Documentation/BH8-280_Datasheet.pdf -->
   <joint name="dummy_sampling_joint" type="fixed">
     <child link="bh_palm_FROGGERSAMPLE"/>
     <parent link="bh_palm"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0.0795"/>
   </joint>
-  <!-- 79.5mm from base to palm: https://web.barrett.com/support/BarrettHand_Documentation/BH8-280_Datasheet.pdf -->
   <link name="bh_palm_FROGGERSAMPLE">
-    <origin rpy="0 0 0.0795" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
   </link>
 </robot>
