@@ -70,7 +70,7 @@ class RobotModelConfig:
     d_min: float = 0.001
     d_pen: float = 0.001
     l_bar_cutoff: float = 1e-6
-    n_couple: int | None = None
+    n_couple: int = 0
     name: str | None = None
 
     def __post_init__(self) -> None:
@@ -85,8 +85,6 @@ class RobotModelConfig:
         # handling default values manually, since derived classes have different ones
         if self.name is None:
             self.name = "robot"
-        if self.n_couple is None:
-            self.n_couple = 0
 
     def create(self) -> "RobotModel":
         model = RobotModel(self)
@@ -223,6 +221,8 @@ class RobotModel:
         self.Dh = None
         self.g = None  # cached values of the ineq constraint function and Jacobian
         self.Dg = None
+        self.f = None  # cached values of the cost function and Jacobian
+        self.Df = None
         self.G = None  # cached values of the grasp map and Jacobian
         self.DG = None
         self.W = None  # cached values of wrench basis matrix and Jacobian

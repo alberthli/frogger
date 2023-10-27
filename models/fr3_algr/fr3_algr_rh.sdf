@@ -16,12 +16,7 @@ effect on the friction value. I report the values from Table III in the OSI colu
 Another repo that helped me debug [2]: https://github.com/AndrejOrsula/panda_ign_moveit2/blob/master/panda_description/panda/model.sdf
 
 The visual geometries are OBJ/MTL file pairs converted from the original DAE files
-provided by Franka EXCEPT for link7, which is still a DAE (OBJ/MTL pair is still
-provided for completeness). The reason is that in Drake, the RenderEngine complains
-about some values being too large for a buffer or something with a cryptic error, and
-changing the format of the visual files resolved it. The reason link7 is still a DAE is
-because some of the geometry was not loading correctly when it was an OBJ, and the
-error does not appear when it is a DAE and the other links are OBJs.
+provided by Franka EXCEPT for link7.
 
 The collision geometries are custom chosen by visual inspection.
 
@@ -642,7 +637,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link7.dae</uri>
+            <uri>package://frogger/models/fr3/visual/link7.obj</uri>
           </mesh>
         </geometry>
       </visual>

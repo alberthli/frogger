@@ -11,12 +11,7 @@ which is the prismatic joint distance relative to the 7th link minus the visual 
 of the hand relative to the 7th link, which is lumped with the 7th link in their model.
 
 The visual geometries are OBJ/MTL file pairs converted from the original DAE files
-provided by Franka EXCEPT for link7, which is still a DAE (OBJ/MTL pair is still
-provided for completeness). The reason is that in Drake, the RenderEngine complains
-about some values being too large for a buffer or something with a cryptic error, and
-changing the format of the visual files resolved it. The reason link7 is still a DAE is
-because some of the geometry was not loading correctly when it was an OBJ, and the
-error does not appear when it is a DAE and the other links are OBJs.
+provided by Franka EXCEPT for link7.
 
 [NOTE] Joint limits are NOT enforced when the plant runs in continuous time!
 -->

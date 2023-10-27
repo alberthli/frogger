@@ -73,26 +73,26 @@ X_WO = RigidTransform(
 obj = MeshObjectConfig(X_WO=X_WO, mesh=mesh, name="001_chips_can", clean=False).create()
 
 # loading model
-# model = AlgrModelConfig(
-#     obj=obj,
-#     ns=4,
-#     mu=0.7,
-#     d_min=0.001,
-#     d_pen=0.005,
-#     l_bar_cutoff=0.3,
-#     hand="rh",
-# ).create()
-model = BH280ModelConfig(
+model = FR3AlgrModelConfig(
     obj=obj,
     ns=4,
     mu=0.7,
     d_min=0.001,
     d_pen=0.005,
     l_bar_cutoff=0.3,
+    hand="rh",
 ).create()
+# model = BH280ModelConfig(
+#     obj=obj,
+#     ns=4,
+#     mu=0.7,
+#     d_min=0.001,
+#     d_pen=0.005,
+#     l_bar_cutoff=0.3,
+# ).create()
 frogger = FroggerConfig(
     model=model,
-    sampler=HeuristicBHICSampler(model),
+    sampler=HeuristicFR3AlgrICSampler(model),
     tol_surf=1e-3,
     tol_joint=1e-2,
     tol_col=1e-3,

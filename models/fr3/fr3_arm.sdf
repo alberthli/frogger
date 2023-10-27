@@ -12,12 +12,9 @@ effect on the friction value. I report the values from Table III in the OSI colu
 Another repo that helped me debug [2]: https://github.com/AndrejOrsula/panda_ign_moveit2/blob/master/panda_description/panda/model.sdf
 
 The visual geometries are OBJ/MTL file pairs converted from the original DAE files
-provided by Franka EXCEPT for link7, which is still a DAE (OBJ/MTL pair is still
-provided for completeness). The reason is that in Drake, the RenderEngine complains
-about some values being too large for a buffer or something with a cryptic error, and
-changing the format of the visual files resolved it. The reason link7 is still a DAE is
-because some of the geometry was not loading correctly when it was an OBJ, and the
-error does not appear when it is a DAE and the other links are OBJs.
+provided by Franka.
+
+The collision geometries are custom chosen by visual inspection.
 
 [NOTE] Joint limits are NOT enforced when the plant runs in continuous time!
 -->
@@ -44,11 +41,20 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link0_collision">
+      <collision name="fr3_link0_collision_1">
+        <pose>-0.043 0.0 0.05 0.0 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link0.obj</uri>
-          </mesh>
+          <box>
+            <size>0.23 0.15 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="fr3_link0_collision_2">
+        <pose>-0.01 0.0 0.12 0.0 0.0 0.0</pose>
+        <geometry>
+          <box>
+            <size>0.14 0.12 0.04</size>
+          </box>
         </geometry>
       </collision>
     </link>
@@ -98,11 +104,31 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link1_collision">
+      <collision name="fr3_link1_collision_1">
+        <pose>0.0 -0.05 -0.05 0.52359877559 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link1.obj</uri>
-          </mesh>
+          <capsule>
+            <length>0.1</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+      <collision name="fr3_link1_collision_2">
+        <pose>0.0 0.0 -0.15 0.0 0.0 0.0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.12</length>
+            <radius>0.06</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name="fr3_link1_collision_3">
+        <pose>0.0 0.0 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.16</length>
+            <radius>0.06</radius>
+          </capsule>
         </geometry>
       </collision>
     </link>
@@ -152,11 +178,22 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link2_collision">
+      <collision name="fr3_link2_collision_1">
+        <pose>0.0 -0.195 0.0 1.57079632679 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link2.obj</uri>
-          </mesh>
+          <capsule>
+            <length>0.11</length>
+            <radius>0.06</radius>
+          </capsule>
+        </geometry>
+      </collision>
+      <collision name="fr3_link2_collision_2">
+        <pose>0.0 -0.05 0.05 -1.0471975512 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.12</length>
+            <radius>0.06</radius>
+          </capsule>
         </geometry>
       </collision>
     </link>
@@ -206,11 +243,21 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link3_collision">
+      <collision name="fr3_link3_collision_1">
+        <pose>0.04 0.035 -0.03 0.0 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link3.obj</uri>
-          </mesh>
+          <sphere>
+            <radius>0.06</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <collision name="fr3_link3_collision_2">
+        <pose>0.085 0.0 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.12</length>
+            <radius>0.06</radius>
+          </capsule>
         </geometry>
       </collision>
     </link>
@@ -260,13 +307,23 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link4_collision">
+      <collision name="fr3_link4_collision_1">
+        <pose>-0.08 0.11 0.0 1.57079632679 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link4.obj</uri>
-          </mesh>
+          <capsule>
+            <length>0.1</length>
+            <radius>0.06</radius>
+          </capsule>
         </geometry>
       </collision>
+      <!-- <collision name="fr3_link4_collision_2">
+        <pose>-0.035 0.03 0.04 0.0 0.0 0.0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.05</radius>
+          </sphere>
+        </geometry>
+      </collision> -->
     </link>
     
     <joint name="fr3_joint5" type="revolute">
@@ -314,11 +371,29 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link5_collision">
+      <!-- <collision name="fr3_link5_collision_1">
+        <pose>0.0 0.033 -0.19 0.0 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link5.obj</uri>
-          </mesh>
+          <sphere>
+            <radius>0.055</radius>
+          </sphere>
+        </geometry>
+      </collision> -->
+      <collision name="fr3_link5_collision_2">
+        <pose>0.0 0.085 -0.1 -0.174533 0.0 0.0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.045 0.2</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="fr3_link5_collision_3">
+        <pose>0.0 0.04 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.11</length>
+            <radius>0.05</radius>
+          </capsule>
         </geometry>
       </collision>
     </link>
@@ -369,11 +444,21 @@ error does not appear when it is a DAE and the other links are OBJs.
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link6_collision">
+      <collision name="fr3_link6_collision_1">
+        <pose>0.03 0.01 0.02 0.0 0.0 0.0</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link6.obj</uri>
-          </mesh>
+          <sphere>
+            <radius>0.06</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <collision name="fr3_link6_collision_2">
+        <pose>0.0845 -0.01 0.0 1.57079632679 0.0 0.0</pose>
+        <geometry>
+          <capsule>
+            <length>0.105</length>
+            <radius>0.051</radius>
+          </capsule>
         </geometry>
       </collision>
     </link>
@@ -419,15 +504,33 @@ error does not appear when it is a DAE and the other links are OBJs.
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link7.dae</uri>
+            <uri>package://frogger/models/fr3/visual/link7.obj</uri>
           </mesh>
         </geometry>
       </visual>
-      <collision name="fr3_link7_collision">
+      <collision name="fr3_link7_collision_1">
+        <pose>0.0275 0.027 0.087 0.0 0.0 -0.78539816339</pose>
         <geometry>
-          <mesh>
-            <uri>package://frogger/models/fr3/collision/link7.obj</uri>
-          </mesh>
+          <box>
+            <size>0.07 0.1 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name="fr3_link7_collision_2">
+        <pose>0.0 0.0 0.082 0.0 0.0 -0.78539816339</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.045</radius>
+            <length>0.05</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name="fr3_link7_collision_3">
+        <pose>0.0275 0.027 0.072 0.3 0.0 -0.78539816339</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.1 0.02</size>
+          </box>
         </geometry>
       </collision>
     </link>

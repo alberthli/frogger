@@ -158,9 +158,12 @@ class Frogger:
 
                 # checking whether the computed solution is feasible
                 surf_vio = np.max(np.abs(h_val[:self.n_surf]))
-                couple_vio = np.max(
-                    np.abs(h_val[self.n_surf:(self.n_surf + self.n_couple)])
-                )
+                if self.model.n_couple > 0:
+                    couple_vio = np.max(
+                        np.abs(h_val[self.n_surf:(self.n_surf + self.n_couple)])
+                    )
+                else:
+                    couple_vio = 0.0
                 joint_vio = max(np.max(g_val[:self.model.n_bounds]), 0.0)
                 col_vio = max(np.max(g_val[self.model.n_bounds:-1]), 0.0)
                 fclosure_vio = max(g_val[-1], 0.0)
