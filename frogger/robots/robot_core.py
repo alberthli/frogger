@@ -88,6 +88,11 @@ class RobotModelConfig:
         if self.n_couple is None:
             self.n_couple = 0
 
+    def create(self) -> "RobotModel":
+        model = RobotModel(self)
+        model.warm_start()
+        return model
+
 class RobotModel:
     """Base class for robot models.
 

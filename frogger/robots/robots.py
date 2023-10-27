@@ -25,6 +25,11 @@ class FR3AlgrModelConfig(RobotModelConfig):
         if self.name is None:
             self.name = f"fr3_algr_{self.hand}"
 
+    def create(self) -> "FR3AlgrModel":
+        """Creates the model."""
+        model = FR3AlgrModel(self)
+        return model
+
 class FR3AlgrModel(RobotModel):
     """The FR3-Allegro model.
 
@@ -67,6 +72,12 @@ class AlgrModelConfig(RobotModelConfig):
         if self.name is None:
             self.name = f"algr_{self.hand}"
 
+    def create(self) -> "AlgrModel":
+        """Creates the model."""
+        model = AlgrModel(self)
+        model.warm_start()
+        return model
+
 class AlgrModel(RobotModel):
     """The Allegro model."""
 
@@ -88,6 +99,12 @@ class BH280ModelConfig(RobotModelConfig):
         assert self.n_couple == 4
         if self.name is None:
             self.name = f"bh280"
+
+    def create(self) -> "BH280Model":
+        """Creates the model."""
+        model = BH280Model(self)
+        model.warm_start()
+        return model
 
 class BH280Model(RobotModel):
     """The Barrett Hand model."""

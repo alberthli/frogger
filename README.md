@@ -37,13 +37,14 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
     - [x] Move burden of custom implementation as much as possible to heuristic sampler.
     - [x] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
 - [x] Add compatibility with underactuated hands + Barrett Hand example.
-- [ ] Add factory methods to config dataclasses to simplify user implementation more.
-- [ ] Add usage examples + a timing script.
+- [x] Add factory methods to config dataclasses to simplify user implementation more.
 - [ ] Clean up unused scripts and files.
 - [ ] Clean up docstrings.
 - [ ] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
 - [ ] Clean up `fr3` models.
 - [ ] Check inertias of models before finalizing branch.
+- [ ] Add usage examples + a timing script.
+- [ ] Add code tooling to help set up contributions.
 - [ ] Before pypi package release, update instructions for using the MOSEK license.
 
 ### Later Changes

@@ -5,11 +5,8 @@ from pydrake.math import RigidTransform, RotationMatrix
 from frogger import ROOT
 from frogger.objects import MeshObject, MeshObjectConfig
 from frogger.robots.robots import (
-    AlgrModel,
     AlgrModelConfig,
-    BH280Model,
     BH280ModelConfig,
-    FR3AlgrModel,
     FR3AlgrModelConfig,
 )
 from frogger.sampling import (
@@ -73,11 +70,10 @@ X_WO = RigidTransform(
     RotationMatrix(),
     np.array([0.7, 0.0, -lb_O[-1]]),
 )
-obj_cfg = MeshObjectConfig(X_WO=X_WO, mesh=mesh, name="001_chips_can", clean=False)
-obj = MeshObject(obj_cfg)
+obj = MeshObjectConfig(X_WO=X_WO, mesh=mesh, name="001_chips_can", clean=False).create()
 
 # loading model
-# model_cfg = AlgrModelConfig(
+# model = AlgrModelConfig(
 #     obj=obj,
 #     ns=4,
 #     mu=0.7,
@@ -85,18 +81,34 @@ obj = MeshObject(obj_cfg)
 #     d_pen=0.005,
 #     l_bar_cutoff=0.3,
 #     hand="rh",
-# )
-# model = AlgrModel(model_cfg)
-# model.warm_start()
-model_cfg = BH280ModelConfig(
+# ).create()
+model = BH280ModelConfig(
     obj=obj,
     ns=4,
     mu=0.7,
     d_min=0.001,
     d_pen=0.005,
     l_bar_cutoff=0.3,
-)
-model = BH280Model(model_cfg)
+).create()
+frogger = FroggerConfig(
+    model=model,
+    sampler=HeuristicBHICSampler(model),
+    tol_surf=1e-3,
+    tol_joint=1e-2,
+    tol_col=1e-3,
+    tol_fclosure=1e-5,
+    xtol_rel=1e-6,
+    xtol_abs=1e-6,
+    maxeval=1000,
+    maxtime=60.0,
+).create()
+q_star = frogger.generate_grasp()
+model.viz_config(q_star)
+
+# ########## #
+# DEBUG CODE #
+# ########## #
+
 # model.viz_config(model.plant.GetPositions(model.plant_context)[:model.n])  # [DEBUG]
 
 # # [DEBUG]
@@ -113,21 +125,3 @@ model = BH280Model(model_cfg)
 # )
 # visualizer.Run()
 # breakpoint()
-
-model.warm_start()
-
-frogger_cfg = FroggerConfig(
-    model=model,
-    sampler=HeuristicBHICSampler(model),
-    tol_surf=1e-3,
-    tol_joint=1e-2,
-    tol_col=1e-3,
-    tol_fclosure=1e-5,
-    xtol_rel=1e-6,
-    xtol_abs=1e-6,
-    maxeval=1000,
-    maxtime=60.0,
-)
-frogger = Frogger(frogger_cfg)
-q_star = frogger.generate_grasp()
-model.viz_config(q_star)

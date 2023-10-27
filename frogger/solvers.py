@@ -23,6 +23,10 @@ class FroggerConfig:
     maxeval: int = 1000
     maxtime: float | None = 60.0
 
+    def create(self) -> "Frogger":
+        """Creates the solver."""
+        return Frogger(self)
+
 class Frogger:
     """The FRoGGeR solver."""
 

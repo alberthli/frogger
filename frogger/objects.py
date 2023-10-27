@@ -53,6 +53,11 @@ class ObjectDescriptionConfig:
         if self.name is None:
             self.name = "abstract"
 
+    def create(self) -> "ObjectDescription":
+        """Creates the object description."""
+        obj = ObjectDescription(self)
+        return obj
+
 class ObjectDescription(ABC):
     """Abstract class for describing an object to manipulate."""
 
@@ -487,6 +492,11 @@ class MeshObjectConfig(ObjectDescriptionConfig):
         self.lb_O = bounds[0, :]
         self.ub_O = bounds[1, :]
 
+    def create(self) -> "MeshObject":
+        """Creates the MeshObject."""
+        obj = MeshObject(self)
+        return obj
+
 class MeshObject(ObjectDescription):
     """An object represented entirely as a mesh.
 
@@ -734,6 +744,11 @@ class CustomObjectConfig(ObjectDescriptionConfig):
         # overriding defaults
         if self.name is None:
             self.name = "custom"
+
+    def create(self) -> "CustomObject":
+        """Creates the CustomObject."""
+        obj = CustomObject(self)
+        return obj
 
 class CustomObject(ObjectDescription):
     """A custom object defined by a user-provided Jax function."""
