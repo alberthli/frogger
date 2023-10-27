@@ -16,7 +16,7 @@ from pydrake.math import RigidTransform
 from skimage.measure import marching_cubes
 
 from frogger import ROOT
-from frogger.sdfs.smoothing import poisson_reconstruction
+from frogger.sdfs import poisson_reconstruction
 
 jax.config.update("jax_platform_name", "cpu")  # force everything to run on CPU
 jax.config.update("jax_enable_x64", True)

@@ -1,5 +1,6 @@
 import numpy as np
 import open3d as o3d
+import trimesh
 from trimesh import Trimesh
 
 
@@ -35,3 +36,11 @@ def poisson_reconstruction(mesh: Trimesh) -> Trimesh:
     normals = np.array(o3d_mesh.triangle_normals)
     poisson_mesh = Trimesh(vertices, faces, normals)
     return poisson_mesh
+
+def to_trimesh(o3d_mesh: o3d.geometry.TriangleMesh) -> trimesh.Trimesh:
+    """Converts an open3d mesh to a trimesh.Trimesh mesh."""
+    vertices = np.array(o3d_mesh.vertices)
+    faces = np.array(o3d_mesh.triangles)
+    normals = np.array(o3d_mesh.triangle_normals)
+    mesh = trimesh.Trimesh(vertices, faces, normals)
+    return mesh

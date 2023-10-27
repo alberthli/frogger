@@ -40,7 +40,7 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [x] Add factory methods to config dataclasses to simplify user implementation more.
 - [ ] Clean up unused scripts and files.
 - [ ] Clean up docstrings.
-- [ ] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
+- [x] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
 - [ ] Clean up `fr3` models.
 - [ ] Check inertias of models before finalizing branch.
 - [ ] Add usage examples + a timing script.
