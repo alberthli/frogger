@@ -54,14 +54,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj">
-          <drake:declare_convex/>
-        </mesh>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_32_collision">
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj">
+          <drake:declare_convex/>
+        </mesh>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
     </collision>
@@ -95,15 +95,15 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj">
-          <drake:declare_convex/>
-        </mesh>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_33_collision_FROGGERCOL">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj"/>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj">
+          <drake:declare_convex/>
+        </mesh>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
     </collision>
@@ -175,14 +175,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj">
-          <drake:declare_convex/>
-        </mesh>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_12_collision">
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj">
+          <drake:declare_convex/>
+        </mesh>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
     </collision>
@@ -216,15 +216,15 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj">
-          <drake:declare_convex/>
-        </mesh>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_13_collision_FROGGERCOL">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj"/>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj">
+          <drake:declare_convex/>
+        </mesh>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
     </collision>
@@ -286,14 +286,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj">
-          <drake:declare_convex/>
-        </mesh>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_22_collision">
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj"/>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj">
+          <drake:declare_convex/>
+        </mesh>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
     </collision>
@@ -327,15 +327,15 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj">
-          <drake:declare_convex/>
-        </mesh>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_23_collision_FROGGERCOL">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj"/>
+        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj">
+          <drake:declare_convex/>
+        </mesh>
       </geometry>
       <contact_coefficients kd="1.0" kp="1000.0" mu="0"/>
     </collision>

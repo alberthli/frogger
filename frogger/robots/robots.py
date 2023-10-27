@@ -34,6 +34,7 @@ class FR3AlgrModelConfig(RobotModelConfig):
     def create(self) -> "FR3AlgrModel":
         """Creates the model."""
         model = FR3AlgrModel(self)
+        model.warm_start()
         return model
 
 

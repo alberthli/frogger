@@ -967,11 +967,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
 
     <!-- adding frame for heuristic IK sampling -->
     <joint name="dummy_sampling_joint" type="fixed">
-      <child>algr_rh_palm_FROGGERSAMPLE</child>
-      <parent>algr_rh_palm</parent>
+      <child>algr_lh_palm_FROGGERSAMPLE</child>
+      <parent>algr_lh_palm</parent>
       <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
     </joint>
-    <link name="algr_rh_palm_FROGGERSAMPLE">
+    <link name="algr_lh_palm_FROGGERSAMPLE">
       <pose>0.0 0.0 0.095 0.0 0.0 0.0</pose>
     </link>
   </model>

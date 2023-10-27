@@ -378,8 +378,6 @@ class RobotModel:
 
     def _process_collisions(self, q: np.ndarray) -> None:
         """Computes all information related to collision constraints."""
-        n = self.n
-
         # we initialize the inequality constraints here to allow derived RobotModels
         # to modify the collision geometries during initialization
         if self.g is None:
@@ -417,8 +415,12 @@ class RobotModel:
             fid = inspector.GetFrameId(gid)
             return self.plant.GetBodyFromFrameId(fid).body_frame()
 
-        self.g[2 * n : (2 * n + self.n_pairs)] = -1.0  # setting "far" points to 1.0m
-        self.Dg[2 * n : (2 * n + self.n_pairs), :] = 0.0  # resetting col gradients
+        self.g[
+            self.n_bounds : (self.n_bounds + self.n_pairs)
+        ] = -1.0  # setting "far" points to 1.0m
+        self.Dg[
+            self.n_bounds : (self.n_bounds + self.n_pairs), :
+        ] = 0.0  # resetting col gradients
 
         # loop through unculled collision pairs
         self.hand_obj_cols = {}  # reset the hand-obj dictionary
