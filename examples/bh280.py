@@ -7,7 +7,7 @@ from frogger.objects import MeshObject, MeshObjectConfig
 from frogger.robots.robots import AlgrModelConfig, BH280ModelConfig, FR3AlgrModelConfig
 from frogger.sampling import (
     HeuristicAlgrICSampler,
-    HeuristicBHICSampler,
+    HeuristicBH280ICSampler,
     HeuristicFR3AlgrICSampler,
 )
 from frogger.solvers import Frogger, FroggerConfig
@@ -35,7 +35,7 @@ model = BH280ModelConfig(
 ).create()
 frogger = FroggerConfig(
     model=model,
-    sampler=HeuristicBHICSampler(model),
+    sampler=HeuristicBH280ICSampler(model),
     tol_surf=1e-3,
     tol_joint=1e-2,
     tol_col=1e-3,

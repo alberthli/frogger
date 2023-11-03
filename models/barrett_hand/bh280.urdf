@@ -3,14 +3,14 @@
   <!-- HAND BASE (RED) -->
   <link name="bh_palm">
     <inertial>
-      <mass value="1.0"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="1"/>
+      <origin rpy="0 0 0" xyz="0 -0.0039272 0.040712"/>
+      <inertia ixx="0.0010893" ixy="0" ixz="6.5953e-19" iyy="0.00097721" iyz="8.6359e-05" izz="0.0010579"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/palm_280.obj"/>
+        <mesh filename="meshes/palm_280.obj"/>
       </geometry>
         <color rgba="0.75 0.75 0.75 1.0"/>
     </visual>
@@ -48,18 +48,18 @@
   <link name="bh_finger_32">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.030745 0.0019837 0.00068129"/>
+      <inertia ixx="7.3832e-06" ixy="2.5967e-06" ixz="-2.9222e-07" iyy="5.9343e-05" iyz="2.4133e-09" izz="6.0411e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj"/>
+        <mesh filename="meshes/finger.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_32_collision">
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj">
+        <mesh filename="meshes/finger_collision.obj">
           <drake:declare_convex/>
         </mesh>
       </geometry>
@@ -89,19 +89,19 @@
   <link name="bh_finger_33">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.016427 0.015348 0.00063234"/>
+      <inertia ixx="1.9434e-05" ixy="1.4715e-05" ixz="-1.3785e-09" iyy="2.2457e-05" iyz="9.4538e-10" izz="3.4232e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj"/>
+        <mesh filename="meshes/finger_tip.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_33_collision_FROGGERCOL">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj">
+        <mesh filename="meshes/finger_tip_collision.obj">
           <drake:declare_convex/>
         </mesh>
       </geometry>
@@ -122,13 +122,13 @@
   <link name="bh_finger_11">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="-0.046 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.033751 0 0.018292"/>
+      <inertia ixx="1.9875e-05" ixy="1.4791e-16" ixz="9.8185e-06" iyy="6.0239e-05" iyz="5.6681e-19" izz="5.0781e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/knuckle.obj"/>
+        <mesh filename="meshes/knuckle.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_11_collision_1">
@@ -169,18 +169,18 @@
   <link name="bh_finger_12">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.030745 0.0019837 0.00068129"/>
+      <inertia ixx="7.3832e-06" ixy="2.5967e-06" ixz="-2.9222e-07" iyy="5.9343e-05" iyz="2.4133e-09" izz="6.0411e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj"/>
+        <mesh filename="meshes/finger.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_12_collision">
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj">
+        <mesh filename="meshes/finger_collision.obj">
           <drake:declare_convex/>
         </mesh>
       </geometry>
@@ -210,19 +210,19 @@
   <link name="bh_finger_13">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.016427 0.015348 0.00063234"/>
+      <inertia ixx="1.9434e-05" ixy="1.4715e-05" ixz="-1.3785e-09" iyy="2.2457e-05" iyz="9.4538e-10" izz="3.4232e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj"/>
+        <mesh filename="meshes/finger_tip.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_13_collision_FROGGERCOL">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj">
+        <mesh filename="meshes/finger_tip_collision.obj">
           <drake:declare_convex/>
         </mesh>
       </geometry>
@@ -243,13 +243,13 @@
   <link name="bh_finger_21">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="-0.046 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.033751 0 0.018292"/>
+      <inertia ixx="1.9875e-05" ixy="1.4791e-16" ixz="9.8185e-06" iyy="6.0239e-05" iyz="5.6681e-19" izz="5.0781e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/knuckle.obj"/>
+        <mesh filename="meshes/knuckle.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_21_collision_1">
@@ -280,18 +280,18 @@
   <link name="bh_finger_22">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.030745 0.0019837 0.00068129"/>
+      <inertia ixx="7.3832e-06" ixy="2.5967e-06" ixz="-2.9222e-07" iyy="5.9343e-05" iyz="2.4133e-09" izz="6.0411e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger.obj"/>
+        <mesh filename="meshes/finger.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_22_collision">
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_collision.obj">
+        <mesh filename="meshes/finger_collision.obj">
           <drake:declare_convex/>
         </mesh>
       </geometry>
@@ -321,19 +321,19 @@
   <link name="bh_finger_23">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <origin rpy="0 0 0" xyz="-0.016427 0.015348 0.00063234"/>
+      <inertia ixx="1.9434e-05" ixy="1.4715e-05" ixz="-1.3785e-09" iyy="2.2457e-05" iyz="9.4538e-10" izz="3.4232e-05"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip.obj"/>
+        <mesh filename="meshes/finger_tip.obj"/>
       </geometry>
     </visual>
     <collision name="bh_finger_23_collision_FROGGERCOL">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://frogger/models/barrett_hand/meshes/finger_tip_collision.obj">
+        <mesh filename="meshes/finger_tip_collision.obj">
           <drake:declare_convex/>
         </mesh>
       </geometry>

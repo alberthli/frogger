@@ -22,22 +22,22 @@ The collision geometries are custom chosen by visual inspection.
   <model name="fr3_arm">
     <link name="fr3_link0">
       <inertial>
-        <pose>-0.041018 -0.00014 0.049974 0 0 0</pose>
-        <mass>0.629769</mass>
+        <pose>-0.03762 0 0.061412 0 0 0</pose>
+        <mass>0.62977</mass>
         <inertia>
-          <ixx>0.00315</ixx>
-          <ixy>8.2904e-07</ixy>
-          <ixz>0.00015</ixz>
-          <iyy>0.00388</iyy>
-          <iyz>8.2299e-06</iyz>
-          <izz>0.004285</izz>
+          <ixx>0.0019855</ixx>
+          <ixy>0</ixy>
+          <ixz>-0.0001985</ixz>
+          <iyy>0.0034589</iyy>
+          <iyz>0</iyz>
+          <izz>0.0036964</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link0_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link0.obj</uri>
+            <uri>visual/link0.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -85,22 +85,22 @@ The collision geometries are custom chosen by visual inspection.
     <link name="fr3_link1">
       <pose relative_to="fr3_joint1">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.003875 0.002081 -0.04762 0 0 0</pose>
-        <mass>4.970684</mass>
+        <pose>0 -0.016667 -0.05 0 0 0</pose>
+        <mass>4.9707</mass>
         <inertia>
-          <ixx>0.70337</ixx>
-          <ixy>-0.00013900</ixy>
-          <ixz>0.0067720</ixz>
-          <iyy>0.70661</iyy>
-          <iyz>0.019169</iyz>
-          <izz>0.009117</izz>
+          <ixx>0.040696</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.027895</iyy>
+          <iyz>0.0014881</iyz>
+          <izz>0.021218</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link1_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link1.obj</uri>
+            <uri>visual/link1.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -159,22 +159,22 @@ The collision geometries are custom chosen by visual inspection.
     <link name="fr3_link2">
       <pose relative_to="fr3_joint2">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.003141 -0.02872  0.003495 0 0 0</pose>
-        <mass>0.646926</mass>
+        <pose>0 -0.12064 0.025641 0 0 0</pose>
+        <mass>0.64693</mass>
         <inertia>
-          <ixx>0.0079620</ixx>
-          <ixy>-3.9250e-3</ixy>
-          <ixz>1.0254e-02</ixz>
-          <iyy>2.8110e-02</iyy>
-          <iyz>7.0400e-04</iyz>
-          <izz>2.5995e-02</izz>
+          <ixx>0.0065165</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0016969</iyy>
+          <iyz>-0.0015597</iyz>
+          <izz>0.0058885</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link2_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link2.obj</uri>
+            <uri>visual/link2.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -224,22 +224,22 @@ The collision geometries are custom chosen by visual inspection.
     <link name="fr3_link3">
       <pose relative_to="fr3_joint3">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>2.7518e-02 3.9252e-02 -6.6502e-02 0 0 0</pose>
-        <mass>3.228604</mass>
+        <pose>0.072143 0.01 -0.0085714 0 0 0</pose>
+        <mass>3.2286</mass>
         <inertia>
-          <ixx>3.7242e-02</ixx>
-          <ixy>-4.7610e-03</ixy>
-          <ixz>-1.1396e-02</ixz>
-          <iyy>3.6155e-02</iyy>
-          <iyz>-1.2805e-02</iyz>
-          <izz>1.0830e-02</izz>
+          <ixx>0.012774</ixx>
+          <ixy>0.0010378</ixy>
+          <ixz>-0.00088951</ixz>
+          <iyy>0.0070746</iyy>
+          <iyz>0.00069184</iyz>
+          <izz>0.013515</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link3_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link3.obj</uri>
+            <uri>visual/link3.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -288,22 +288,22 @@ The collision geometries are custom chosen by visual inspection.
     <link name="fr3_link4">
       <pose relative_to="fr3_joint4">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-5.317e-02 1.04419e-01 2.7454e-02 0 0 0</pose>
-        <mass>3.587895</mass>
+        <pose>-0.08 0.11 0 0 0 0</pose>
+        <mass>3.5879</mass>
         <inertia>
-          <ixx>2.5853e-02</ixx>
-          <ixy>7.7960e-03</ixy>
-          <ixz>-1.3320e-03</ixz>
-          <iyy>1.9552e-02</iyy>
-          <iyz>8.6410e-03</iyz>
-          <izz>2.8323e-02</izz>
+          <ixx>0.013326</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0058841</iyy>
+          <iyz>3.6439e-14</iyz>
+          <izz>0.013326</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link4_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link4.obj</uri>
+            <uri>visual/link4.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -352,22 +352,22 @@ The collision geometries are custom chosen by visual inspection.
     <link name="fr3_link5">
       <pose relative_to="fr3_joint5">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-1.1953e-02 4.1065e-02 -3.8437e-02 0 0 0</pose>
-        <mass>1.225946</mass>
+        <pose>0 0.054052 -0.031226 0 0 0</pose>
+        <mass>1.2259</mass>
         <inertia>
-          <ixx>3.5549e-02</ixx>
-          <ixy>-2.1170e-03</ixy>
-          <ixz>-4.0370e-03</ixz>
-          <iyy>2.9474e-02</iyy>
-          <iyz>2.2900e-04</iyz>
-          <izz>8.6270e-03</izz>
+          <ixx>0.0073008</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.005003</iyy>
+          <iyz>0.00097758</iyz>
+          <izz>0.0035848</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link5_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link5.obj</uri>
+            <uri>visual/link5.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -425,22 +425,22 @@ The collision geometries are custom chosen by visual inspection.
       <pose relative_to="fr3_joint6">0 0 0 0 0 1.57079632679</pose>
       <!-- <pose relative_to="fr3_joint6">0 0 0 0 0 0</pose> -->  <!-- original -->
       <inertial>
-        <pose>6.0149e-02 -1.4117e-02 -1.0517e-02 0 0 0</pose>
-        <mass>1.666555</mass>
+        <pose>0.063231 -0.0021948 0.0078052 0 0 0</pose>
+        <mass>1.6666</mass>
         <inertia>
-          <ixx>1.9640e-03</ixx>
-          <ixy>1.0900e-04</ixy>
-          <ixz>-1.1580e-03</ixz>
-          <iyy>4.3540e-03</iyy>
-          <iyz>3.4100e-04</iyz>
-          <izz>5.4330e-03</izz>
+          <ixx>0.00454</ixx>
+          <ixy>0.00043226</ixy>
+          <ixz>0.00043226</ixz>
+          <iyy>0.0034907</iyy>
+          <iyz>-0.00015863</iyz>
+          <izz>0.0055593</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link6_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link6.obj</uri>
+            <uri>visual/link6.obj</uri>
           </mesh>
         </geometry>
       </visual>
@@ -489,22 +489,22 @@ The collision geometries are custom chosen by visual inspection.
     <link name="fr3_link7">
       <pose relative_to="fr3_joint7">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>1.0517e-02 -4.252e-03 6.1597e-02 0 0 0</pose>
-        <mass>7.35522e-01</mass>
+        <pose>0.012874 0.01264 0.08083 0 0 0</pose>
+        <mass>0.73552</mass>
         <inertia>
-          <ixx>1.2516e-02</ixx>
-          <ixy>-4.2800e-04</ixy>
-          <ixz>-1.1960e-03</ixz>
-          <iyy>1.0027e-02</iyy>
-          <iyz>-7.4100e-04</iyz>
-          <izz>4.8150e-03</izz>
+          <ixx>0.00066482</ixx>
+          <ixy>-0.00020314</ixy>
+          <ixz>-1.4906e-05</ixz>
+          <iyy>0.00066981</iyy>
+          <iyz>-1.5135e-05</iyz>
+          <izz>0.0010836</izz>
         </inertia>
       </inertial>
       <visual name="fr3_link7_visual">
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>package://frogger/models/fr3/visual/link7.obj</uri>
+            <uri>visual/link7.obj</uri>
           </mesh>
         </geometry>
       </visual>

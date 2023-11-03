@@ -44,8 +44,10 @@ Post-IROS, there are some planned changes to the codebase. If you have suggestio
 - [x] Clean up docstrings.
 - [x] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
 - [x] Clean up `fr3` models.
-- [ ] Check inertias of models before finalizing branch.
-- [ ] Add usage examples + a timing script.
+- [x] Check inertias of models before finalizing branch.
+- [ ] Add back optional z cutoff to the palm pose sampler that is activated with the FR3AlgrSampler
+- [x] Add usage examples.
+- [ ] Add a timing script + verify the heuristic actually converges for all objects.
 - [x] Add code tooling to help set up contributions.
 - [ ] FAQ + sharp bits in README
 - [ ] Before pypi package release, update instructions for using the MOSEK license.

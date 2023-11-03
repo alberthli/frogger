@@ -57,6 +57,8 @@ class RobotModelConfig:
         The minimum allowable value of l_bar.
     name : str | None, default=None
         The name of the robot.
+    viz : bool, default=True
+        Whether to visualize the robot.
     """
 
     # required
@@ -71,6 +73,7 @@ class RobotModelConfig:
     l_bar_cutoff: float = 1e-6
     n_couple: int = 0
     name: str | None = None
+    viz: bool = True
 
     def __post_init__(self) -> None:
         """Post-initialization checks."""
@@ -122,6 +125,7 @@ class RobotModel:
         self.d_min = cfg.d_min
         self.d_pen = cfg.d_pen
         self.l_bar_cutoff = cfg.l_bar_cutoff
+        self.viz = cfg.viz
 
         # boilerplate drake code + initializing the robot
         self.builder = DiagramBuilder()
@@ -146,27 +150,28 @@ class RobotModel:
         self.plant.Finalize()
 
         # visualization settings
-        self.meshcat = StartMeshcat()
-        self.visualizer = MeshcatVisualizer.AddToBuilder(
-            self.builder,
-            self.scene_graph,
-            self.meshcat,
-            MeshcatVisualizerParams(role=Role.kPerception, prefix="visual"),
-        )
-        MeshcatVisualizer.AddToBuilder(
-            self.builder,
-            self.scene_graph,
-            self.meshcat,
-            MeshcatVisualizerParams(
-                role=Role.kProximity,
-                prefix="collision",
-                default_color=Rgba(0.9, 0.9, 0.9, 0.5),
-            ),
-        )
-        self.meshcat.SetProperty("collision", "visible", False)
-        self.sliders = self.builder.AddSystem(
-            JointSliders(self.meshcat, self.plant, step=1e-12)
-        )
+        if self.viz:
+            self.meshcat = StartMeshcat()
+            self.visualizer = MeshcatVisualizer.AddToBuilder(
+                self.builder,
+                self.scene_graph,
+                self.meshcat,
+                MeshcatVisualizerParams(role=Role.kPerception, prefix="visual"),
+            )
+            MeshcatVisualizer.AddToBuilder(
+                self.builder,
+                self.scene_graph,
+                self.meshcat,
+                MeshcatVisualizerParams(
+                    role=Role.kProximity,
+                    prefix="collision",
+                    default_color=Rgba(0.9, 0.9, 0.9, 0.5),
+                ),
+            )
+            self.meshcat.SetProperty("collision", "visible", False)
+            self.sliders = self.builder.AddSystem(
+                JointSliders(self.meshcat, self.plant, step=1e-12)
+            )
 
         # creating diagrams, subsystems, and subcontexts
         self.diagram = self.builder.Build()
@@ -904,6 +909,7 @@ class RobotModel:
     def viz_config(self, q: np.ndarray) -> None:
         """Visualizes a configuration q in meshcat."""
         assert q.shape == (self.n,)
+        assert self.viz
         X_WO = self.obj.X_WO
         obj_quat = X_WO.rotation().ToQuaternion().wxyz()
         obj_pos = X_WO.translation()
