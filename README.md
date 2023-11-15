@@ -2,6 +2,8 @@
 
 This repository houses the code for the paper "[FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric](https://arxiv.org/abs/2302.13687)."
 
+[Nov. 14, 2023] The codebase has been refactored for better general usability and a cleaner API. To facilitate this, a lot of minutiae has been stripped away that was present in the original code release. If you are looking to investigate the original paper results, those can be found on the `iros-release` branch. If you simply want to try to use FRoGGeR for grasp synthesis, use the `main` branch.
+
 ## Installation
 We recommend using a `conda` environment to run the code in this repo. To get the latest changes, install as an editable package in the conda environment using
 ```
@@ -10,65 +12,27 @@ pip install -e .
 If you have a MOSEK license and would like to activate the MOSEK solver in `Drake`, then place the license file `mosek.lic` in the repository root and 
 
 ## Usage
-TODO: add examples
+There are three major components to using FRoGGeR to sample grasps:
+1. a compliant robot model,
+2. a description of the target object, and
+3. an initial condition sampler for the nonlinear optimization.
 
-To sample grasps on a custom manipulator, you need the following:
-* a description of the manipulator in URDF or SDF form,
-    * in the description, you must specify which collision geoms are allowed to touch the object. If a body has any geoms of this type, then those bodies MUST touch it
-    * additionally, if using the provided heuristic IK sampler, a canonical dummy "palm" frame must be specified, which the sampler will look for to help place the hand. this frame should be roughly located in the middle of the surface of the palm.
-    * if you're making custom collision geometries from meshes, remember to add the `drake:convex` tag to the URDF
-* a description of the object, either as a mesh or as an analytical SDF,
-* an implementation of an IK sampler to produce initial guesses for the solver (NOTE: this is probably the most important part of the robot-specific implementations, as the nonlinear solver is very sensitive to the choice of initial guess)
+We provide usage examples for 3 different robots (The floating Allegro hand, the floating underactuated Barrett Hand, and the Allegro hand attached to the Franka Research 3 on a tabletop) and on a subset of the YCB dataset. We also provide a script that times the execution of grasp generation for these objects on your system.
 
-## FAQ
+### Robot Model
+We allow robot descriptions using URDFs or SDFs. We enforce that the _entire_ robot must be described in a single file. Important details that are required in the description:
+* You must specify which collision geoms are allowed to touch the object. If a body has any geoms of this type, then those bodies MUST touch it (but only the specified geoms must touch). Such collision geometries are automatically parsed if the substring `FROGGERCOL` is in the name. 
+* If you use the provided heuristic sampler, you must specify a canonical "dummy palm" frame in the robot description. The sampler will look for this frame to help place the hand. For an example, see the bottom of `allegro_rh.sdf`.
+* If you define custom collision geometries from convex meshes, add the `drake:convex` tag to the URDF so `Drake` knows that the geometry is convex at parsing time.
 
-## Upcoming Changes
-This branch is the development branch for the upcoming FRoGGeR refactor.
+### Object
+Objects can be defined either by a supplied (watertight) mesh or by an analytical SDF. If you supply an analytical SDF, it must be written in `jax` to be compatible with the provided API, though you can easily add your own functionality.
 
-Post-IROS, there are some planned changes to the codebase. If you have suggestions, feel free to open an issue!
-- [x] Update Drake to 1.22.0, removing Dockerization requirement since `pip` issues were fixed (see [#19515](https://github.com/RobotLocomotion/drake/pull/19515)).
-- [x] Fix internal paths, which are hardcoded based on the Docker container internals, to be relative package paths
-- [x] Refactor dependency management onto `pyproject.toml`
-- [x] Significantly loosen requirements due to moving away from Docker
-- [X] Handle multiple collision geoms on robot AND on object for surface constraint
-- [x] Force the user to supply a single URDF or SDF for the entire system to greatly simplify the pipeline (requires a relatively large refactor of the sim pipeline)
-- [x] Abstract the initial condition sampler so that people can implement their own.
-- [x] Simplify `RobotModel` abstract API:
-    - [x] Automatically read joint limit/torque bounds from file
-    - [x] Remove requirement for specifying prescribed contact locations on fingertips, simply require that the user must specify the collision geometries in the URDF/SDF
-    - [x] Move burden of custom implementation as much as possible to heuristic sampler.
-    - [x] Simplify the expected implementation in the `__init__` function by creating configuration dataclasses.
-- [x] Add compatibility with underactuated hands + Barrett Hand example.
-- [x] Add factory methods to config dataclasses to simplify user implementation more.
-- [x] Clean up unused scripts and files.
-- [x] Clean up docstrings.
-- [x] Consolidate the `sdfs` subdirectory into just one file, since there's not much.
-- [x] Clean up `fr3` models.
-- [x] Check inertias of models before finalizing branch.
-- [ ] Add back optional z cutoff to the palm pose sampler that is activated with the FR3AlgrSampler
-- [x] Add usage examples.
-- [ ] Add a timing script + verify the heuristic actually converges for all objects.
-- [x] Add code tooling to help set up contributions.
-- [ ] FAQ + sharp bits in README
-- [ ] Before pypi package release, update instructions for using the MOSEK license.
-
-### Later Changes
-There are a few changes that won't be immediately addressed, but are on the radar:
-- [ ] Add back in the simulation pipeline with controllers. This was removed because it cluttered the grasp refinement API and the simulator implementation isn't universal. However, if you'd like, you can check the main idea out in the old branch.
-- [ ] Add back in baseline code
-- [ ] Improve sampling heuristic
-- [ ] Refactor from `numba` to `jax`
-- [ ] Refactor solver from `nlopt` to Drake's SNOPT bindings.
-
-## Reproducibility
-This code has been refactored from the original paper implementation to emphasize usability for custom robots. However, the original code can be found on the branch `iros-release`.
+### Sampler
+FRoGGeR is sensitive to the choice of initial guess, because it's just solving a complicated nonlinear optimization program under the hood. We supply a coarse heuristic that performs reasonably well on a decent range of objects, but it can certainly be improved upon. You can implement your own custom samplers using our API.
 
 ## Citation
 If you found our work useful (either the paper or the code), please use the following citation:
-
-```
-Albert H. Li, Preston Culbertson, Joel W. Burdick, Aaron D. Ames, "FRoGGeR: Fast Robust Grasp Generation via the Min-Weight Metric," arXiv:2302.13687, Feb. 2023.
-```
 
 ```
 @article{
