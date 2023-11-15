@@ -126,6 +126,7 @@ class RobotModel:
         self.d_pen = cfg.d_pen
         self.l_bar_cutoff = cfg.l_bar_cutoff
         self.viz = cfg.viz
+        self.cfg = cfg
 
         # boilerplate drake code + initializing the robot
         self.builder = DiagramBuilder()
@@ -135,14 +136,14 @@ class RobotModel:
         self.parser = Parser(self.plant, self.scene_graph)
         self.parser.package_map().Add("frogger", ROOT)
 
-        # adding robot + object
-        self.robot_instance = self.parser.AddModels(f"{ROOT}/models/{model_path}")[0]
-        self._load_object()
-
         # [Oct. 26, 2023] setting discrete contact solver to SAP to enable mimic joints
         # during sim. Hopefully, this gets patched eventually and we don't need to
         # specify this.
         self.plant.set_discrete_contact_solver(DiscreteContactSolver.kSap)
+
+        # adding robot + object
+        self.robot_instance = self.parser.AddModels(f"{ROOT}/models/{model_path}")[0]
+        self._load_object()
 
         # additional plant setup - if you want additional modifications to plants in
         # derived classes, overwrite this method
