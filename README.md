@@ -9,7 +9,7 @@ We recommend using a `conda` environment to run the code in this repo. To get th
 ```
 pip install -e .
 ```
-If you have a MOSEK license and would like to activate the MOSEK solver in `Drake`, then place the license file `mosek.lic` in the repository root and 
+If you have a MOSEK license and would like to activate the MOSEK solver in `Drake`, then place the license file `mosek.lic` in the repository root and run `setup_mosek.sh`.
 
 ## Usage
 There are three major components to using FRoGGeR to sample grasps:
