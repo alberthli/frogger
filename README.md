@@ -26,25 +26,17 @@ import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
 from frogger import ROOT
-from frogger.objects import MeshObject, MeshObjectConfig
-from frogger.robots.robots import AlgrModelConfig, BH280ModelConfig, FR3AlgrModelConfig
-from frogger.sampling import (
-    HeuristicAlgrICSampler,
-    HeuristicBH280ICSampler,
-    HeuristicFR3AlgrICSampler,
-)
-from frogger.solvers import Frogger, FroggerConfig
+from frogger.objects import MeshObjectConfig
+from frogger.robots.robots import AlgrModelConfig
+from frogger.sampling import HeuristicAlgrICSampler
+from frogger.solvers import FroggerConfig
 
 # loading object
 obj_name = "001_chips_can"
 mesh = trimesh.load(ROOT + f"/data/{obj_name}/{obj_name}_clean.obj")
 bounds = mesh.bounds
 lb_O = bounds[0, :]
-ub_O = bounds[1, :]
-X_WO = RigidTransform(
-    RotationMatrix(),
-    np.array([0.0, 0.0, -lb_O[-1]]),
-)
+X_WO = RigidTransform(RotationMatrix(), np.array([0.0, 0.0, -lb_O[-1]]))
 obj = MeshObjectConfig(X_WO=X_WO, mesh=mesh, name=obj_name, clean=False).create()
 
 # loading model
@@ -57,6 +49,8 @@ model = AlgrModelConfig(
     l_bar_cutoff=0.3,
     hand="rh",
 ).create()
+
+# creating solver and generating grasp
 frogger = FroggerConfig(
     model=model,
     sampler=HeuristicAlgrICSampler(model),
@@ -69,6 +63,7 @@ frogger = FroggerConfig(
     maxeval=1000,
     maxtime=60.0,
 ).create()
+
 print("Model compiled! Generating grasp...")
 q_star = frogger.generate_grasp()
 print("Grasp generated!")
