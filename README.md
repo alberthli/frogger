@@ -22,7 +22,7 @@ We provide usage examples for a few different robots:
 * the floating underactuated Barrett Hand,
 * the Allegro hand attached to the Franka Research 3 on a tabletop, and
 * the Allegro hand attached to the Franka Research 3 on a tabletop with a Zed2i camera.
-All examples synthesize grasps on a subset of the YCB dataset. The usage script times the execution of grasp generation for these objects on your system, and is located in `scripts/timing.py`.
+All examples synthesize grasps on a subset of the YCB dataset. The usage script times the execution of grasp generation for these objects on your system, and is located in `scripts/timing.py`. This script also gives an example of how to adjust an existing robot with a baseline non-FRoGGeR solver.
 
 For example, synthesizing a grasp with the Allegro hand can be done in the following ~50 lines of code. Many of the options have reasonable default values already and are just explicitly assigned in this example to demonstrate what is available. 
 ```
