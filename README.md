@@ -17,7 +17,12 @@ There are three major components to using FRoGGeR to sample grasps:
 2. a description of the target object, and
 3. an initial condition sampler for the nonlinear optimization.
 
-We provide usage examples for 3 different robots (The floating Allegro hand, the floating underactuated Barrett Hand, and the Allegro hand attached to the Franka Research 3 on a tabletop) and on a subset of the YCB dataset. We also provide a script that times the execution of grasp generation for these objects on your system.
+We provide usage examples for a few different robots:
+* the floating Allegro hand,
+* the floating underactuated Barrett Hand,
+* the Allegro hand attached to the Franka Research 3 on a tabletop, and
+* the Allegro hand attached to the Franka Research 3 on a tabletop with a Zed2i camera.
+All examples synthesize grasps on a subset of the YCB dataset. The usage script times the execution of grasp generation for these objects on your system, and is located in `scripts/timing.py`.
 
 For example, synthesizing a grasp with the Allegro hand can be done in the following ~50 lines of code. Many of the options have reasonable default values already and are just explicitly assigned in this example to demonstrate what is available. 
 ```
