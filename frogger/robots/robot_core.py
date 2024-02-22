@@ -36,92 +36,6 @@ from frogger.grasping import (
 from frogger.objects import ObjectDescription
 
 
-@dataclass(kw_only=True)
-class RobotModelConfig:
-    """A configuration for a robot model.
-
-    Parameters
-    ----------
-    model_path : str
-        The path of the description relative to the ROOT/models directory in the repo.
-    obj : ObjectDescription
-        The description of the object.
-    ns : int, default=4
-        The number of sides of the pyramidal friction cone approximation.
-    mu : float, default=0.7
-        The coefficient of friction.
-    d_min : float, default=0.001
-        The minimum distance between any two collision geometries.
-    d_pen : float, default=0.001
-        The allowable penetration between the fingertips and the object.
-    l_bar_cutoff : float, default=1e-6
-        The minimum allowable value of l_bar.
-    name : str | None, default=None
-        The name of the robot.
-    viz : bool, default=True
-        Whether to visualize the robot.
-    custom_compute_l : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
-        A custom cost function that takes in the robot and returns l and Dl. This ensures that
-        the callback has access to whatever info might be necessary.
-    custom_compute_g : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
-        A custom inequality constraint function that returns extra inequality constraints.
-    custom_compute_h : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
-        A custom equality constraint function that returns extra equality constraints.
-    n_g_extra : int, default=1
-        The number of "extra" inequality constraints. Extra is defined as anything that is
-        not a box constraint or a collision constraint.
-    n_h_extra : int, default=0
-        The number of "extra" equality constraints. Extra is defined as anything that is
-        not a coupling or contact constraint.
-
-    WARNING
-    -------
-    When defining the custom callbacks, it is important to note the order that they
-    execute, in case they rely on cached values. The function `compute_all` shows that first,
-    l is computed, then the extra inequality constraints, then the equality constraints. The only
-    caveat to this is that the non-extra inequality constraints (collision and joint limits) are
-    computed before l.
-    """
-
-    # required
-    model_path: str | None = None
-    obj: ObjectDescription | None = None
-
-    # optional
-    ns: int = 4
-    mu: float = 0.7
-    d_min: float = 0.001
-    d_pen: float = 0.001
-    l_bar_cutoff: float = 1e-6
-    n_couple: int = 0
-    name: str | None = None
-    viz: bool = True
-    custom_compute_l: Callable[["RobotModel"], Tuple[np.ndarray, np.ndarray]] | None = None
-    custom_compute_g: Callable[["RobotModel"], Tuple[np.ndarray, np.ndarray]] | None = None
-    custom_compute_h: Callable[["RobotModel"], Tuple[np.ndarray, np.ndarray]] | None = None
-    n_g_extra: int = 1
-    n_h_extra: int = 0
-
-    def __post_init__(self) -> None:
-        """Post-initialization checks."""
-        # enforcing required parameters manually, since model_path is provided by
-        # derived classes
-        if self.model_path is None:
-            raise AttributeError
-        if self.obj is None:
-            raise AttributeError
-
-        # handling default values manually, since derived classes have different ones
-        if self.name is None:
-            self.name = "robot"
-
-    def create(self) -> "RobotModel":
-        """Creates the robot model."""
-        model = RobotModel(self)
-        model.warm_start()
-        return model
-
-
 class RobotModel:
     """Base class for robot models.
 
@@ -136,7 +50,7 @@ class RobotModel:
     # INITIALIZATION #
     # ############## #
 
-    def __init__(self, cfg: RobotModelConfig) -> None:
+    def __init__(self, cfg: "RobotModelConfig") -> None:
         """Initialize the robot model.
 
         Parameters
@@ -153,9 +67,9 @@ class RobotModel:
         self.d_pen = cfg.d_pen
         self.l_bar_cutoff = cfg.l_bar_cutoff
         self.viz = cfg.viz
-        self.custom_compute_l = cfg.custom_compute_l
-        self.custom_compute_g = cfg.custom_compute_g
-        self.custom_compute_h = cfg.custom_compute_h
+        self.custom_compute_l = cfg.__class__.custom_compute_l  # these will be class functions
+        self.custom_compute_g = cfg.__class__.custom_compute_g
+        self.custom_compute_h = cfg.__class__.custom_compute_h
         self.n_g_extra = cfg.n_g_extra
         self.n_h_extra = cfg.n_h_extra
         self.cfg = cfg
@@ -578,12 +492,12 @@ class RobotModel:
     def _finish_ineq_cons(self) -> None:
         """Finishes computing inequality constraints and their gradients."""
         if self.custom_compute_g is None:
-            assert self.n_g_extra == 1
+            # the default behavior is to enforce a minimum l* value
+            if self.n_g_extra == 1:
+                idx_minw = self.n_pairs + self.n_bounds
+                self.g[idx_minw] = -self.l + self.l_bar_cutoff / (self.ns * self.nc)
+                self.Dg[idx_minw, :] = -self.Dl
 
-            # force closure inequality constraint
-            idx_minw = self.n_pairs + self.n_bounds
-            self.g[idx_minw] = -self.l + self.l_bar_cutoff / (self.ns * self.nc)
-            self.Dg[idx_minw, :] = -self.Dl
         else:
             g_extra, Dg_extra = self.custom_compute_g(self)
             assert len(g_extra) == self.n_g_extra
@@ -723,7 +637,7 @@ class RobotModel:
             self.l = x_opt[-1]
             self.Dl = self._Dl_helper(x_opt, lamb_opt, nu_opt, self.W, self.DW)
         else:
-            l, Dl = self.custom_compute_l(self)
+            self.l, self.Dl = self.custom_compute_l(self)
 
     @staticmethod
     @jit(nopython=True, fastmath=True, cache=True)
@@ -979,3 +893,97 @@ class RobotModel:
         self.plant.SetPositions(self.plant_context, q_all)
         self.sliders.SetPositions(q_all)
         self.sliders.Run(self.diagram, None)
+
+
+@dataclass(kw_only=True)
+class RobotModelConfig:
+    """A configuration for a robot model.
+
+    Parameters
+    ----------
+    model_path : str
+        The path of the description relative to the ROOT/models directory in the repo.
+    obj : ObjectDescription
+        The description of the object.
+    ns : int, default=4
+        The number of sides of the pyramidal friction cone approximation.
+    mu : float, default=0.7
+        The coefficient of friction.
+    d_min : float, default=0.001
+        The minimum distance between any two collision geometries.
+    d_pen : float, default=0.001
+        The allowable penetration between the fingertips and the object.
+    l_bar_cutoff : float, default=1e-6
+        The minimum allowable value of l_bar.
+    name : str | None, default=None
+        The name of the robot.
+    viz : bool, default=True
+        Whether to visualize the robot.
+    custom_compute_l : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
+        A custom cost function that takes in the robot and returns l and Dl. This ensures that
+        the callback has access to whatever info might be necessary.
+    custom_compute_g : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
+        A custom inequality constraint function that returns extra inequality constraints.
+    custom_compute_h : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
+        A custom equality constraint function that returns extra equality constraints.
+    n_g_extra : int, default=1
+        The number of "extra" inequality constraints. Extra is defined as anything that is
+        not a box constraint or a collision constraint.
+    n_h_extra : int, default=0
+        The number of "extra" equality constraints. Extra is defined as anything that is
+        not a coupling or contact constraint.
+
+    WARNING
+    -------
+    When defining the custom callbacks, it is important to note the order that they
+    execute, in case they rely on cached values. The function `compute_all` shows that first,
+    l is computed, then the extra inequality constraints, then the equality constraints. The only
+    caveat to this is that the non-extra inequality constraints (collision and joint limits) are
+    computed before l.
+    """
+
+    # required
+    model_path: str | None = None
+    obj: ObjectDescription | None = None
+
+    # optional
+    ns: int = 4
+    mu: float = 0.7
+    d_min: float = 0.001
+    d_pen: float = 0.001
+    l_bar_cutoff: float = 1e-6
+    n_couple: int = 0
+    name: str | None = None
+    viz: bool = True
+    custom_compute_l: Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None = None
+    custom_compute_g: Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None = None
+    custom_compute_h: Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None = None
+    n_g_extra: int = 1
+    n_h_extra: int = 0
+
+    # model type to create - shouldn't override during initialization, only when subclassing
+    model_class: type = RobotModel
+
+    def __post_init__(self) -> None:
+        """Post-initialization checks."""
+        # enforcing required parameters manually, since model_path is provided by
+        # derived classes
+        if self.model_path is None:
+            raise AttributeError
+        if self.obj is None:
+            raise AttributeError
+
+        # handling default values manually, since derived classes have different ones
+        if self.name is None:
+            self.name = "robot"
+
+    def create_pre_warmstart(self, model: "RobotModel") -> None:
+        """Entrypoint into the create() function before the warm start."""
+        pass
+
+    def create(self) -> "RobotModel":
+        """Creates the robot model."""
+        model = self.model_class(self)
+        self.create_pre_warmstart(model)
+        model.warm_start()
+        return model

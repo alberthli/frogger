@@ -5,6 +5,7 @@ import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
 from frogger import ROOT
+from frogger.baselines import WuBaselineConfig
 from frogger.objects import MeshObject, MeshObjectConfig
 from frogger.robots.robots import AlgrModelConfig, BH280ModelConfig, FR3AlgrModelConfig
 from frogger.sampling import (
@@ -17,6 +18,7 @@ from frogger.solvers import Frogger, FroggerConfig
 # all example robot models
 model_sampler_pairs = [
     ("Allegro", AlgrModelConfig, HeuristicAlgrICSampler),
+    ("Allegro_WuBaseline", WuBaselineConfig.from_cfg(AlgrModelConfig), HeuristicAlgrICSampler)
     ("BH280", BH280ModelConfig, HeuristicBH280ICSampler),
     ("FR3-Allegro", FR3AlgrModelConfig, HeuristicFR3AlgrICSampler),
 ]
