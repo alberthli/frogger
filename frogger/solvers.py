@@ -81,14 +81,18 @@ class Frogger:
         n_col = len(model.query_object.inspector().GetCollisionCandidates())
         n_surf = model.nc
 
-        n_ineq = n_joint + n_col + 1
-        n_eq = n_surf + n_couple
+        n_ineq = n_joint + n_col + model.n_g_extra
+        n_eq = n_surf + n_couple + model.n_h_extra
 
-        tol_eq = tol_surf * np.ones(n_eq)  # surface constraint tolerances
+        tol_eq = tol_fclosure * np.ones(n_eq)  # fill with fclosure tols
+        tol_eq[:n_surf] = tol_surf  # surface constraint tolerances
         tol_eq[n_surf : (n_surf + n_couple)] = tol_couple
-        tol_ineq = tol_col * np.ones(n_ineq)  # collision constraint tolerances
+
+        tol_ineq = tol_fclosure * np.ones(n_ineq)  # fill with fclosure tols
         tol_ineq[:n_joint] = tol_joint  # joint limit constraint tolerances
-        tol_ineq[n_joint + n_col] = tol_fclosure  # fclosure constraint tolerance
+        tol_ineq[
+            n_joint : (n_joint + n_col)
+        ] = tol_col  # collision constraint tolerances
 
         # setting up the solver
         f, g, h = self._make_fgh()
@@ -165,7 +169,7 @@ class Frogger:
             # refine the grasp
             try:
                 q_star = self.opt.optimize(q0)
-            except (RuntimeError, ValueError, nlopt.RoundoffLimited):
+            except (RuntimeError, ValueError, nlopt.RoundoffLimited) as e:
                 # [NOTE] RuntimeError catches two extremely rare errors:
                 #        "RuntimeError: bug: more than iter SQP iterations"
                 #          -this is an NLOPT error
@@ -173,6 +177,7 @@ class Frogger:
                 #          -see: github.com/RobotLocomotion/drake/issues/18704
                 # [NOTE] ValueError catches a rare error involving nans appearing in
                 #        MeshObject gradient computation
+                print(f"Caught error: {e}! Resampling...")
                 q_star = np.nan * np.ones(self.model.n)
 
             # check whether the solution satisfies the constraints
