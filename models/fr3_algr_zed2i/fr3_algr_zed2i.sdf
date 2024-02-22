@@ -722,6 +722,13 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </geometry>
       </visual>
     </link>
+    <drake:collision_filter_group name="link6_connector_cfg">
+      <drake:member>fr3_link6</drake:member>
+      <drake:member>connector</drake:member>
+      <drake:ignored_collision_filter_group>
+        link6_connector_cfg
+      </drake:ignored_collision_filter_group>
+    </drake:collision_filter_group>
 
     <!-- ################## -->
     <!-- CONNECTOR TO ZED2i -->
