@@ -705,12 +705,11 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </inertia>
       </inertial>
       <collision name="connector_collision">
-        <pose>0 0 0 0 0 -1.57079632679</pose>
+        <pose>-0.009 0 0.017 0 0 -1.57079632679</pose>
         <geometry>
-          <mesh>
-            <scale>1 1 1</scale>
-            <uri>meshes/connector.obj</uri>
-          </mesh>
+          <box>
+            <size>0.078 0.095 0.034</size>
+          </box>
         </geometry>
       </collision>
       <visual name="connector_visual">
@@ -747,7 +746,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <izz>5.47e-4</izz>
         </inertia>
       </inertial>
-      <collision name="connector_collision">
+      <collision name="zed2i_collision">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
@@ -756,7 +755,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           </mesh>
         </geometry>
       </collision>
-      <visual name="connector_visual">
+      <visual name="zed2i_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
