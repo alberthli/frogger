@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import numpy as np
 from numba import jit
 from quantecon.optimize.linprog_simplex import linprog_simplex as linprog
@@ -5,12 +7,15 @@ from scipy.spatial import ConvexHull
 
 from frogger.grasping import compute_primitive_forces
 
+if TYPE_CHECKING:
+    from frogger.robots.robot_core import RobotModel
+
 # ############# #
 # FERRARI-CANNY #
 # ############# #
 
 
-def ferrari_canny_L1(
+def _ferrari_canny_L1(
     G: np.ndarray,
     mu: float,
     c: np.ndarray | None = None,
@@ -178,3 +183,35 @@ def min_weight_gradient(
     Dl_W = -np.linalg.lstsq(C, RHS2)[0][-1, :].reshape((6, m))
     Dl = Dl_W.reshape(-1) @ DW.reshape((-1, DW.shape[-1]))
     return Dl
+
+
+# ########### #
+# CONVENIENCE #
+# ########### #
+
+
+def min_weight_metric(robot: "RobotModel") -> float:
+    """Convenience function for computing the min-weight metric.
+
+    Assumes that the basis wrenches have already been computed and cached.
+
+    Parameters
+    ----------
+    robot : RobotModel
+        The robot model.
+    """
+    x_opt, lamb_opt, nu_opt = min_weight_lp(robot.W)
+    return x_opt[-1]
+
+
+def ferrari_canny_L1(robot: "RobotModel") -> float:
+    """Convenience function for computing the Ferrari-Canny L1 metric.
+
+    Assumes that the grasp matrix has already been computed and cached.
+
+    Parameters
+    ----------
+    robot : RobotModel
+        The robot model.
+    """
+    return _ferrari_canny_L1(robot.G, robot.mu, ns=robot.ns, nc=robot.nc, lamb=1.0)
