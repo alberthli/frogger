@@ -1,6 +1,5 @@
 import numpy as np
 from numba import jit
-from scipy.spatial import ConvexHull
 
 
 @jit(nopython=True, fastmath=True, cache=True)
@@ -56,6 +55,8 @@ def vee(A: np.ndarray) -> np.ndarray:
 def compute_g_inv(g: np.ndarray) -> np.ndarray:
     """Inverse of homogeneous transform. Can compute in batches.
 
+    TODO(ahl): convert this to a numba function.
+
     Parameters
     ----------
     g : np.ndarray, shape=(..., 4, 4)
@@ -81,6 +82,8 @@ def compute_g_inv(g: np.ndarray) -> np.ndarray:
 
 def compute_adjoint(g: np.ndarray) -> np.ndarray:
     """Computes the adjoint of a homogeneous transform. Can compute in batches.
+
+    TODO(ahl): convert this to a numba function.
 
     Parameters
     ----------
@@ -153,6 +156,8 @@ def compute_gOCs(ps: np.ndarray, normals: np.ndarray) -> np.ndarray:
 def compute_grasp_matrix(g_OCs: np.ndarray, model: str = "hard") -> np.ndarray:
     """Computes the grasp matrix.
 
+    TODO(ahl): convert this to a numba function.
+
     Parameters
     ----------
     g_OCs : np.ndarray, shape=(nc, 4, 4)
@@ -198,6 +203,8 @@ def compute_primitive_forces(ns: int, mu: float, model: str = "hard"):
 
     These are the forces along the edges of a friction pyramid with unit norm.
 
+    TODO(ahl): convert this to a numba function.
+
     Parameters
     ----------
     ns : int
@@ -226,61 +233,3 @@ def compute_primitive_forces(ns: int, mu: float, model: str = "hard"):
     else:
         raise ValueError("model must be 'hard' or 'soft'!")
     return fs
-
-
-def ferrari_canny_L1(
-    G: np.ndarray,
-    mu: float,
-    c: np.ndarray | None = None,
-    ns: int = 4,
-    nc: int = 4,
-    lamb: float = 1.0,
-) -> float:
-    """Computes the L1 Ferrari-Canny metric.
-
-    Parameters
-    ----------
-    G : np.ndarray, shape=(6, nc*nb)
-        Grasp matrix. nb=3 for hard contact, nb=4 for soft contact.
-    mu : float
-        Coefficient of friction.
-    c : np.ndarray | None, default=None
-        The center about which to check the ball radius. If None, defaults to 0.
-    ns : int, default=4
-        Number of sides of pyramidal friction cone approximation.
-    nc : int, default=4
-        Number of contact points.
-    lamb : float, default=1.0
-        The weighting parameter defining the wrench space metric. lamb=1.0 -> L2
-        metric.
-        For discussion of alternatives see paragraph before Sec. 3.3.2 of "Grasp
-        quality measures: review and performance" by Roa et al.
-        norm(w) = sqrt(|f|^2 + lamb*|tau|^2)
-
-    Returns
-    -------
-    Q : float
-        Grasp quality. Geometrically, the radius of the largest sphere that is
-        contained in the grasp wrench space centered around c. Returns -1.0 if c is
-        not contained in the convex hull.
-    """
-    assert mu > 0.0
-    assert lamb > 0.0
-
-    if c is None:
-        c = np.zeros(6)
-
-    # columns of W are the primitive wrenches.
-    F = compute_primitive_forces(ns, mu, model="hard")  # (3, ns)
-    W = G @ np.kron(np.eye(nc), F)  # generating primitive wrenches from forces
-    W[3:, :] *= np.sqrt(lamb)  # scales the torques by lamb
-
-    # hull.equations returns [A, b] for normals and offset of hyperplanes of facets.
-    # The hull is defined as the polyhedron Ax + b <= 0, where rows of A are normals.
-    # If min over all -b is negative, then the origin is not contained.
-    # Otherwise, the quality is given by the min over all -b.
-    # In general, if x is a point in the convex hull, Ax + b <= 0.
-    W = ConvexHull(W.T - c)  # subtracts off the center from all points in W
-    _Q = min(-W.equations[:, -1])
-    Q = _Q if _Q >= 0.0 else -1.0
-    return Q
