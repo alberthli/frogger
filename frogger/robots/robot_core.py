@@ -33,6 +33,7 @@ from frogger.grasping import (
     compute_primitive_forces,
     wedge,
 )
+from frogger.metrics import min_weight_gradient, min_weight_lp
 from frogger.objects import ObjectDescription
 
 
@@ -635,80 +636,11 @@ class RobotModel:
     def _compute_l(self) -> None:
         """Computes the min-weight metric and its gradient."""
         if self.custom_compute_l is None:
-            x_opt, lamb_opt, nu_opt = self._l_helper(self.W)
+            x_opt, lamb_opt, nu_opt = min_weight_lp(self.W)
             self.l = x_opt[-1]
-            self.Dl = self._Dl_helper(x_opt, lamb_opt, nu_opt, self.W, self.DW)
+            self.Dl = min_weight_gradient(x_opt, lamb_opt, nu_opt, self.W, self.DW)
         else:
             self.l, self.Dl = self.custom_compute_l(self)
-
-    @staticmethod
-    @jit(nopython=True, fastmath=True, cache=True)
-    def _l_helper(W: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Numba jit-compiled helper method for computing l."""
-        m = W.shape[-1]
-
-        Im = np.eye(m)
-        ones_m = np.ones((m, 1))
-        w_bar = np.zeros(6)  # wrench whose convex hull membership is checked
-
-        # numba-compiled quantecon simplex method
-        # [NOTE] we must convert the LP to standard form to use quantecon's linprog.
-        # Thus, we add slack variables for the non-negativity constraints on the
-        # standard form decision variables
-        c = np.concatenate((np.zeros(2 * m), np.array([1, -1])))
-        top = np.concatenate((W, -W, np.zeros((6, 2))), axis=1)
-        bot = np.concatenate((ones_m.T, -ones_m.T, np.zeros((1, 2))), axis=1)
-        Aeq = np.concatenate((top, bot), axis=0)
-        beq = np.concatenate((w_bar, np.array([1.0])))
-        Ain = np.concatenate((-Im, Im, ones_m, -ones_m), axis=1)
-        res = linprog(c, A_ub=Ain, b_ub=np.zeros(m), A_eq=Aeq, b_eq=beq)
-        x_ = res.x
-        x_p = np.concatenate((x_[:m], np.array([x_[-2]])))
-        x_m = np.concatenate((x_[m : 2 * m], np.array([x_[-1]])))
-
-        x_opt = x_p - x_m
-        lamb_opt = res.lambd[:m]
-        nu_opt = res.lambd[m:]
-
-        return x_opt, lamb_opt, nu_opt
-
-    @staticmethod
-    @jit(nopython=True, fastmath=True, cache=True)
-    def _Dl_helper(
-        x_opt: np.ndarray,
-        lamb_opt: np.ndarray,
-        nu_opt: np.ndarray,
-        W: np.ndarray,
-        DW: np.ndarray,
-    ) -> np.ndarray:
-        """Numba jit-compiled helper method for computing Dl."""
-        m = lamb_opt.shape[0]
-        Im = np.eye(m)
-        ones_m = np.ones((m, 1))
-
-        # [NOTE] these are the inequality and equality constraint matrices in the
-        # original formulation. We use these to compute the gradient, not to set up
-        # the LP, which must be put in standard form for quantecon's linprog method.
-        Ain = np.concatenate((-Im, ones_m), axis=1)
-        Aeq = np.zeros((7, m + 1))
-        Aeq[:-1, :-1] = W
-        Aeq[-1, :-1] = 1.0
-
-        # jacobian of KKT wrt W
-        _DH_W1_T = np.kron(Im, nu_opt[:6]).reshape((m, m, 6))
-        _DH_W1 = np.swapaxes(_DH_W1_T, -1, -2)
-        _DH_W2 = np.kron(np.eye(6), x_opt[:m]).reshape((6, 6, m))
-        DH_W = np.concatenate(
-            (_DH_W1, np.zeros((m + 1, 6, m)), _DH_W2, np.zeros((1, 6, m)))
-        )
-        C = np.vstack((Ain * np.expand_dims(lamb_opt, -1), Aeq))
-        _DH_W = DH_W.reshape((2 * m + 8, 6 * m))  # 3d -> 2d for lstsq
-
-        # computing Dl explicitly using chain rule + sparsity exploit
-        RHS2 = _DH_W[m + 1 :, :]  # bottom block of _DH_W
-        Dl_W = -np.linalg.lstsq(C, RHS2)[0][-1, :].reshape((6, m))
-        Dl = Dl_W.reshape(-1) @ DW.reshape((-1, DW.shape[-1]))
-        return Dl
 
     def _compute_cost_func(self) -> None:
         """Computes the cost function and its gradient."""
@@ -985,10 +917,10 @@ class RobotModelConfig:
         if self.name is None:
             self.name = "robot"
 
-    def create_pre_warmstart(self, model: "RobotModel") -> None:
+    def create_pre_warmstart(self, model: RobotModel) -> None:
         """Entrypoint into the create() function before the warm start."""
 
-    def create(self) -> "RobotModel":
+    def create(self) -> RobotModel:
         """Creates the robot model."""
         model = self.model_class(self)
         self.create_pre_warmstart(model)

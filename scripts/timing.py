@@ -6,6 +6,7 @@ from pydrake.math import RigidTransform, RotationMatrix
 
 from frogger import ROOT
 from frogger.baselines import WuBaselineConfig
+from frogger.metrics import ferrari_canny_L1, min_weight_metric
 from frogger.objects import MeshObject, MeshObjectConfig
 from frogger.robots.robots import AlgrModelConfig, BH280ModelConfig, FR3AlgrModelConfig
 from frogger.sampling import (
@@ -77,6 +78,7 @@ obj_names = [
 tot_setup_time = 0.0
 tot_gen_time = 0.0
 NUM_SAMPLES = 1  # [EDIT THIS] number of grasps to sample per object
+EVAL = True  # [EDIT THIS] whether to eval the grasps on min-weight/Ferrari-Canny
 
 # looping over the example models
 for pair in model_sampler_pairs:
@@ -147,12 +149,14 @@ for pair in model_sampler_pairs:
         start = time.time()
         for _ in range(NUM_SAMPLES):
             _q_star = frogger.generate_grasp()
+            print(f"        min-weight: {min_weight_metric(model)}")
+            print(f"        Ferrari-Canny: {ferrari_canny_L1(model)}")
         end = time.time()
         print(f"    grasp generation time: {end - start}")
         tot_gen_time += end - start
 
         # [DEBUG] visualize the grasp
-        # model.viz_config(q_star)
+        # model.viz_config(_q_star)
 
     # computing total times
     avg_setup_time = tot_setup_time / (len(obj_names) * NUM_SAMPLES)

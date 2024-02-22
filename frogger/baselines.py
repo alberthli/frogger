@@ -99,7 +99,13 @@ class BaselineConfig(RobotModelConfig):
 
 @dataclass(kw_only=True)
 class WuBaselineConfig(BaselineConfig):
-    """Configuration for the Wu baseline solver."""
+    """Configuration for the Wu baseline solver.
+
+    Note
+    ----
+    All of the torch functions use the default device, which is CPU unless changed
+    elsewhere. In testing, the device did not have a large difference on run time.
+    """
 
     n_g_extra: int = 0
     n_h_extra: int = 1
@@ -164,18 +170,17 @@ class WuBaselineConfig(BaselineConfig):
         Requires robot.DG to have been computed and cached already!
         """
         # equality constraint
-        # device = "cuda" if torch.cuda.is_available() else "cpu"
         G = torch.tensor(robot.G).double()
-        h = (robot._bilevel_cons(G)).detach().numpy()[..., None]  # (1,)
+        h = (robot._bilevel_cons(G)).cpu().detach().numpy()[..., None]  # (1,)
 
         # gradient
         Dh_G = (
             torch.autograd.functional.jacobian(
                 robot._bilevel_cons, G, create_graph=True, strict=True
             )
+            .cpu()
             .detach()
             .numpy()
-            .astype(np.float64)
         )
         DG = robot.DG
         Dh = (Dh_G.reshape(-1) @ DG.reshape((-1, DG.shape[-1])))[None, ...]  # (1, n)
