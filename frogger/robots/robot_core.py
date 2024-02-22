@@ -917,10 +917,10 @@ class RobotModelConfig:
         if self.name is None:
             self.name = "robot"
 
-    def create_pre_warmstart(self, model: "RobotModel") -> None:
+    def create_pre_warmstart(self, model: RobotModel) -> None:
         """Entrypoint into the create() function before the warm start."""
 
-    def create(self) -> "RobotModel":
+    def create(self) -> RobotModel:
         """Creates the robot model."""
         model = self.model_class(self)
         self.create_pre_warmstart(model)
