@@ -828,6 +828,37 @@ class RobotModel:
         self.sliders.SetPositions(q_all)
         self.sliders.Run(self.diagram, None)
 
+    def introspect_collisions(
+        self, q: np.ndarray | None = None, level: float = -1e-6
+    ) -> None:
+        """Introspects collisions for most recently processed configuration.
+
+        Parameters
+        ----------
+        q : np.ndarray | None, default=None
+            The configuration to introspect. If None, uses the most recent configuration.
+        level : float, default=-1e-6
+            The level of penetration to introspect. Any pair with signed distance less than
+            level will be printed.
+        """
+        if q is not None:
+            self.compute_all(q)
+
+        # print the names of the collision pairs in violation
+        d_min = self.d_min
+        sdps = self.query_object.ComputeSignedDistancePairwiseClosestPoints(
+            max_distance=(d_min + 0.001)
+        )
+        inspector = self.query_object.inspector()  # model inspector for geometries
+
+        # loop through unculled collision pairs
+        for sdp in sdps:
+            id_A, id_B = sdp.id_A, sdp.id_B  # geometry IDs
+            sd = sdp.distance  # signed distance
+            names = [inspector.GetName(id_A), inspector.GetName(id_B)]
+            if sd <= level:
+                print(names)
+
 
 @dataclass(kw_only=True)
 class RobotModelConfig:
