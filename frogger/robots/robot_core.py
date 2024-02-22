@@ -67,7 +67,9 @@ class RobotModel:
         self.d_pen = cfg.d_pen
         self.l_bar_cutoff = cfg.l_bar_cutoff
         self.viz = cfg.viz
-        self.custom_compute_l = cfg.__class__.custom_compute_l  # these will be class functions
+        self.custom_compute_l = (
+            cfg.__class__.custom_compute_l
+        )  # these will be class functions
         self.custom_compute_g = cfg.__class__.custom_compute_g
         self.custom_compute_h = cfg.__class__.custom_compute_h
         self.n_g_extra = cfg.n_g_extra
@@ -719,13 +721,13 @@ class RobotModel:
         if self.n_couple != 0:
             h_couple = self.A_couple @ q + self.b_couple
             Dh_couple = self.A_couple
-            self.h[:self.n_couple + self.nc] = np.concatenate((self.h_tip, h_couple))
-            self.Dh[:self.n_couple + self.nc, :] = np.concatenate(
+            self.h[: self.n_couple + self.nc] = np.concatenate((self.h_tip, h_couple))
+            self.Dh[: self.n_couple + self.nc, :] = np.concatenate(
                 (self.Dh_tip, Dh_couple), axis=0
             )
         else:
-            self.h[:self.nc] = self.h_tip
-            self.Dh[:self.nc, :] = self.Dh_tip
+            self.h[: self.nc] = self.h_tip
+            self.Dh[: self.nc, :] = self.Dh_tip
 
         # computing the extra equality constraints
         if self.custom_compute_h is not None:
@@ -955,9 +957,15 @@ class RobotModelConfig:
     n_couple: int = 0
     name: str | None = None
     viz: bool = True
-    custom_compute_l: Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None = None
-    custom_compute_g: Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None = None
-    custom_compute_h: Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None = None
+    custom_compute_l: Callable[
+        [RobotModel], Tuple[np.ndarray, np.ndarray]
+    ] | None = None
+    custom_compute_g: Callable[
+        [RobotModel], Tuple[np.ndarray, np.ndarray]
+    ] | None = None
+    custom_compute_h: Callable[
+        [RobotModel], Tuple[np.ndarray, np.ndarray]
+    ] | None = None
     n_g_extra: int = 1
     n_h_extra: int = 0
 
@@ -979,7 +987,6 @@ class RobotModelConfig:
 
     def create_pre_warmstart(self, model: "RobotModel") -> None:
         """Entrypoint into the create() function before the warm start."""
-        pass
 
     def create(self) -> "RobotModel":
         """Creates the robot model."""

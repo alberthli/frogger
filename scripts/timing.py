@@ -17,8 +17,12 @@ from frogger.solvers import Frogger, FroggerConfig
 
 # all example robot models
 model_sampler_pairs = [
+    (
+        "Allegro_WuBaseline",
+        WuBaselineConfig.from_cfg(AlgrModelConfig),
+        HeuristicAlgrICSampler,
+    ),
     ("Allegro", AlgrModelConfig, HeuristicAlgrICSampler),
-    ("Allegro_WuBaseline", WuBaselineConfig.from_cfg(AlgrModelConfig), HeuristicAlgrICSampler)
     ("BH280", BH280ModelConfig, HeuristicBH280ICSampler),
     ("FR3-Allegro", FR3AlgrModelConfig, HeuristicFR3AlgrICSampler),
 ]
@@ -118,6 +122,7 @@ for pair in model_sampler_pairs:
             d_pen=0.005,
             l_bar_cutoff=0.3,
             viz=False,
+            # viz=True,  # [DEBUG]
         ).create()
         sampler = Sampler(model)
 
@@ -141,10 +146,13 @@ for pair in model_sampler_pairs:
         # timing test
         start = time.time()
         for _ in range(NUM_SAMPLES):
-            _ = frogger.generate_grasp()
+            _q_star = frogger.generate_grasp()
         end = time.time()
         print(f"    grasp generation time: {end - start}")
         tot_gen_time += end - start
+
+        # [DEBUG] visualize the grasp
+        # model.viz_config(q_star)
 
     # computing total times
     avg_setup_time = tot_setup_time / (len(obj_names) * NUM_SAMPLES)

@@ -90,7 +90,9 @@ class Frogger:
 
         tol_ineq = tol_fclosure * np.ones(n_ineq)  # fill with fclosure tols
         tol_ineq[:n_joint] = tol_joint  # joint limit constraint tolerances
-        tol_ineq[n_joint : (n_joint + n_col)] = tol_col  # collision constraint tolerances
+        tol_ineq[
+            n_joint : (n_joint + n_col)
+        ] = tol_col  # collision constraint tolerances
 
         # setting up the solver
         f, g, h = self._make_fgh()

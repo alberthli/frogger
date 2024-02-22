@@ -7,17 +7,17 @@ from qpth.qp import QPFunction
 
 from frogger.robots.robot_core import RobotModel, RobotModelConfig
 
-
 # ##### #
 # UTILS #
 # ##### #
 
-def combine_dataclasses(cls_a: RobotModelConfig, cls_b) -> type:
+
+def combine_dataclasses(cls_a: type, cls_b: type) -> type:
     """Combines two config dataclasses into a new one, prioritizing attributes of cls_b.
 
     Parameters
     ----------
-    cls_a : RobotModelConfig
+    cls_a : type
         The first dataclass type.
     cls_b : type
         The second dataclass type.
@@ -27,18 +27,21 @@ def combine_dataclasses(cls_a: RobotModelConfig, cls_b) -> type:
     new_cls : type
         The new dataclass type.
     """
+    # extract attributes from cls_a
     attributes = {
-        field.name: (field.type, getattr(cls_a, field.name))
-        for field in fields(cls_a)
+        field.name: (field.type, getattr(cls_a, field.name)) for field in fields(cls_a)
     }
 
-    # remove fields that are methods in class b
+    # remove fields that are methods in cls_b
     for k in list(attributes.keys()):
         if k in cls_b.__dict__ and isinstance(getattr(cls_b, k), Callable):
             del attributes[k]
 
+    # include attributes from cls_b, prioritizing non-callable attributes
     for field in fields(cls_b):
-        if field.name not in attributes and not isinstance(getattr(cls_b, field.name), Callable):
+        if field.name not in attributes and not isinstance(
+            getattr(cls_b, field.name), Callable
+        ):
             attributes[field.name] = field.type, getattr(cls_b, field.name)
 
     # combine methods, prioritizing those from B
@@ -54,7 +57,7 @@ def combine_dataclasses(cls_a: RobotModelConfig, cls_b) -> type:
         if isinstance(method, Callable):
             methods[method_name] = method
 
-    # generating the new class
+    # generate the new class
     new_class_name = cls_a.__name__ + cls_b.__name__.replace("Config", "")
     new_cls = make_dataclass(
         new_class_name,
@@ -62,18 +65,19 @@ def combine_dataclasses(cls_a: RobotModelConfig, cls_b) -> type:
         kw_only=True,
         bases=(cls_a, cls_b),
     )
-    # new_cls.__annotations__ = {**cls_a.__annotations__, **cls_b.__annotations__}
-    
+
     # add methods to the new dataclass
     for method_name, method in methods.items():
         if method_name != "__class__":
             setattr(new_cls, method_name, method)
-    
+
     return new_cls
+
 
 # ######### #
 # BASELINES #
 # ######### #
+
 
 @dataclass(kw_only=True)
 class BaselineConfig(RobotModelConfig):
@@ -96,6 +100,7 @@ class BaselineConfig(RobotModelConfig):
 @dataclass(kw_only=True)
 class WuBaselineConfig(BaselineConfig):
     """Configuration for the Wu baseline solver."""
+
     n_g_extra: int = 0
     n_h_extra: int = 1
 
@@ -112,7 +117,9 @@ class WuBaselineConfig(BaselineConfig):
             (
                 np.append(np.cos(2 * np.pi * np.arange(model.ns) / model.ns), 0.0),
                 np.append(np.sin(2 * np.pi * np.arange(model.ns) / model.ns), 0.0),
-                -np.append(model.mu * np.cos(np.pi * np.ones(model.ns) / model.ns), 1.0),
+                -np.append(
+                    model.mu * np.cos(np.pi * np.ones(model.ns) / model.ns), 1.0
+                ),
             )
         ).T  # pyramidal friction cone approx in contact frame + min normal force
 
@@ -152,7 +159,7 @@ class WuBaselineConfig(BaselineConfig):
     def custom_compute_h(robot: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
         """Extra equality constraints for Wu baseline. This is the force closure QP.
 
-        WARNING
+        Warning
         -------
         Requires robot.DG to have been computed and cached already!
         """
