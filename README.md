@@ -13,7 +13,7 @@ If you have a MOSEK license and would like to activate the MOSEK solver in `Drak
 
 ## Usage
 There are three major components to using FRoGGeR to sample grasps:
-1. a compliant robot model,
+1. a FRoGGeR-compliant robot model,
 2. a description of the target object, and
 3. an initial condition sampler for the nonlinear optimization.
 
@@ -69,6 +69,8 @@ q_star = frogger.generate_grasp()
 print("Grasp generated!")
 model.viz_config(q_star)
 ```
+
+Note that the first time you run the code, there will be `numba` compilation happening, so it will be slower. Afterwards, the compiled code should be cached, so everything will run quickly.
 
 ### Robot Model
 We allow robot descriptions using URDFs or SDFs. We enforce that the _entire_ robot must be described in a single file. Important details that are required in the description:
