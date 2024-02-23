@@ -172,8 +172,11 @@ class RobotModel:
         self.q = None  # cached value of the last unique configuration
         self.p_tips = None  # cached values of the fingertip FK and Jacobians
         self.J_tips = None
-        self.P_OF = None  # cached values of tips and contact normals in object frame
+        self.P_OF = (
+            None  # cached values of tips and contact normals in object/world frame
+        )
         self.n_O = None
+        self.n_W = None
         self.Ds_p = None  # cached value of Ds evaluated at fingertips
         self.h = None  # cached values of the eq constraint function and Jacobian
         self.Dh = None
@@ -517,8 +520,8 @@ class RobotModel:
         # contact points and normals in the object frame
         self.P_OF = X_OW @ self.p_tips.T  # (3, nc)
         Ds_p = self.obj.Ds_W(self.p_tips, batched=True)  # Ds(p)
-        _normals = -Ds_p.T / np.linalg.norm(Ds_p, axis=1)  # (3, nc)
-        self.n_O = R_OW @ _normals  # INWARD pointing normals
+        self.n_W = -Ds_p.T / np.linalg.norm(Ds_p, axis=1)  # (3, nc)
+        self.n_O = R_OW @ self.n_W  # INWARD pointing normals
 
         self.gOCs = compute_gOCs(self.P_OF, self.n_O)  # (nc, 4, 4)
         self.G = compute_grasp_matrix(self.gOCs)  # (6, 3 * nc), object frame
@@ -709,6 +712,20 @@ class RobotModel:
             self.compute_all(q)
             self.q = np.copy(q)
         return self.J_tips  # (nc, 3, n)
+
+    def compute_n_O(self, q: np.ndarray) -> np.ndarray:
+        """Computes the invward contact normals in the object frame, n_O."""
+        if self.n_O is None or np.any(q != self.q):
+            self.compute_all(q)
+            self.q = np.copy(q)
+        return self.n_O.T  # (nc, 3)
+
+    def compute_n_W(self, q: np.ndarray) -> np.ndarray:
+        """Computes the inward contact normals in the world frame, n_W."""
+        if self.n_W is None or np.any(q != self.q):
+            self.compute_all(q)
+            self.q = np.copy(q)
+        return self.n_W.T  # (nc, 3)
 
     def compute_g(self, q: np.ndarray) -> np.ndarray:
         """Computes the inequality constraints g."""
