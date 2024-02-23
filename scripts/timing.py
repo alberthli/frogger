@@ -1,4 +1,5 @@
 import time
+import warnings
 
 import numpy as np
 import trimesh
@@ -8,13 +9,21 @@ from frogger import ROOT
 from frogger.baselines import WuBaselineConfig
 from frogger.metrics import ferrari_canny_L1, min_weight_metric
 from frogger.objects import MeshObject, MeshObjectConfig
-from frogger.robots.robots import AlgrModelConfig, BH280ModelConfig, FR3AlgrModelConfig
+from frogger.robots.robots import (
+    AlgrModelConfig,
+    BH280ModelConfig,
+    FR3AlgrModelConfig,
+    FR3AlgrZed2iModelConfig,
+)
 from frogger.sampling import (
     HeuristicAlgrICSampler,
     HeuristicBH280ICSampler,
     HeuristicFR3AlgrICSampler,
 )
 from frogger.solvers import Frogger, FroggerConfig
+
+# [Feb. 22, 2024] suppress annoying torch warning about LUSolve from qpth
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # all example robot models
 model_sampler_pairs = [
@@ -26,6 +35,7 @@ model_sampler_pairs = [
     ("Allegro", AlgrModelConfig, HeuristicAlgrICSampler),
     ("BH280", BH280ModelConfig, HeuristicBH280ICSampler),
     ("FR3-Allegro", FR3AlgrModelConfig, HeuristicFR3AlgrICSampler),
+    ("FR3-Allegro-Zed2i", FR3AlgrZed2iModelConfig, HeuristicFR3AlgrICSampler),
 ]
 
 # all objects from paper
@@ -79,11 +89,12 @@ tot_setup_time = 0.0
 tot_gen_time = 0.0
 NUM_SAMPLES = 1  # [EDIT THIS] number of grasps to sample per object
 EVAL = True  # [EDIT THIS] whether to eval the grasps on min-weight/Ferrari-Canny
+VIZ = False  # [EDIT THIS] whether to visualize the results every grasp
 
 # looping over the example models
 for pair in model_sampler_pairs:
     model_name, ModelConfig, Sampler = pair
-    translation = 0.7 if model_name == "FR3-Allegro" else 0.0
+    translation = 0.7 if model_name in ["FR3-Allegro", "FR3-Allegro-Zed2i"] else 0.0
     print(f"model: {model_name}")
 
     # looping over all objects
@@ -123,8 +134,7 @@ for pair in model_sampler_pairs:
             d_min=0.001,
             d_pen=0.005,
             l_bar_cutoff=0.3,
-            viz=False,
-            # viz=True,  # [DEBUG]
+            viz=VIZ,
         ).create()
         sampler = Sampler(model)
 
@@ -146,17 +156,24 @@ for pair in model_sampler_pairs:
         tot_setup_time += end - start
 
         # timing test
-        start = time.time()
+        sub_time = 0.0
         for _ in range(NUM_SAMPLES):
-            _q_star = frogger.generate_grasp()
-            print(f"        min-weight: {min_weight_metric(model)}")
-            print(f"        Ferrari-Canny: {ferrari_canny_L1(model)}")
-        end = time.time()
-        print(f"    grasp generation time: {end - start}")
-        tot_gen_time += end - start
+            start = time.time()
+            q_star = frogger.generate_grasp()  # only time generation
+            end = time.time()
+            sub_time += end - start
 
-        # [DEBUG] visualize the grasp
-        # model.viz_config(_q_star)
+            # evaluate the grasps if requested
+            if EVAL:
+                print(f"        min-weight: {min_weight_metric(model, q_star)}")
+                print(f"        Ferrari-Canny: {ferrari_canny_L1(model, q_star)}")
+
+            # visualize the grasp if requested
+            if VIZ:
+                model.viz_config(q_star)
+
+        print(f"    grasp generation time: {end - start}")
+        tot_gen_time += sub_time
 
     # computing total times
     avg_setup_time = tot_setup_time / (len(obj_names) * NUM_SAMPLES)

@@ -190,7 +190,7 @@ def min_weight_gradient(
 # ########### #
 
 
-def min_weight_metric(robot: "RobotModel") -> float:
+def min_weight_metric(robot: "RobotModel", q: np.ndarray | None = None) -> float:
     """Convenience function for computing the min-weight metric.
 
     Assumes that the basis wrenches have already been computed and cached.
@@ -199,12 +199,17 @@ def min_weight_metric(robot: "RobotModel") -> float:
     ----------
     robot : RobotModel
         The robot model.
+    q : np.ndarray | None, default=None
+        The configuration at which to evaluate the metric. If None, defaults to the
+        current configuration of the robot.
     """
+    if q is not None:
+        robot.compute_all(q)
     x_opt, lamb_opt, nu_opt = min_weight_lp(robot.W)
     return x_opt[-1]
 
 
-def ferrari_canny_L1(robot: "RobotModel") -> float:
+def ferrari_canny_L1(robot: "RobotModel", q: np.ndarray | None = None) -> float:
     """Convenience function for computing the Ferrari-Canny L1 metric.
 
     Assumes that the grasp matrix has already been computed and cached.
@@ -213,5 +218,10 @@ def ferrari_canny_L1(robot: "RobotModel") -> float:
     ----------
     robot : RobotModel
         The robot model.
+    q : np.ndarray | None, default=None
+        The configuration at which to evaluate the metric. If None, defaults to the
+        current configuration of the robot.
     """
+    if q is not None:
+        robot.compute_all(q)
     return _ferrari_canny_L1(robot.G, robot.mu, ns=robot.ns, nc=robot.nc, lamb=1.0)

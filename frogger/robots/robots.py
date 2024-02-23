@@ -11,6 +11,10 @@ from frogger import ROOT
 from frogger.objects import ObjectDescription
 from frogger.robots.robot_core import RobotModel, RobotModelConfig
 
+# ################# #
+# FR3-Allegro Model #
+# ################# #
+
 
 class FR3AlgrModel(RobotModel):
     """The FR3-Allegro model.
@@ -65,6 +69,51 @@ class FR3AlgrModelConfig(RobotModelConfig):
         super().__post_init__()
 
 
+# ####################### #
+# FR3-Allegro-Zed2i Model #
+# ####################### #
+
+
+class FR3AlgrZed2iModel(FR3AlgrModel):
+    """The FR3-Allegro with Zed2i model.
+
+    [NOTE] This model comes with a fixed table.
+    """
+
+    def __init__(self, cfg: "FR3AlgrZed2iModelConfig") -> None:
+        """Initialize the FR3-Allegro model."""
+        self.cfg = cfg
+        assert cfg.hand == "rh"
+        super().__init__(cfg)
+
+
+@dataclass(kw_only=True)
+class FR3AlgrZed2iModelConfig(FR3AlgrModelConfig):
+    """Configuration of the FR3AlgrZed2i robot model.
+
+    Attributes
+    ----------
+    hand : str, default="rh"
+        The hand to use. For this model, MUST be "rh".
+    """
+
+    hand: str = "rh"
+
+    def __post_init__(self) -> None:
+        """Post-initialization checks."""
+        assert self.hand == "rh"
+        self.model_path = "fr3_algr_zed2i/fr3_algr_zed2i.sdf"
+        self.model_class = FR3AlgrZed2iModel
+        if self.name is None:
+            self.name = "fr3_algr_zed2i"
+        RobotModelConfig.__post_init__(self)
+
+
+# ################## #
+# Allegro Hand Model #
+# ################## #
+
+
 class AlgrModel(RobotModel):
     """The Allegro model."""
 
@@ -95,6 +144,11 @@ class AlgrModelConfig(RobotModelConfig):
         if self.name is None:
             self.name = f"algr_{self.hand}"
         super().__post_init__()
+
+
+# ################## #
+# Barrett Hand Model #
+# ################## #
 
 
 class BH280Model(RobotModel):

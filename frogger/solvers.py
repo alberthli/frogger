@@ -77,6 +77,7 @@ class Frogger:
         maxtime = cfg.maxtime
 
         # constraint setup
+        # TODO(ahl): expose tolerances for extra constraints
         n_joint = model.n_bounds
         n_col = len(model.query_object.inspector().GetCollisionCandidates())
         n_surf = model.nc
@@ -199,9 +200,30 @@ class Frogger:
                     )
                 else:
                     couple_vio = 0.0
+                if len(h_val[(self.n_surf + self.n_couple) :]) > 0:
+                    h_extra_vio = np.max(
+                        np.abs(h_val[(self.n_surf + self.n_couple) :])
+                    )  # extra eq constraints
+                else:
+                    h_extra_vio = 0.0
+
                 joint_vio = max(np.max(g_val[: self.model.n_bounds]), 0.0)
-                col_vio = max(np.max(g_val[self.model.n_bounds : -1]), 0.0)
-                fclosure_vio = max(g_val[-1], 0.0)
+                col_vio = max(
+                    np.max(
+                        g_val[
+                            self.model.n_bounds : (
+                                self.model.n_bounds + self.model.n_pairs
+                            )
+                        ]
+                    ),
+                    0.0,
+                )
+                if len(g_val[(self.model.n_bounds + self.model.n_pairs) :]) > 0:
+                    g_extra_vio = max(
+                        np.max(g_val[(self.model.n_bounds + self.model.n_pairs) :]), 0.0
+                    )
+                else:
+                    g_extra_vio = 0.0
 
                 # setting the feasibility flag
                 success = (
@@ -209,6 +231,9 @@ class Frogger:
                     and couple_vio <= self.tol_couple
                     and joint_vio <= self.tol_joint
                     and col_vio <= self.tol_col
-                    and fclosure_vio <= self.tol_fclosure  # min-weight bound
+                    and g_extra_vio <= self.tol_fclosure  # extra ineq constraints
+                    and h_extra_vio
+                    <= self.tol_fclosure  # TODO(ahl): once exposed, allow diff tolerances here
                 )
+
         return q_star

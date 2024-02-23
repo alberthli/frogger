@@ -414,7 +414,7 @@ class HeuristicAlgrICSampler(HeuristicICSampler):
 
 
 class HeuristicFR3AlgrICSampler(HeuristicAlgrICSampler):
-    """Convenience class for sampling with the FR3-Allexgro system.
+    """Convenience class for sampling with the FR3-Allegro system.
 
     The implementation turns out to be identical to the Allegro sampler with a table
     and constraints on the arm.

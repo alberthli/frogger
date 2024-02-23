@@ -13,11 +13,16 @@ If you have a MOSEK license and would like to activate the MOSEK solver in `Drak
 
 ## Usage
 There are three major components to using FRoGGeR to sample grasps:
-1. a compliant robot model,
+1. a FRoGGeR-compliant robot model,
 2. a description of the target object, and
 3. an initial condition sampler for the nonlinear optimization.
 
-We provide usage examples for 3 different robots (The floating Allegro hand, the floating underactuated Barrett Hand, and the Allegro hand attached to the Franka Research 3 on a tabletop) and on a subset of the YCB dataset. We also provide a script that times the execution of grasp generation for these objects on your system.
+We provide usage examples for a few different robots:
+* the floating Allegro hand,
+* the floating underactuated Barrett Hand,
+* the Allegro hand attached to the Franka Research 3 on a tabletop, and
+* the Allegro hand attached to the Franka Research 3 on a tabletop with a Zed2i camera.
+All examples synthesize grasps on a subset of the YCB dataset. The usage script times the execution of grasp generation for these objects on your system, and is located in `scripts/timing.py`. This script also gives an example of how to adjust an existing robot with a baseline non-FRoGGeR solver.
 
 For example, synthesizing a grasp with the Allegro hand can be done in the following ~50 lines of code. Many of the options have reasonable default values already and are just explicitly assigned in this example to demonstrate what is available. 
 ```
@@ -69,6 +74,8 @@ q_star = frogger.generate_grasp()
 print("Grasp generated!")
 model.viz_config(q_star)
 ```
+
+Note that the first time you run the code, there will be `numba` compilation happening, so it will be slower. Afterwards, the compiled code should be cached, so everything will run quickly.
 
 ### Robot Model
 We allow robot descriptions using URDFs or SDFs. We enforce that the _entire_ robot must be described in a single file. Important details that are required in the description:
