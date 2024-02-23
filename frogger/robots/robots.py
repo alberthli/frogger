@@ -94,7 +94,7 @@ class FR3AlgrZed2iModelConfig(FR3AlgrModelConfig):
     Attributes
     ----------
     hand : str, default="rh"
-        The hand to use. Can be "rh" or "lh".
+        The hand to use. For this model, MUST be "rh".
     """
 
     hand: str = "rh"
