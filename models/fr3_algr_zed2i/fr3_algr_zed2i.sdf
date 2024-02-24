@@ -534,7 +534,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
     <joint name="fr3_joint6" type="revolute">
       <child>fr3_link6</child>
       <parent>fr3_link5</parent>
-      <pose relative_to="fr3_link5">0 0 0 1.57079632679 0 0</pose>
+      <pose relative_to="fr3_link5">0 0 0 1.57079632679 1.57079632679 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
