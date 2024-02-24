@@ -52,7 +52,9 @@ class HeuristicICSampler(ICSampler):
     If desired, additional constraints can also be added.
     """
 
-    def __init__(self, model: RobotModel, table: bool = False) -> None:
+    def __init__(
+        self, model: RobotModel, table: bool = False, z_axis_fwd: bool = False
+    ) -> None:
         """Initialize the heuristic sampler.
 
         Parameters
@@ -62,10 +64,14 @@ class HeuristicICSampler(ICSampler):
         table : bool, default=False
             Whether there is a table at z=0. Determines whether to use a heuristic for
             dealing with flat objects.
+        z_axis_fwd : bool, default=False
+            Whether the z-axis of the palm is forced to point forward. Useful for generating
+            non-awkward grasps when there's an arm attached to a hand.
         """
         super().__init__(model)
         self.palm_frame = None  # palm frame used for sampling.
         self.table = table
+        self.z_axis_fwd = z_axis_fwd
 
     def get_palm_frame(self) -> Frame:
         """Gets the palm frame.
@@ -178,6 +184,12 @@ class HeuristicICSampler(ICSampler):
 
         # computing the rotation matrix associated with the choice of x and y-axis
         z_hat = np.cross(x_hat, y_hat)
+
+        # check whether z axis is forward. if not, negate y and z
+        if (
+            self.z_axis_fwd and z_hat[0] < 0
+        ):  # assume "forward" is +x in the world frame
+            y_hat, z_hat = -y_hat, -z_hat
         R_WPalm = np.stack((x_hat, y_hat, z_hat), axis=1)
 
         # (3) compute a palm position by bisecting with the object bounding box
@@ -314,9 +326,11 @@ class HeuristicAlgrICSampler(HeuristicICSampler):
     object, the fingers are heuristically placed to determine the initial guess.
     """
 
-    def __init__(self, model: AlgrModel, table: bool = False) -> None:
+    def __init__(
+        self, model: AlgrModel, table: bool = False, z_axis_fwd: bool = False
+    ) -> None:
         """Initialize the IC sampler."""
-        super().__init__(model, table=table)
+        super().__init__(model, table=table, z_axis_fwd=z_axis_fwd)
 
     def add_additional_constraints(
         self, ik: InverseKinematics, X_WPalm_des: RigidTransform
@@ -332,7 +346,7 @@ class HeuristicAlgrICSampler(HeuristicICSampler):
         """
         # set guess for hand
         q_imr = np.array([0.0, 0.5, 0.5, 0.5])  # if, mf, rf
-        q_th = np.array([0.8, 1.0, 0.5, 0.5])  # th
+        q_th = np.array([1.2, 0.5, 0.5, 0.4])  # th
         q_hand = np.concatenate((q_imr, q_imr, q_imr, q_th))
         q_curr = self.model.plant.GetPositions(self.model.plant_context)
         q_curr[-16:] = q_hand  # hand states come last
@@ -420,9 +434,11 @@ class HeuristicFR3AlgrICSampler(HeuristicAlgrICSampler):
     and constraints on the arm.
     """
 
-    def __init__(self, model: FR3AlgrModel, table: bool = True) -> None:
+    def __init__(
+        self, model: FR3AlgrModel, table: bool = True, z_axis_fwd: bool = False
+    ) -> None:
         """Initialize the IC sampler."""
-        super().__init__(model, table=table)
+        super().__init__(model, table=table, z_axis_fwd=z_axis_fwd)
 
 
 class HeuristicBH280ICSampler(HeuristicFR3AlgrICSampler):
@@ -431,9 +447,9 @@ class HeuristicBH280ICSampler(HeuristicFR3AlgrICSampler):
     See description in HeuristicFR3AlgrICSampler.
     """
 
-    def __init__(self, model: BH280Model) -> None:
+    def __init__(self, model: BH280Model, z_axis_fwd: bool = False) -> None:
         """Initialize the IC sampler."""
-        super().__init__(model, table=False)
+        super().__init__(model, table=False, z_axis_fwd=z_axis_fwd)
 
     def add_additional_constraints(
         self, ik: InverseKinematics, X_WPalm_des: RigidTransform
