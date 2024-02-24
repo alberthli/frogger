@@ -1010,10 +1010,10 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </drake:proximity_properties>
       </collision>
       <collision name="algr_rh_if_ds_tip_collision_2_FROGGERCOL">
-        <pose>0 0 0.01335 0 0 0</pose>
+        <pose>0 0 0.0210875 0 0 0</pose>
         <geometry>
           <cylinder>
-            <length>0.0267</length>
+            <length>0.0122875</length>
             <radius>0.012</radius>
           </cylinder>
         </geometry>
@@ -1229,10 +1229,10 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </drake:proximity_properties>
       </collision>
       <collision name="algr_rh_mf_ds_tip_collision_2_FROGGERCOL">
-        <pose>0 0 0.01335 0 0 0</pose>
+        <pose>0 0 0.0210875 0 0 0</pose>
         <geometry>
           <cylinder>
-            <length>0.0267</length>
+            <length>0.0122875</length>
             <radius>0.012</radius>
           </cylinder>
         </geometry>
@@ -1448,10 +1448,10 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </drake:proximity_properties>
       </collision>
       <collision name="algr_rh_rf_ds_tip_collision_2_FROGGERCOL">
-        <pose>0 0 0.01335 0 0 0</pose>
+        <pose>0 0 0.0210875 0 0 0</pose>
         <geometry>
           <cylinder>
-            <length>0.0267</length>
+            <length>0.0122875</length>
             <radius>0.012</radius>
           </cylinder>
         </geometry>
@@ -1668,14 +1668,15 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
         </drake:proximity_properties>
       </collision>
       <collision name="algr_rh_th_ds_tip_collision_2_FROGGERCOL">
-        <pose>0 0 0.02115 0 0 0</pose>
+        <pose>0 0 0.037 0 0 0</pose>
         <geometry>
           <cylinder>
-            <length>0.0423</length>
+            <length>0.0122875</length>
             <radius>0.012</radius>
           </cylinder>
         </geometry>
       </collision>
+
       <visual name="algr_rh_th_ds_visual">
         <geometry>
           <mesh>
