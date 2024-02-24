@@ -136,7 +136,10 @@ for pair in model_sampler_pairs:
             l_bar_cutoff=0.3,
             viz=VIZ,
         ).create()
-        sampler = Sampler(model)
+        sampler = Sampler(
+            model,
+            z_axis_fwd=model_name in ["FR3-Allegro", "FR3-Allegro-Zed2i"],
+        )
 
         # loading grasp generator
         frogger = FroggerConfig(
