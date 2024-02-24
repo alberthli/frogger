@@ -115,7 +115,7 @@ class RobotModel:
             )
             self.meshcat.SetProperty("collision", "visible", False)
             self.sliders = self.builder.AddSystem(
-                JointSliders(self.meshcat, self.plant, step=1e-12)
+                JointSliders(self.meshcat, self.plant, step=1e-2)
             )
 
         # creating diagrams, subsystems, and subcontexts
@@ -249,9 +249,16 @@ class RobotModel:
 
     def _create_bound_cons(self) -> None:
         """Creates the lower and upper bound constraints."""
-        lb_q, ub_q = self.q_bounds
-        lb_inds = ~np.isinf(lb_q)  # finite lower and upper bounds
+        # cap the bounds in the middle 90% of the total range
+        _lb_q, _ub_q = self.q_bounds
+        lb_q = _lb_q + 0.05 * (_ub_q - _lb_q)
+        ub_q = _ub_q - 0.05 * (_ub_q - _lb_q)
+
+        # finite lower and upper bounds
+        lb_inds = ~np.isinf(lb_q)
         ub_inds = ~np.isinf(ub_q)
+
+        # creating constraint matrices
         self.n_bounds = np.sum(lb_inds) + np.sum(ub_inds)
         _A_box_lb = np.diag(lb_inds).astype(float)
         _A_box_ub = np.diag(ub_inds).astype(float)
