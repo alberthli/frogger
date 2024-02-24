@@ -873,6 +873,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.47</lower>
           <upper>0.47</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -919,6 +920,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.196</lower>
           <upper>1.61</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -965,6 +967,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.174</lower>
           <upper>1.709</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1042,6 +1045,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.227</lower>
           <upper>1.618</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1088,6 +1092,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.47</lower>
           <upper>0.47</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1134,6 +1139,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.196</lower>
           <upper>1.61</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1180,6 +1186,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.174</lower>
           <upper>1.709</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1257,6 +1264,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.227</lower>
           <upper>1.618</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1303,6 +1311,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.47</lower>
           <upper>0.47</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1349,6 +1358,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.196</lower>
           <upper>1.61</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1395,6 +1405,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.174</lower>
           <upper>1.709</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1472,6 +1483,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.227</lower>
           <upper>1.618</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1518,6 +1530,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>0.263</lower>
           <upper>1.396</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1565,6 +1578,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.105</lower>
           <upper>1.163</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1611,6 +1625,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.189</lower>
           <upper>1.644</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
@@ -1688,6 +1703,7 @@ the thumb to axially rotate, and the mcp and ip joints are in order as above.
           <lower>-0.162</lower>
           <upper>1.719</upper>
           <effort>0.7</effort>
+          <velocity>7.0</velocity>
         </limit>
         <dynamics>
           <damping>1.5e-2</damping>
