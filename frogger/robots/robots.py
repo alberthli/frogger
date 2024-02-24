@@ -86,6 +86,35 @@ class FR3AlgrZed2iModel(FR3AlgrModel):
         assert cfg.hand == "rh"
         super().__init__(cfg)
 
+    def _create_bound_cons(self) -> None:
+        """Creates the lower and upper bound constraints."""
+        # cap the bounds in the middle 90% of the total range
+        _lb_q, _ub_q = self.q_bounds
+        lb_q = _lb_q + 0.05 * (_ub_q - _lb_q)
+        ub_q = _ub_q - 0.05 * (_ub_q - _lb_q)
+
+        # additional constraints: prevent weird forearm flip,
+        # which is bad for the wire layout on hardware
+        ub_q[4] = np.pi / 2.0
+        ub_q[5] = np.pi
+        ub_q[6] = 3.0 * np.pi / 4.0
+        lb_q[6] = -np.pi / 4.0
+
+        # finite lower and upper bounds
+        lb_inds = ~np.isinf(lb_q)
+        ub_inds = ~np.isinf(ub_q)
+
+        # creating constraint matrices
+        self.n_bounds = np.sum(lb_inds) + np.sum(ub_inds)
+        _A_box_lb = np.diag(lb_inds).astype(float)
+        _A_box_ub = np.diag(ub_inds).astype(float)
+        A_box_lb = _A_box_lb[~np.all(_A_box_lb == 0.0, axis=1)]
+        A_box_ub = _A_box_ub[~np.all(_A_box_ub == 0.0, axis=1)]
+        b_box_lb = lb_q[lb_inds]
+        b_box_ub = ub_q[ub_inds]
+        self.A_box = np.concatenate((-A_box_lb, A_box_ub))
+        self.b_box = np.concatenate((b_box_lb, -b_box_ub))
+
 
 @dataclass(kw_only=True)
 class FR3AlgrZed2iModelConfig(FR3AlgrModelConfig):

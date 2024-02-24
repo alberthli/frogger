@@ -249,10 +249,7 @@ class RobotModel:
 
     def _create_bound_cons(self) -> None:
         """Creates the lower and upper bound constraints."""
-        # cap the bounds in the middle 90% of the total range
-        _lb_q, _ub_q = self.q_bounds
-        lb_q = _lb_q + 0.05 * (_ub_q - _lb_q)
-        ub_q = _ub_q - 0.05 * (_ub_q - _lb_q)
+        lb_q, ub_q = self.q_bounds
 
         # finite lower and upper bounds
         lb_inds = ~np.isinf(lb_q)
