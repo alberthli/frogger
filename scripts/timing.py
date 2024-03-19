@@ -6,7 +6,7 @@ import trimesh
 from pydrake.math import RigidTransform, RotationMatrix
 
 from frogger import ROOT
-from frogger.baselines import WuBaselineConfig
+from frogger.baselines.wu import WuBaselineConfig
 from frogger.metrics import ferrari_canny_L1, min_weight_metric
 from frogger.objects import MeshObject, MeshObjectConfig
 from frogger.robots.robots import (
