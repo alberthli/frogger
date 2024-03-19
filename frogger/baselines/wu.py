@@ -69,32 +69,32 @@ class WuBaselineConfig(BaselineConfig):
         model._bilevel_cons = bilevel_constraint_func
 
     @staticmethod
-    def custom_compute_l(robot: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
+    def custom_compute_l(model: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
         """Cost function for Wu baseline. Since it's a feas program, does nothing."""
-        return 0.0, np.zeros(robot.n)
+        return 0.0, np.zeros(model.n)
 
     @staticmethod
-    def custom_compute_h(robot: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
+    def custom_compute_h(model: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
         """Extra equality constraints for Wu baseline. This is the force closure QP.
 
         Warning
         -------
-        Requires robot.DG to have been computed and cached already!
+        Requires model.DG to have been computed and cached already!
         """
         # equality constraint
-        G = torch.tensor(robot.G).double()
-        h = (robot._bilevel_cons(G)).cpu().detach().numpy()[..., None]  # (1,)
+        G = torch.tensor(model.G).double()
+        h = (model._bilevel_cons(G)).cpu().detach().numpy()[..., None]  # (1,)
 
         # gradient
         Dh_G = (
             torch.autograd.functional.jacobian(
-                robot._bilevel_cons, G, create_graph=True, strict=True
+                model._bilevel_cons, G, create_graph=True, strict=True
             )
             .cpu()
             .detach()
             .numpy()
         )
-        DG = robot.DG
+        DG = model.DG
         Dh = (Dh_G.reshape(-1) @ DG.reshape((-1, DG.shape[-1])))[None, ...]  # (1, n)
 
         return h, Dh
