@@ -46,7 +46,13 @@ dev = [
 
 # nerf grasping dependencies
 ng = [
-    "nerf_grasping@git+https://github.com/tylerlum/nerf_grasping"
+    "nerf_grasping@git+https://github.com/tylerlum/nerf_grasping",
+]
+
+# all
+all = [
+    "frogger[dev]",
+    "frogger[ng]",
 ]
 
 [options]
