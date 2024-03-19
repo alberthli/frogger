@@ -44,6 +44,11 @@ dev = [
     "pyglet<2",  # for showing meshes in trimesh
 ]
 
+# nerf grasping dependencies
+ng = [
+    "nerf_grasping@git+https://github.com/tylerlum/nerf_grasping"
+]
+
 [options]
 dependency_links = [
     "https://storage.googleapis.com/jax-releases/jax_releases.html",
