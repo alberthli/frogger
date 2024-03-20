@@ -73,6 +73,7 @@ class RobotModel:
         )  # these will be class functions
         self.custom_compute_g = cfg.__class__.custom_compute_g
         self.custom_compute_h = cfg.__class__.custom_compute_h
+        self.finger_level_set = cfg.finger_level_set
         self.n_g_extra = cfg.n_g_extra
         self.n_h_extra = cfg.n_h_extra
         self.cfg = cfg
@@ -172,6 +173,8 @@ class RobotModel:
         )
         self.n_O = None
         self.n_W = None
+        self.R_cf_O = None  # contact frames of each finger expressed in obj frame
+        self.DR_cf_O = None
         self.Ds_p = None  # cached value of Ds evaluated at fingertips
         self.h = None  # cached values of the eq constraint function and Jacobian
         self.Dh = None
@@ -476,7 +479,9 @@ class RobotModel:
         p_tips = []
         J_tips = []
         for _, v in sorted(self.hand_obj_cols.items()):
-            h.append(v[0])
+            h.append(
+                v[0] - self.finger_level_set
+            )  # enforce that the tips lie on a level set
             Dh.append(v[1])
             p_tips.append(v[2])
             J_tips.append(
@@ -534,7 +539,7 @@ class RobotModel:
 
         Ds_O_ps = self.obj.Ds_O(self.P_OF.T, batched=True)
         D2s_O_ps = self.obj.D2s_O(self.P_OF.T, batched=True)
-        self.DG, self.DW = self._DG_DW_helper(
+        self.DG, self.DW, self.R_cf_O, self.DR_cf_O = self._DG_DW_helper(
             J_T, Ds_O_ps, D2s_O_ps, self.P_OF, self.n_O, R_OW, self.F
         )
 
@@ -579,6 +584,10 @@ class RobotModel:
         summing_matrix = np.kron(np.eye(nc), np.ones((1, 3)))
         gs_inners = summing_matrix @ (np.ascontiguousarray(Ds_O_ps).reshape(-1) ** 2)
 
+        # caching the contact frames and their Jacobians wrt q
+        Rs = []
+        DRs = []
+
         for i in range(nc):
             p = P_OF.T[i, :]  # P_OF.T has shape (nc, 3), select ith row
             nrml = n_O.T[i, :]  # n_O.T has shape (nc, 3), select ith row
@@ -589,9 +598,10 @@ class RobotModel:
             zz = z @ z
             tx = z / np.sqrt(zz)
             ty = np.cross(nrml, tx)
-            R = np.stack((tx, ty, nrml)).T
+            R = np.stack((tx, ty, nrml)).T  # contact frame in object frame
+            Rs.append(R)
 
-            # compute DR_p, Jacobian of rotation matrix wrt p
+            # compute DR_p, Jacobian of rotation matrix wrt p in object frame
             gs = Ds_O_ps[i]  # compute this in the object frame
             gsgs = gs_inners[i]
             factor1 = (np.eye(3) - np.outer(gs, gs) / gsgs) / np.sqrt(gsgs)
@@ -607,6 +617,10 @@ class RobotModel:
             Dty_p = Dty_n @ Dn_p
 
             DR_p = np.stack((Dtx_p, Dty_p, Dn_p), axis=1)  # (3, 3, 3)
+
+            # computing the Jacobian of R wrt q - useful for nerf grasping
+            DR = DR_p @ R_OW_J  # (3, 3, n)
+            DRs.append(DR)
 
             # compute DphatR_p, Jacobian of skew(p) @ R
             # note that here p is in the object frame, so later, when we try to
@@ -633,7 +647,10 @@ class RobotModel:
 
             DG[:, (3 * i) : (3 * (i + 1)), :] = DG_i
             DW[:, (ns * i) : (ns * (i + 1)), :] = DW_i
-        return DG, DW
+
+        R_cf_O = np.array(Rs)  # (nc, 3, 3)
+        DR_cf_O = np.array(DRs)  # (nc, 3, 3, n)
+        return DG, DW, R_cf_O, DR_cf_O
 
     def _compute_l(self) -> None:
         """Computes the min-weight metric and its gradient."""
@@ -725,6 +742,20 @@ class RobotModel:
             self.compute_all(q)
             self.q = np.copy(q)
         return self.n_W.T  # (nc, 3)
+
+    def compute_R_cf_O(self, q: np.ndarray) -> np.ndarray:
+        """Computes the contact frames of each finger expressed in the object frame."""
+        if self.R_cf_O is None or np.any(q != self.q):
+            self.compute_all(q)
+            self.q = np.copy(q)
+        return self.R_cf_O
+
+    def compute_DR_cf_O(self, q: np.ndarray) -> np.ndarray:
+        """Computes the Jacobian of the contact frames in the object frame."""
+        if self.DR_cf_O is None or np.any(q != self.q):
+            self.compute_all(q)
+            self.q = np.copy(q)
+        return self.DR_cf_O
 
     def compute_g(self, q: np.ndarray) -> np.ndarray:
         """Computes the inequality constraints g."""
@@ -896,6 +927,10 @@ class RobotModelConfig:
         The allowable penetration between the fingertips and the object.
     l_bar_cutoff : float, default=1e-6
         The minimum allowable value of l_bar.
+    n_couple : int, default=0
+        The number of coupling constraints.
+    finger_level_set : float, default=0.0
+        The object level set that the fingertips should lie on.
     name : str | None, default=None
         The name of the robot.
     viz : bool, default=True
@@ -934,6 +969,7 @@ class RobotModelConfig:
     d_pen: float = 0.001
     l_bar_cutoff: float = 1e-6
     n_couple: int = 0
+    finger_level_set: float = 0.0
     name: str | None = None
     viz: bool = True
     custom_compute_l: Callable[
