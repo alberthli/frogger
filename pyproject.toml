@@ -63,4 +63,4 @@ dependency_links = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["frogger"]
+include = ["frogger*"]
