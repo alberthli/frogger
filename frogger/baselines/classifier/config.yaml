@@ -1,0 +1,119 @@
+# tyro YAML.
+!dataclass:ClassifierConfig
+checkpoint_workspace: !dataclass:CheckpointWorkspaceConfig
+  input_leaf_dir_name: null
+  output_leaf_dir_name: 75bottle_augmented_pose_HALTON_400_cnn-3d-xyz_l2_passed-eval_2024-03-12_16-20-12-513415
+  root_dir: !!python/object/apply:pathlib.PosixPath
+  - /
+  - home
+  - albert
+  - research
+  - frogger
+  - frogger
+  - baselines
+  - classifier
+  - Train_DexGraspNet_NeRF_Grasp_Metric_workspaces
+data: !dataclass:ClassifierDataConfig
+  debug_shuffle_labels: false
+  frac_test: 0.1
+  frac_train: 0.8
+  frac_val: 0.1
+  max_num_data_points: null
+  nerf_density_threshold_value: null
+  use_random_rotations: true
+dataloader: !dataclass:ClassifierDataLoaderConfig
+  batch_size: 256
+  load_grasp_labels_in_ram: false
+  load_grasp_transforms_in_ram: false
+  load_nerf_configs_in_ram: false
+  load_nerf_grid_inputs_in_ram: false
+  num_workers: 8
+  pin_memory: true
+model_config: !dataclass:CNN_3D_XYZ_ModelConfig
+  conv_channels:
+  - 32
+  - 64
+  - 128
+  mlp_hidden_layers:
+  - 256
+  - 256
+  n_fingers: 4
+name: 75bottle_augmented_pose_HALTON_400_cnn-3d-xyz_l2_passed-eval
+nerfdata_config: !dataclass:GridNerfDataConfig
+  cameras_samples_chunk_size: 2000
+  config_dict_visualize_index: 0
+  dexgraspnet_data_root: !!python/object/apply:pathlib.PosixPath
+  - /
+  - home
+  dexgraspnet_meshdata_root: !!python/object/apply:pathlib.PosixPath
+  - /
+  - home
+  evaled_grasp_config_dicts_path: !!python/object/apply:pathlib.PosixPath
+  - /
+  - home
+  fingertip_config: !dataclass:EvenlySpacedFingertipConfig
+    distance_between_pts_mm: 2
+    finger_height_mm: 60.0
+    finger_width_mm: 60.0
+    grasp_depth_mm: 80.0
+    n_fingers: 4
+    num_pts_x: 31
+    num_pts_y: 31
+    num_pts_z: 41
+  grasp_visualize_index: 0
+  limit_num_configs: null
+  max_num_data_points_per_file: null
+  nerf_checkpoints_path: !!python/object/apply:pathlib.PosixPath
+  - /
+  - home
+  - albert
+  - research
+  - frogger
+  - frogger
+  - baselines
+  - nerf
+  output_filepath: null
+  plot_all_high_density_points: true
+  plot_alpha_images_each_finger: true
+  plot_alphas_each_finger_1D: true
+  plot_only_one: false
+  print_timing: true
+  ray_samples_chunk_size: 50
+  save_dataset: true
+nerfdata_config_path: null
+random_seed: 42
+task_type: !enum:TaskType 'PASSED_EVAL'
+test_dataset_filepath: null
+train_dataset_filepath: !!python/object/apply:pathlib.PosixPath
+- /
+- scr
+- tylerlum
+- data
+- 2024-03-10_75bottle_augmented_pose_HALTON_400
+- grid_dataset
+- train_dataset.h5
+training: !dataclass:ClassifierTrainingConfig
+  betas: !!python/tuple
+  - 0.9
+  - 0.999
+  extra_punish_false_positive_factor: 0.0
+  grad_clip_val: 1.0
+  label_smoothing: 0.0
+  loss_fn: l2
+  lr: 0.0001
+  lr_scheduler_name: constant
+  lr_scheduler_num_warmup_steps: 0
+  n_epochs: 1000
+  save_checkpoint_freq: 1
+  save_checkpoint_on_epoch_0: false
+  val_freq: 5
+  val_on_epoch_0: false
+  weight_decay: 0.001
+val_dataset_filepath: null
+wandb: !dataclass:WandbConfig
+  entity: null
+  group: null
+  job_type: null
+  name: 75bottle_augmented_pose_HALTON_400_cnn-3d-xyz_l2_passed-eval_2024-03-12_16-20-12-513415
+  project: learned_metric
+  resume: never
