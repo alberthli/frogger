@@ -336,12 +336,13 @@ class RobotModel:
         """Sets the robot state."""
         assert len(q) == self.n
         self.plant.SetPositions(self.plant_context, self.robot_instance, q)
+        self.q = np.copy(q)
 
     # ######################## #
     # CACHED VALUE COMPUTATION #
     # ######################## #
 
-    def _process_collisions(self, q: np.ndarray) -> None:
+    def _process_collisions(self) -> None:
         """Computes all information related to collision constraints."""
         # we initialize the inequality constraints here to allow derived RobotModels
         # to modify the collision geometries during initialization
@@ -349,7 +350,7 @@ class RobotModel:
             self._init_ineq_cons()
 
         # update joint limit constraint values
-        self.g[: self.n_bounds] = self.A_box @ q + self.b_box
+        self.g[: self.n_bounds] = self.A_box @ self.q + self.b_box
 
         # collisions get computed conditionally after culling w/max_distance.
         # everything sufficiently far away we ignore and set the gradient to 0
@@ -585,8 +586,8 @@ class RobotModel:
         gs_inners = summing_matrix @ (np.ascontiguousarray(Ds_O_ps).reshape(-1) ** 2)
 
         # caching the contact frames and their Jacobians wrt q
-        Rs = []
-        DRs = []
+        R_cf_O = np.zeros((nc, 3, 3))
+        DR_cf_O = np.zeros((nc, 3, 3, n))
 
         for i in range(nc):
             p = P_OF.T[i, :]  # P_OF.T has shape (nc, 3), select ith row
@@ -599,7 +600,7 @@ class RobotModel:
             tx = z / np.sqrt(zz)
             ty = np.cross(nrml, tx)
             R = np.stack((tx, ty, nrml)).T  # contact frame in object frame
-            Rs.append(R)
+            R_cf_O[i, ...] = R
 
             # compute DR_p, Jacobian of rotation matrix wrt p in object frame
             gs = Ds_O_ps[i]  # compute this in the object frame
@@ -619,8 +620,8 @@ class RobotModel:
             DR_p = np.stack((Dtx_p, Dty_p, Dn_p), axis=1)  # (3, 3, 3)
 
             # computing the Jacobian of R wrt q - useful for nerf grasping
-            DR = DR_p @ R_OW_J  # (3, 3, n)
-            DRs.append(DR)
+            DR = (DR_p.reshape((9, -1)) @ R_OW_J).reshape((3, 3, n))  # (3, 3, n)
+            DR_cf_O[i, ...] = DR
 
             # compute DphatR_p, Jacobian of skew(p) @ R
             # note that here p is in the object frame, so later, when we try to
@@ -648,8 +649,6 @@ class RobotModel:
             DG[:, (3 * i) : (3 * (i + 1)), :] = DG_i
             DW[:, (ns * i) : (ns * (i + 1)), :] = DW_i
 
-        R_cf_O = np.array(Rs)  # (nc, 3, 3)
-        DR_cf_O = np.array(DRs)  # (nc, 3, 3, n)
         return DG, DW, R_cf_O, DR_cf_O
 
     def _compute_l(self) -> None:
@@ -666,11 +665,11 @@ class RobotModel:
         self.f = -self.l
         self.Df = -self.Dl
 
-    def _compute_eq_cons(self, q: np.ndarray) -> None:
+    def _compute_eq_cons(self) -> None:
         """Computes the equality constraints."""
         # computing coupling and contact constraints
         if self.n_couple != 0:
-            h_couple = self.A_couple @ q + self.b_couple
+            h_couple = self.A_couple @ self.q + self.b_couple
             Dh_couple = self.A_couple
             self.h[: self.n_couple + self.nc] = np.concatenate((self.h_tip, h_couple))
             self.Dh[: self.n_couple + self.nc, :] = np.concatenate(
@@ -698,18 +697,18 @@ class RobotModel:
         # updating plant context
         n = self.n
         assert q.shape == (n,)
-        self.set_q(q)
+        self.set_q(q)  # also caches self.q
 
         # computing all cached values
         if self.h is None:
             self._init_eq_cons()
-        self._process_collisions(q)
+        self._process_collisions()
         self._compute_G_and_W()
         self._compute_DG_and_DW()
         self._compute_l()
         self._compute_cost_func()
         self._finish_ineq_cons()
-        self._compute_eq_cons(q)
+        self._compute_eq_cons()
 
     # ###################### #
     # CACHED VALUE RETRIEVAL #
@@ -719,70 +718,60 @@ class RobotModel:
         """Computes the forward kinematics, p_tips."""
         if self.p_tips is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.p_tips  # (nc, 3)
 
     def compute_J_tips(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobians of the fingertips, J_tips."""
         if self.J_tips is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.J_tips  # (nc, 3, n)
 
     def compute_n_O(self, q: np.ndarray) -> np.ndarray:
         """Computes the invward contact normals in the object frame, n_O."""
         if self.n_O is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.n_O.T  # (nc, 3)
 
     def compute_n_W(self, q: np.ndarray) -> np.ndarray:
         """Computes the inward contact normals in the world frame, n_W."""
         if self.n_W is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.n_W.T  # (nc, 3)
 
     def compute_R_cf_O(self, q: np.ndarray) -> np.ndarray:
         """Computes the contact frames of each finger expressed in the object frame."""
         if self.R_cf_O is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.R_cf_O
 
     def compute_DR_cf_O(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the contact frames in the object frame."""
         if self.DR_cf_O is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.DR_cf_O
 
     def compute_g(self, q: np.ndarray) -> np.ndarray:
         """Computes the inequality constraints g."""
         if self.g is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.g  # (n_ineq_cons,)
 
     def compute_Dg(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the inequality constraints, Dg."""
         if self.Dg is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.Dg  # (n_ineq_cons, n)
 
     def compute_h(self, q: np.ndarray) -> np.ndarray:
         """Computes the equality constraints h."""
         if self.h is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.h  # (n_eq_cons,)
 
     def compute_Dh(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the equality constraints, Dh."""
         if self.Dh is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.Dh  # (n_eq_cons, n)
 
     def compute_Ds(self, q: np.ndarray) -> np.ndarray:
@@ -792,70 +781,60 @@ class RobotModel:
         """
         if self.Ds_p is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.Ds_p  # (nc, 3)
 
     def compute_gOCs(self, q: np.ndarray) -> np.ndarray:
         """Computes the transformations from contacts to object frames."""
         if self.gOCs is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.gOCs  # (nc, 4, 4)
 
     def compute_G(self, q: np.ndarray) -> np.ndarray:
         """Computes the grasp map, G."""
         if self.G is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.G  # (6, 3 * nc)
 
     def compute_DG(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the grasp map, DG."""
         if self.DG is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.DG  # (6, 3 * nc, n)
 
     def compute_W(self, q: np.ndarray) -> np.ndarray:
         """Computes the wrench matrix whose columns are the primitive wrenches, W."""
         if self.W is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.W  # (6, ns * nc)
 
     def compute_DW(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the wrench matrix, Dw."""
         if self.DW is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.DW  # (6, ns * nc, n)
 
     def compute_l(self, q: np.ndarray) -> float:
-        """Computes the optimal minimum convex weight l."""
+        """Computes the optimal minimum convex weight l (or other metric value)."""
         if self.l is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.l
 
     def compute_Dl(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of l, Dl."""
         if self.Dl is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.Dl  # (n,)
 
     def compute_f(self, q: np.ndarray) -> float:
-        """Computes the cost function f."""
+        """Computes the cost function f. Negative of the metric l."""
         if self.f is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.f
 
     def compute_Df(self, q: np.ndarray) -> np.ndarray:
         """Computes the gradient of the cost, Df."""
         if self.Df is None or np.any(q != self.q):
             self.compute_all(q)
-            self.q = np.copy(q)
         return self.Df  # (n,)
 
     # ##### #
