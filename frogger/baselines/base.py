@@ -50,7 +50,7 @@ def combine_dataclasses(cls_a: type, cls_b: type) -> type:
             methods[method_name] = method
 
     # generate the new class
-    new_class_name = cls_a.__name__ + cls_b.__name__.replace("Config", "")
+    new_class_name = cls_a.__name__.replace("Config", "") + cls_b.__name__
     new_cls = make_dataclass(
         new_class_name,
         [(name, type_, default) for name, (type_, default) in attributes.items()],
