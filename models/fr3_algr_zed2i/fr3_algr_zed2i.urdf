@@ -1,0 +1,1067 @@
+<?xml version="1.0" ?>
+<!--URDF file made especially for compatibility with pytorch_kinematics-->
+
+<robot name="fr3_algr" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <link name="world"/>
+
+  <!-- TABLE -->
+  <joint name="table_joint" type="fixed">
+    <parent link="world"/>
+    <child link="table"/>
+    <origin rpy="0 0 0" xyz="0.50165 0 -0.01"/>
+  </joint>
+  <link name="table">
+    <visual>
+      <geometry>
+        <box size="1.3208 1.8288 0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="1.3208 1.8288 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- FRANKA RESEARCH 3 -->
+
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="fr3_link0"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+  <link name="fr3_link0">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0.05"/>
+      <mass value="2.9"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link0.obj"/>
+      </geometry>
+      <material name="fr3_white">
+        <color rgba="1. 1. 1. 1."/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link0.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <link name="fr3_link1">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 -0.04 -0.05"/>
+      <mass value="2.7"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link1.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link1.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <joint name="fr3_joint1" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.333"/>
+    <parent link="fr3_link0"/>
+    <child link="fr3_link1"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="87.0" lower="-2.3093" upper="2.3093" velocity="2.0"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+  <link name="fr3_link2">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 -0.04 0.06"/>
+      <mass value="2.73"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link2.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link2.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <joint name="fr3_joint2" type="revolute">
+    <origin rpy="-1.57079632679 0 0" xyz="0 0 0"/>
+    <parent link="fr3_link1"/>
+    <child link="fr3_link2"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="87" lower="-1.5133" upper="1.5133" velocity="1.0"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+  <link name="fr3_link3">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.01 0.01 -0.05"/>
+      <mass value="2.04"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link3.obj"/>
+      </geometry>
+      <material name="fr3_red">
+        <color rgba="1. 1. 1. 1."/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link3.obj"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="fr3_joint3" type="revolute">
+    <origin rpy="1.57079632679 0 0" xyz="0 -0.316 0"/>
+    <parent link="fr3_link2"/>
+    <child link="fr3_link3"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="87" lower="-2.4937" upper="2.4937" velocity="1.5"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+  <link name="fr3_link4">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.03 0.03 0.02"/>
+      <mass value="2.08"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link4.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link4.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <joint name="fr3_joint4" type="revolute">
+    <origin rpy="1.57079632679 0 0" xyz="0.0825 0 0"/>
+    <parent link="fr3_link3"/>
+    <child link="fr3_link4"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="87" lower="-2.7478" upper="-0.4461" velocity="1.25"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+  <link name="fr3_link5">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0.04 -0.12"/>
+      <mass value="3"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link5.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link5.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <joint name="fr3_joint5" type="revolute">
+    <origin rpy="-1.57079632679 0 0" xyz="-0.0825 0.384 0"/>
+    <parent link="fr3_link4"/>
+    <child link="fr3_link5"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="12.0" lower="-2.48" upper="2.48" velocity="3.0"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+  <link name="fr3_link6">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.04 0 0"/>
+      <mass value="1.3"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link6.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link6.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <joint name="fr3_joint6" type="revolute">
+    <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+    <parent link="fr3_link5"/>
+    <child link="fr3_link6"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="12.0" lower="0.8521" upper="4.2094" velocity="1.5"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+  <link name="fr3_link7">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0.08"/>
+      <mass value=".2"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="../fr3/visual/link7.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="../fr3/collision/link7.obj"/>
+      </geometry>
+      <material name="fr3_white"/>
+    </collision>
+  </link>
+  <joint name="fr3_joint7" type="revolute">
+    <origin rpy="1.57079632679 0 0" xyz="0.088 0 0"/>
+    <parent link="fr3_link6"/>
+    <child link="fr3_link7"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="12.0" lower="-2.6895" upper="2.6895" velocity="3.0"/>
+    <dynamics D="1" K="7000" damping="0.003" friction="0.0" mu_coulomb="0" mu_viscous="16"/>
+  </joint>
+
+  <!-- DUMMY FLANGE JOINT -->
+
+  <joint name="fr3_flange_joint" type="fixed">
+    <parent link="fr3_link7"/>
+    <child link="fr3_flange"/>
+    <origin rpy="0 0 -0.785398163397" xyz="0 0 0.107"/>
+  </joint>
+  <link name="fr3_flange">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+
+  <!-- FR3-TO-ALGR CONNECTOR -->
+
+  <joint name="connector_fr3_joint" type="fixed">
+    <parent link="fr3_flange"/>
+    <child link="connector"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+  <link name="connector">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00360180 0.00323645 0.01116276"/>
+      <mass value="0.070"/>
+      <inertia ixx="6.147e-5" ixy="-9.26e-6" ixz="-2.83e-6" iyy="2.787e-5" iyz="4.78e-6" izz="7.271e-5"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/connector.obj"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/connector.obj"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </collision>
+  </link>
+  <joint name="connector_algr_joint" type="fixed">
+    <parent link="connector"/>
+    <child link="algr_rh_palm"/>
+    <origin rpy="3.14159265359 -1.57079632679 0" xyz="0.13398 0 0.0265"/>
+  </joint>
+
+  <!-- CONNECTOR TO ZED2i -->
+  <!-- [NOTE] for simplicity, the camera frame here is placed in the center of a box with the same outer dimensions as the ZED2i -->
+  <link name="zed2i">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.003774 0 0.014944"/>
+      <mass value="0.230"/>
+      <inertia ixx="5.84e-4" ixy="0" ixz="-1.3e-5" iyy="9.9e-5" iyz="0" izz="5.47e-4"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/other/zed2i.obj"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <!-- <box size="0.17525 0.02913 0.04308"/> -->
+        <mesh filename="meshes/other/zed2i.obj"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="connector_zed2i_joint" type="fixed">
+    <parent link="connector"/>
+    <child link="zed2i"/>
+    <origin rpy="0 -1.57079632679 0" xyz="-0.05568 0 0.021803664"/>
+  </joint>
+  <link name="zed2i_left_optical">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="zed2i_left_optical_joint" type="fixed">
+    <parent link="zed2i"/>
+    <child link="zed2i_left_optical"/>
+    <origin rpy="-1.57079632679 0 -1.57079632679" xyz="-0.02 0.06 0.015"/>
+  </joint>
+  <link name="zed2i_right_optical">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="zed2i_right_optical_joint" type="fixed">
+    <parent link="zed2i"/>
+    <child link="zed2i_right_optical"/>
+    <origin rpy="-1.57079632679 0 -1.57079632679" xyz="-0.02 -0.06 0.015"/>
+  </joint>
+
+  <!-- ALLEGRO HAND -->
+
+  <link name="algr_rh_palm">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/base_link_right.obj"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.009300 0 -0.0475"/>
+      <geometry>
+        <box size="0.0408 0.1130 0.095"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.4154"/>
+      <inertia ixx="0.00208916" ixy="-3.63457e-06" ixz="0.000223277" iyy="0.00182848" iyz="-1.75634e-05" izz="0.000482459"/>
+    </inertial>
+  </link>
+  
+  <link name="algr_rh_if_bs">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_0.0.obj"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.2 0.2 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0164"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0082"/>
+    </collision>
+    <inertial>
+      <mass value="0.0119"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.95377e-06" ixy="3.03372e-09" ixz="8.92323e-08" iyy="1.17908e-06" iyz="-3.7069e-08" izz="1.49673e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_if_axl" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="0.7" lower="-0.55" upper="0.55" velocity="7"/>
+    <parent link="algr_rh_palm"/>
+    <child link="algr_rh_if_bs"/>
+    <origin rpy="-0.08726646255 0 0" xyz="0 0.0435 -0.001542"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_if_axl_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_if_axl_motor"/>
+    <joint name="algr_rh_if_axl"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_if_px">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_1.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.054"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.027"/>
+    </collision>
+    <inertial>
+      <mass value="0.065"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="7.19218e-05" ixy="0" ixz="0" iyy="7.4377e-05" iyz="7.32186e-07" izz="5.40622e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_if_mcp" type="revolute">
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <axis xyz="0 1 0"/>
+    <parent link="algr_rh_if_bs"/>
+    <child link="algr_rh_if_px"/>
+    <origin xyz="0 0 0.0164"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_if_mcp_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_if_mcp_motor"/>
+    <joint name="algr_rh_if_mcp"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_if_md">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_2.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0384"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0192"/>
+    </collision>
+    <inertial>
+      <mass value="0.0355"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="3.16925e-05" ixy="1.07094e-09" ixz="-4.91273e-09" iyy="3.10516e-05" iyz="3.87549e-08" izz="3.20319e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_if_pip" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <parent link="algr_rh_if_px"/>
+    <child link="algr_rh_if_md"/>
+    <origin xyz="0 0 0.054"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_if_pip_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_if_pip_motor"/>
+    <joint name="algr_rh_if_pip"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_if_ds">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_3.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0267"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.01335"/>
+    </collision>
+    <inertial>
+      <mass value="0.0096"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="2.13975e-06" ixy="1.59554e-09" ixz="-7.47528e-09" iyy="1.52036e-06" iyz="-9.89336e-09" izz="1.20271e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_if_dip" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <parent link="algr_rh_if_md"/>
+    <child link="algr_rh_if_ds"/>
+    <origin xyz="0 0 0.0384"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_if_dip_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_if_dip_motor"/>
+    <joint name="algr_rh_if_dip"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_if_ds_tip">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_3.0_tip.obj"/>
+      </geometry>
+      <material name="white">
+        <color rgba=".9 .9 .9 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.0168"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.19599e-05" ixy="0" ixz="0" iyy="1.19598e-05" iyz="0" izz="1.10345e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_if_dip_tip" type="fixed">
+    <parent link="algr_rh_if_ds"/>
+    <child link="algr_rh_if_ds_tip"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0267"/>
+  </joint>
+
+  <!--
+  The dummy joint introducing the contact frame for the index finger.
+  The frame attached to the tip link is centered at the hemisphere with x axis pointing
+  the same as the palm and the z axis aligned with the finger.
+  [DEBUG] Currently placing the contact location at the very tip of the finger.
+  -->
+  <joint name="algr_rh_if_contact_joint" type="fixed">
+    <parent link="algr_rh_if_ds_tip"/>
+    <child link="algr_rh_if_CONTACT0"/>
+    <origin rpy="0 0 0" xyz="0.01039230484 0 0.006"/>
+  </joint>
+  <link name="algr_rh_if_CONTACT0"/>
+
+  <link name="algr_rh_mf_bs">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_0.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0164"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0082"/>
+    </collision>
+    <inertial>
+      <mass value="0.0119"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.95377e-06" ixy="3.03372e-09" ixz="8.92323e-08" iyy="1.17908e-06" iyz="-3.7069e-08" izz="1.49673e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_mf_axl" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="0.7" lower="-0.55" upper="0.55" velocity="7"/>
+    <parent link="algr_rh_palm"/>
+    <child link="algr_rh_mf_bs"/>
+    <origin rpy="0.0 0 0" xyz="0 0 0.0007"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_mf_axl_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_mf_axl_motor"/>
+    <joint name="algr_rh_mf_axl"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_mf_px">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_1.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.054"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.027"/>
+    </collision>
+    <inertial>
+      <mass value="0.065"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="7.19218e-05" ixy="0" ixz="0" iyy="7.4377e-05" iyz="7.32186e-07" izz="5.40622e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_mf_mcp" type="revolute">
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <axis xyz="0 1 0"/>
+    <parent link="algr_rh_mf_bs"/>
+    <child link="algr_rh_mf_px"/>
+    <origin xyz="0 0 0.0164"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_mf_mcp_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_mf_mcp_motor"/>
+    <joint name="algr_rh_mf_mcp"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_mf_md">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_2.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0384"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0192"/>
+    </collision>
+    <inertial>
+      <mass value="0.0355"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="3.16925e-05" ixy="1.07094e-09" ixz="-4.91273e-09" iyy="3.10516e-05" iyz="3.87549e-08" izz="3.20319e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_mf_pip" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <parent link="algr_rh_mf_px"/>
+    <child link="algr_rh_mf_md"/>
+    <origin xyz="0 0 0.054"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_mf_pip_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_mf_pip_motor"/>
+    <joint name="algr_rh_mf_pip"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_mf_ds">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_3.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0267"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.01335"/>
+    </collision>
+    <inertial>
+      <mass value="0.0096"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="2.13975e-06" ixy="1.59554e-09" ixz="-7.47528e-09" iyy="1.52036e-06" iyz="-9.89336e-09" izz="1.20271e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_mf_dip" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <parent link="algr_rh_mf_md"/>
+    <child link="algr_rh_mf_ds"/>
+    <origin xyz="0 0 0.0384"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_mf_dip_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_mf_dip_motor"/>
+    <joint name="algr_rh_mf_dip"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_mf_ds_tip">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_3.0_tip.obj"/>
+      </geometry>
+      <material name="white">
+        <color rgba=".9 .9 .9 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.0168"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.19599e-05" ixy="0" ixz="0" iyy="1.19598e-05" iyz="0" izz="1.10345e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_mf_dip_tip" type="fixed">
+    <parent link="algr_rh_mf_ds"/>
+    <child link="algr_rh_mf_ds_tip"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0267"/>
+  </joint>
+
+  <!--
+  The dummy joint introducing the contact frame for the middle finger.
+  The frame attached to the tip link is centered at the hemisphere with x axis pointing
+  the same as the palm and the z axis aligned with the finger.
+  [DEBUG] Currently placing the contact location at the very tip of the finger.
+  -->
+  <joint name="algr_rh_mf_contact_joint" type="fixed">
+    <parent link="algr_rh_mf_ds_tip"/>
+    <child link="algr_rh_mf_CONTACT1"/>
+    <origin rpy="0 0 0" xyz="0.01039230484 0 0.006"/>
+  </joint>
+  <link name="algr_rh_mf_CONTACT1"/>
+
+  <link name="algr_rh_rf_bs">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_0.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0164"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0082"/>
+    </collision>
+    <inertial>
+      <mass value="0.0119"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.95377e-06" ixy="3.03372e-09" ixz="8.92323e-08" iyy="1.17908e-06" iyz="-3.7069e-08" izz="1.49673e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_rf_axl" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="0.7" lower="-0.55" upper="0.55" velocity="7"/>
+    <parent link="algr_rh_palm"/>
+    <child link="algr_rh_rf_bs"/>
+    <origin rpy="0.08726646255 0 0" xyz="0 -0.0435 -0.001542"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_rf_axl_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_rf_axl_motor"/>
+    <joint name="algr_rh_rf_axl"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_rf_px">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_1.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.054"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.027"/>
+    </collision>
+    <inertial>
+      <mass value="0.065"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="7.19218e-05" ixy="0" ixz="0" iyy="7.4377e-05" iyz="7.32186e-07" izz="5.40622e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_rf_mcp" type="revolute">
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <axis xyz="0 1 0"/>
+    <parent link="algr_rh_rf_bs"/>
+    <child link="algr_rh_rf_px"/>
+    <origin xyz="0 0 0.0164"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_rf_mcp_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_rf_mcp_motor"/>
+    <joint name="algr_rh_rf_mcp"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_rf_md">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_2.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0384"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0192"/>
+    </collision>
+    <inertial>
+      <mass value="0.0355"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="3.16925e-05" ixy="1.07094e-09" ixz="-4.91273e-09" iyy="3.10516e-05" iyz="3.87549e-08" izz="3.20319e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_rf_pip" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <parent link="algr_rh_rf_px"/>
+    <child link="algr_rh_rf_md"/>
+    <origin xyz="0 0 0.054"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_rf_pip_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_rf_pip_motor"/>
+    <joint name="algr_rh_rf_pip"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_rf_ds">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_3.0.obj"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0267"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.01335"/>
+    </collision>
+    <inertial>
+      <mass value="0.0096"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="2.13975e-06" ixy="1.59554e-09" ixz="-7.47528e-09" iyy="1.52036e-06" iyz="-9.89336e-09" izz="1.20271e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_rf_dip" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.25" upper="1.72" velocity="7"/>
+    <parent link="algr_rh_rf_md"/>
+    <child link="algr_rh_rf_ds"/>
+    <origin xyz="0 0 0.0384"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_rf_dip_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_rf_dip_motor"/>
+    <joint name="algr_rh_rf_dip"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_rf_ds_tip">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_3.0_tip.obj"/>
+      </geometry>
+      <material name="white">
+        <color rgba=".9 .9 .9 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.0168"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.19599e-05" ixy="0" ixz="0" iyy="1.19598e-05" iyz="0" izz="1.10345e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_rf_dip_tip" type="fixed">
+    <parent link="algr_rh_rf_ds"/>
+    <child link="algr_rh_rf_ds_tip"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0267"/>
+  </joint>
+
+  <!--
+  The dummy joint introducing the contact frame for the ring finger.
+  The frame attached to the tip link is centered at the hemisphere with x axis pointing
+  the same as the palm and the z axis aligned with the finger.
+  [DEBUG] Currently placing the contact location at the very tip of the finger.
+  -->
+  <joint name="algr_rh_rf_contact_joint" type="fixed">
+    <parent link="algr_rh_rf_ds_tip"/>
+    <child link="algr_rh_rf_CONTACT2"/>
+    <origin rpy="0 0 0" xyz="0.01039230484 0 0.006"/>
+  </joint>
+  <link name="algr_rh_rf_CONTACT2"/>
+
+  <link name="algr_rh_th_mp">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_12.0_right.obj"/>
+      </geometry>
+      <material name="black">
+        <color rgba=".2 .2 .2 1"/>
+      </material>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0358 0.034 0.0455"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="-0.0179 0.009 0.0145"/>
+    </collision>
+    <inertial>
+      <mass value="0.0176"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="8.13883e-06" ixy="2.55226e-06" ixz="3.89933e-06" iyy="1.31421e-05" iyz="-1.46267e-06" izz="1.00171e-05"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_th_cmc" type="revolute">
+    <axis xyz="-1 0 0"/>
+    <limit effort="0.7" lower="0.263" upper="1.57" velocity="7"/>
+    <parent link="algr_rh_palm"/>
+    <child link="algr_rh_th_mp"/>
+    <origin rpy="0 -1.65806278845 -1.5707963259" xyz="-0.0182 0.019333 -0.045987"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_th_cmc_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_th_cmc_motor"/>
+    <joint name="algr_rh_th_cmc"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_th_bs">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_13.0.obj"/>
+      </geometry>
+      <material name="black">
+        <color rgba=".2 .2 .2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0177"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.00885"/>
+    </collision>
+    <inertial>
+      <mass value="0.0119"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.9263e-06" ixy="3.05433e-09" ixz="8.86582e-08" iyy="1.15276e-06" iyz="-3.64521e-08" izz="1.4957e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_th_axl" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="0.7" lower="-0.3" upper="1.1" velocity="7"/>
+    <parent link="algr_rh_th_mp"/>
+    <child link="algr_rh_th_bs"/>
+    <origin xyz="-0.027 0.005 0.0399"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_th_axl_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_th_axl_motor"/>
+    <joint name="algr_rh_th_axl"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_th_px">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_14.0.obj"/>
+      </geometry>
+      <material name="black"></material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0514"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.0257"/>
+    </collision>
+    <inertial>
+      <mass value="0.038"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="3.67044e-05" ixy="1.02277e-09" ixz="1.4854e-07" iyy="3.54042e-05" iyz="-3.67203e-08" izz="3.63275e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_th_mcp" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.1" upper="1.71" velocity="7"/>
+    <parent link="algr_rh_th_bs"/>
+    <child link="algr_rh_th_px"/>
+    <origin xyz="0 0 0.0177"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_th_mcp_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_th_mcp_motor"/>
+    <joint name="algr_rh_th_mcp"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_th_ds">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_15.0.obj"/>
+      </geometry>
+      <material name="black"></material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.0196 0.0275 0.0423"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.02115"/>
+    </collision>
+    <inertial>
+      <mass value="0.0388"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="4.30919e-05" ixy="0" ixz="0" iyy="3.85425e-05" iyz="-3.0146e-08" izz="1.72974e-05"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_th_ipl" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="0.7" lower="-0.1" upper="1.7" velocity="7"/>
+    <parent link="algr_rh_th_px"/>
+    <child link="algr_rh_th_ds"/>
+    <origin xyz="0 0 0.0514"/>
+    <dynamics damping="1.5e-2" friction="0"/>
+  </joint>
+  <transmission name="algr_rh_th_ipl_trans" type="transmission_interface/SimpleTransmission">
+    <actuator name="algr_rh_th_ipl_motor"/>
+    <joint name="algr_rh_th_ipl"/>
+    <mechanicalReduction>1</mechanicalReduction>
+    <motorTorqueConstant>1</motorTorqueConstant>
+  </transmission>
+  <link name="algr_rh_th_ds_tip">
+    <visual>
+      <geometry>
+        <mesh filename="../allegro/meshes/link_15.0_tip.obj"/>
+      </geometry>
+      <material name="white">
+        <color rgba=".9 .9 .9 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.0168"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="1.19599e-05" ixy="0" ixz="0" iyy="1.19598e-05" iyz="0" izz="1.10345e-06"/>
+    </inertial>
+  </link>
+  <joint name="algr_rh_th_ipl_tip" type="fixed">
+    <parent link="algr_rh_th_ds"/>
+    <child link="algr_rh_th_ds_tip"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0423"/>
+  </joint>
+
+  <!--
+  The dummy joint introducing the contact frame for the thumb.
+  The frame attached to the tip link is centered at the hemisphere with x axis pointing
+  the same as the palm and the z axis aligned with the finger.
+  [DEBUG] Currently placing the contact location at the very tip of the finger.
+  -->
+  <joint name="algr_rh_th_contact_joint" type="fixed">
+    <parent link="algr_rh_th_ds_tip"/>
+    <child link="algr_rh_th_CONTACT3"/>
+    <origin rpy="0 0 0" xyz="0.01039230484 0 0.006"/>
+  </joint>
+  <link name="algr_rh_th_CONTACT3"/>
+
+</robot>
