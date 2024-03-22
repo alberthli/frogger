@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Tuple
 
 import numpy as np
+import pypose as pp
 import pytorch_kinematics as pk
 import torch
 
@@ -68,6 +69,13 @@ class NerfGraspingBaselineConfig(BaselineConfig):
         grasp_metric = grasp_metric.to(device)
         grasp_metric.eval()
 
+        FINGERTIP_LINK_NAMES = [
+            "algr_rh_if_ds_tip",
+            "algr_rh_mf_ds_tip",
+            "algr_rh_rf_ds_tip",
+            "algr_rh_th_ds_tip",
+        ]
+
         def q_to_failure_prob(
             q: torch.Tensor, grasp_orientations: torch.Tensor
         ) -> torch.Tensor:
@@ -77,69 +85,39 @@ class NerfGraspingBaselineConfig(BaselineConfig):
                 body_name = "algr_lh_palm"
             else:
                 body_name = "algr_rh_palm"
-            X_WWrist = chain.forward_kinematics(q, chain.get_frame_indices(body_name))[
-                "algr_rh_palm"
-            ].get_matrix()
+            link_poses_hand_frame = chain.forward_kinematics(q)  # (23, 4, 4
+            X_WWrist = link_poses_hand_frame[body_name].get_matrix()
             X_WO = torch.tensor(
                 model.obj.X_WO.GetAsMatrix4(), device=device, dtype=torch.float32
             )  # (4, 4)
             X_OWrist = torch.inverse(X_WO) @ X_WWrist  # TODO(ahl): not optimized
-            p_OWrist = X_OWrist[..., :3, 3]
-            _R_OWrist = X_OWrist[..., :3, :3]
-            R_OOyup = torch.tensor(
-                [
-                    [1.0, 0.0, 0.0],
-                    [0.0, 0.0, -1.0],
-                    [0.0, 1.0, 0.0],
-                ],
-                device=device,
-                dtype=torch.float32,
-            )  # rotate to y up
-            R_OWrist = R_OOyup.T @ _R_OWrist
 
-            # defining the grasp config dict
-            gcd = {
-                "trans": p_OWrist,  # (1, 3)
-                "rot": R_OWrist,  # (1, 3, 3)
-                "joint_angles": q[None, -16:],  # (1, 16)
-                "grasp_orientations": grasp_orientations[None, ...],  # (1, 4, 3, 3)
-            }
+            # computing fingertip transforms
+            fingertip_poses = [link_poses_hand_frame[ln] for ln in FINGERTIP_LINK_NAMES]
+            fingertip_pyposes = [
+                pp.from_matrix(fp.get_matrix(), pp.SE3_type) for fp in fingertip_poses
+            ]
+            wrist_pose = pp.from_matrix(X_OWrist, ltype=pp.SE3_type)
+            fingertip_transforms = torch.stack(
+                [wrist_pose @ fp for fp in fingertip_pyposes], dim=1
+            )
 
-            # passing the grasp config dict to the metric object
-            grasp_config = AllegroGraspConfig.from_grasp_config_dict(
-                gcd, numpy_inputs=False
-            )[0:1]
-            failure_prob = grasp_metric.get_failure_probability(grasp_config)
-
-            ##################
-            # def func(t, r, j, g):
-            #     gcd = {
-            #         "trans": t,  # (1, 3)
-            #         "rot": r,  # (1, 3, 3)
-            #         "joint_angles": j,  # (1, 16)
-            #         "grasp_orientations": g,  # (1, 4, 3, 3)
-            #     }
-            #     grasp_config = AllegroGraspConfig.from_grasp_config_dict(gcd, numpy_inputs=False)[0:1]
-            #     grasp_config.wrist_pose.requires_grad = True
-            #     grasp_config.grasp_orientations.requires_grad = True
-            #     grasp_config.joint_angles.requires_grad = True
-            #     failure_prob = grasp_metric.get_failure_probability(grasp_config)
-            #     return failure_prob, grasp_config
-
-            # t = p_OWrist.clone().detach().requires_grad_(True)
-            # r = R_OWrist.clone().detach().requires_grad_(True)
-            # j = q[None, -16:].clone().detach().requires_grad_(True)
-            # g = grasp_orientations[None, ...].clone().detach().requires_grad_(True)
-            # asdf, grasp_config = func(t, r, j, g)
-            # asdf.backward()
-            # print(t.grad)
-            # print(r.grad)
-            # print(j.grad)
-            # print(g.grad)
-            # print(f"grasp_config.wrist_pose.grad = {grasp_config.wrist_pose.grad}")
-            ##################
-
-            breakpoint()
+            # call alternative forward pass to avoid using grasp_config, which breaks the
+            # compute graph and prevents us from getting gradients
+            fingertip_positions_pp = fingertip_transforms.translation()  # (1, nc, 3)
+            grasp_orientations_pp = pp.from_matrix(
+                grasp_orientations[None, ...], pp.SO3_type
+            )  # (1, nc, 4)
+            grasp_frame_transforms = pp.SE3(
+                torch.cat(
+                    [
+                        fingertip_positions_pp,
+                        grasp_orientations_pp,
+                    ],
+                    dim=-1,
+                )
+            )
+            failure_prob = grasp_metric.forward_alt(grasp_frame_transforms)
             return failure_prob
 
         # adding this function to the model attributes
@@ -175,7 +153,7 @@ class NerfGraspingBaselineConfig(BaselineConfig):
         Dgo_q = np.einsum(
             "jk,iklm->ijlm", R_OOyup.T.cpu().numpy(), model.DR_cf_O
         )  # (4, 3, 3, 23)
-        _Dl = (Dl_q + torch.einsum("ijk,ijkl->l", Dl_go, Dgo_q)).cpu().detach().numpy()
+        _Dl = Dl_q + np.einsum("ijk,ijkl->l", Dl_go, Dgo_q)
         return -_l, -_Dl
 
     def create_pre_warmstart(self, model: RobotModel) -> None:
