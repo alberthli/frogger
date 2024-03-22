@@ -8,7 +8,7 @@ from pydrake.math import RigidTransform, RotationMatrix
 from frogger import ROOT
 from frogger.baselines.wu import WuBaselineConfig
 from frogger.metrics import ferrari_canny_L1, min_weight_metric
-from frogger.objects import MeshObject, MeshObjectConfig
+from frogger.objects import MeshObjectConfig
 from frogger.robots.robots import (
     AlgrModelConfig,
     BH280ModelConfig,
@@ -20,7 +20,7 @@ from frogger.sampling import (
     HeuristicBH280ICSampler,
     HeuristicFR3AlgrICSampler,
 )
-from frogger.solvers import Frogger, FroggerConfig
+from frogger.solvers import FroggerConfig
 
 # [Feb. 22, 2024] suppress annoying torch warning about LUSolve from qpth
 warnings.filterwarnings("ignore", category=UserWarning)
