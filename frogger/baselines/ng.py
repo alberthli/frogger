@@ -144,7 +144,7 @@ class NerfGraspingBaselineConfig(BaselineConfig):
             True
         )
         _l_torch = model._q_to_failure_prob(q, grasp_orientations)
-        _l = _l_torch.cpu().detach().numpy()
+        _l = _l_torch.item()
 
         # compute gradients using chain rule + total derivative
         _l_torch.backward()
