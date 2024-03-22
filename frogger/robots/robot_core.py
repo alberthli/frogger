@@ -511,7 +511,10 @@ class RobotModel:
 
         else:
             g_extra, Dg_extra = self.custom_compute_g(self)
-            assert len(g_extra) == self.n_g_extra
+            if isinstance(g_extra, float):
+                assert self.n_g_extra == 1
+            elif isinstance(g_extra, np.ndarray):
+                assert len(g_extra) == self.n_g_extra
             self.g[-self.n_g_extra :] = g_extra
             self.Dg[-self.n_g_extra :, :] = Dg_extra
 

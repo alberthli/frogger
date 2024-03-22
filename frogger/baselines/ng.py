@@ -30,6 +30,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class NerfGraspingBaselineConfig(BaselineConfig):
     """Configuration for the NeRF grasping baseline."""
 
+    n_g_extra: int = 1
+    min_success_prob: float = 0.0
+
     # def __post_init__(self) -> None:
     #     """Post-initialization checks."""
     #     # TODO(ahl): figure out how to annotate the model class correctly
@@ -57,6 +60,7 @@ class NerfGraspingBaselineConfig(BaselineConfig):
                 chain = chain.to(device="cuda", dtype=torch.float32)
 
         # initializing the grasp metric
+        # TODO(ahl): expose this somehow
         base_path = Path(ROOT) / "frogger/baselines"
         grasp_metric_config = GraspMetricConfig(
             # classifier_config=None,  # use default
@@ -76,6 +80,16 @@ class NerfGraspingBaselineConfig(BaselineConfig):
             "algr_rh_th_ds_tip",
         ]
 
+        R_OOyup = torch.tensor(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, 0.0, -1.0],
+                [0.0, 1.0, 0.0],
+            ],
+            device=device,
+            dtype=torch.float32,
+        )  # rotate to y up
+
         def q_to_failure_prob(
             q: torch.Tensor, grasp_orientations: torch.Tensor
         ) -> torch.Tensor:
@@ -85,21 +99,25 @@ class NerfGraspingBaselineConfig(BaselineConfig):
                 body_name = "algr_lh_palm"
             else:
                 body_name = "algr_rh_palm"
-            link_poses_hand_frame = chain.forward_kinematics(q)  # (23, 4, 4
+            link_poses_hand_frame = chain.forward_kinematics(q)
             X_WWrist = link_poses_hand_frame[body_name].get_matrix()
             X_WO = torch.tensor(
                 model.obj.X_WO.GetAsMatrix4(), device=device, dtype=torch.float32
             )  # (4, 4)
             X_OWrist = torch.inverse(X_WO) @ X_WWrist  # TODO(ahl): not optimized
+            R_OyupWrist = R_OOyup.T @ X_OWrist[:3, :3]
+            X_OyupWrist = X_OWrist
+            X_OyupWrist[:3, :3] = R_OyupWrist
 
             # computing fingertip transforms
             fingertip_poses = [link_poses_hand_frame[ln] for ln in FINGERTIP_LINK_NAMES]
             fingertip_pyposes = [
                 pp.from_matrix(fp.get_matrix(), pp.SE3_type) for fp in fingertip_poses
             ]
-            wrist_pose = pp.from_matrix(X_OWrist, ltype=pp.SE3_type)
+            wrist_pose = pp.from_matrix(X_OyupWrist, ltype=pp.SE3_type)
+            X_WristW_pp = pp.from_matrix(torch.inverse(X_WWrist), ltype=pp.SE3_type)
             fingertip_transforms = torch.stack(
-                [wrist_pose @ fp for fp in fingertip_pyposes], dim=1
+                [wrist_pose @ X_WristW_pp @ fp for fp in fingertip_pyposes], dim=1
             )
 
             # call alternative forward pass to avoid using grasp_config, which breaks the
@@ -122,6 +140,13 @@ class NerfGraspingBaselineConfig(BaselineConfig):
 
         # adding this function to the model attributes
         model._q_to_failure_prob = q_to_failure_prob
+
+    @staticmethod
+    def custom_compute_g(model: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
+        """Adding minimum success probability constraint."""
+        g_extra = -model.l + model.min_success_prob  # success probability
+        Dg_extra = -model.Dl
+        return g_extra, Dg_extra
 
     @staticmethod
     def custom_compute_l(model: RobotModel) -> Tuple[np.ndarray, np.ndarray]:
@@ -154,8 +179,9 @@ class NerfGraspingBaselineConfig(BaselineConfig):
             "jk,iklm->ijlm", R_OOyup.T.cpu().numpy(), model.DR_cf_O
         )  # (4, 3, 3, 23)
         _Dl = Dl_q + np.einsum("ijk,ijkl->l", Dl_go, Dgo_q)
-        return -_l, -_Dl
+        return 1.0 - _l, -_Dl
 
     def create_pre_warmstart(self, model: RobotModel) -> None:
         """Initializes the baseline constraints."""
+        model.min_success_prob = self.min_success_prob
         self._init_baseline_obj(model)
