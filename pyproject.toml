@@ -44,6 +44,17 @@ dev = [
     "pyglet<2",  # for showing meshes in trimesh
 ]
 
+# nerf grasping dependencies
+ng = [
+    "nerf_grasping@git+https://github.com/tylerlum/nerf_grasping",
+]
+
+# all
+all = [
+    "frogger[dev]",
+    "frogger[ng]",
+]
+
 [options]
 dependency_links = [
     "https://storage.googleapis.com/jax-releases/jax_releases.html",
@@ -52,4 +63,4 @@ dependency_links = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["frogger"]
+include = ["frogger*"]
