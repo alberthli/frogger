@@ -173,8 +173,8 @@ class RobotModel:
         )
         self.n_O = None
         self.n_W = None
-        self.R_cf_O = None  # contact frames of each finger expressed in obj frame
-        self.DR_cf_O = None
+        self.R_O_cf = None  # contact frames of each finger expressed in obj frame
+        self.DR_O_cf = None
         self.Ds_p = None  # cached value of Ds evaluated at fingertips
         self.h = None  # cached values of the eq constraint function and Jacobian
         self.Dh = None
@@ -543,7 +543,7 @@ class RobotModel:
 
         Ds_O_ps = self.obj.Ds_O(self.P_OF.T, batched=True)
         D2s_O_ps = self.obj.D2s_O(self.P_OF.T, batched=True)
-        self.DG, self.DW, self.R_cf_O, self.DR_cf_O = self._DG_DW_helper(
+        self.DG, self.DW, self.R_O_cf, self.DR_O_cf = self._DG_DW_helper(
             J_T, Ds_O_ps, D2s_O_ps, self.P_OF, self.n_O, R_OW, self.F
         )
 
@@ -589,8 +589,8 @@ class RobotModel:
         gs_inners = summing_matrix @ (np.ascontiguousarray(Ds_O_ps).reshape(-1) ** 2)
 
         # caching the contact frames and their Jacobians wrt q
-        R_cf_O = np.zeros((nc, 3, 3))
-        DR_cf_O = np.zeros((nc, 3, 3, n))
+        R_O_cf = np.zeros((nc, 3, 3))
+        DR_O_cf = np.zeros((nc, 3, 3, n))
 
         for i in range(nc):
             p = P_OF.T[i, :]  # P_OF.T has shape (nc, 3), select ith row
@@ -603,7 +603,7 @@ class RobotModel:
             tx = z / np.sqrt(zz)
             ty = np.cross(nrml, tx)
             R = np.stack((tx, ty, nrml)).T  # contact frame in object frame
-            R_cf_O[i, ...] = R
+            R_O_cf[i, ...] = R
 
             # compute DR_p, Jacobian of rotation matrix wrt p in object frame
             gs = Ds_O_ps[i]  # compute this in the object frame
@@ -624,7 +624,7 @@ class RobotModel:
 
             # computing the Jacobian of R wrt q - useful for nerf grasping
             DR = (DR_p.reshape((9, -1)) @ R_OW_J).reshape((3, 3, n))  # (3, 3, n)
-            DR_cf_O[i, ...] = DR
+            DR_O_cf[i, ...] = DR
 
             # compute DphatR_p, Jacobian of skew(p) @ R
             # note that here p is in the object frame, so later, when we try to
@@ -652,7 +652,7 @@ class RobotModel:
             DG[:, (3 * i) : (3 * (i + 1)), :] = DG_i
             DW[:, (ns * i) : (ns * (i + 1)), :] = DW_i
 
-        return DG, DW, R_cf_O, DR_cf_O
+        return DG, DW, R_O_cf, DR_O_cf
 
     def _compute_l(self) -> None:
         """Computes the min-weight metric and its gradient."""
@@ -741,17 +741,17 @@ class RobotModel:
             self.compute_all(q)
         return self.n_W.T  # (nc, 3)
 
-    def compute_R_cf_O(self, q: np.ndarray) -> np.ndarray:
+    def compute_R_O_cf(self, q: np.ndarray) -> np.ndarray:
         """Computes the contact frames of each finger expressed in the object frame."""
-        if self.R_cf_O is None or np.any(q != self.q):
+        if self.R_O_cf is None or np.any(q != self.q):
             self.compute_all(q)
-        return self.R_cf_O
+        return self.R_O_cf
 
-    def compute_DR_cf_O(self, q: np.ndarray) -> np.ndarray:
+    def compute_DR_O_cf(self, q: np.ndarray) -> np.ndarray:
         """Computes the Jacobian of the contact frames in the object frame."""
-        if self.DR_cf_O is None or np.any(q != self.q):
+        if self.DR_O_cf is None or np.any(q != self.q):
             self.compute_all(q)
-        return self.DR_cf_O
+        return self.DR_O_cf
 
     def compute_g(self, q: np.ndarray) -> np.ndarray:
         """Computes the inequality constraints g."""
