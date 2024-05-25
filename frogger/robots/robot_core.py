@@ -67,6 +67,7 @@ class RobotModel:
         self.d_min = cfg.d_min
         self.d_pen = cfg.d_pen
         self.l_bar_cutoff = cfg.l_bar_cutoff
+        self.ignore_mass_inertia = cfg.ignore_mass_inertia
         self.viz = cfg.viz
         self.custom_compute_l = (
             cfg.__class__.custom_compute_l
@@ -209,16 +210,22 @@ class RobotModel:
         # registering object's visual/collision geoms with the plant
         assert None not in [self.obj.shape_visual, self.obj.shape_collision_list]
         self.obj_instance = self.plant.AddModelInstance("obj")
-        I_o = self.obj.inertia / self.obj.mass
+        if self.ignore_mass_inertia:
+            inertia = UnitInertia(1, 1, 1, 0, 0, 0)
+            mass = 1.0
+        else:
+            I_o = self.obj.inertia / self.obj.mass
+            inertia = UnitInertia(
+                I_o[0, 0], I_o[1, 1], I_o[2, 2], I_o[0, 1], I_o[0, 2], I_o[1, 2]
+            )
+            mass = self.obj.mass
         self.obj_body = self.plant.AddRigidBody(
             "obj",
             self.obj_instance,
             SpatialInertia(
-                self.obj.mass,
+                mass,
                 np.zeros(3),
-                UnitInertia(
-                    I_o[0, 0], I_o[1, 1], I_o[2, 2], I_o[0, 1], I_o[0, 2], I_o[1, 2]
-                ),
+                inertia,
             ),
         )
 
@@ -929,6 +936,8 @@ class RobotModelConfig:
         The allowable penetration between the fingertips and the object.
     l_bar_cutoff : float, default=1e-6
         The minimum allowable value of l_bar.
+    ignore_mass_inertia: bool, default=True
+        Whether to ignore the object mass/inertia and only rely on geoms for grasp planning.
     name : str | None, default=None
         The name of the robot.
     viz : bool, default=True
@@ -969,6 +978,7 @@ class RobotModelConfig:
     d_min: float = 0.001
     d_pen: float = 0.001
     l_bar_cutoff: float = 1e-6
+    ignore_mass_inertia: bool = True
     n_couple: int = 0
     name: str | None = None
     viz: bool = True
