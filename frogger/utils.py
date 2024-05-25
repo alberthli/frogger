@@ -1,4 +1,4 @@
-import signal
+import threading
 from concurrent.futures import TimeoutError
 from functools import wraps
 
@@ -25,32 +25,51 @@ def timeout(seconds: float) -> callable:
     Parameters
     ----------
     seconds : float
-        The number of seconds to wait before raising a TimeoutError. If seconds is 0.0,
-        then there is NO timeout!
+        The number of seconds to wait before raising a TimeoutError.
 
     Returns
     -------
     callable
         A function that can be used to decorate other functions with a timeout.
     """
+    # raise warning, not error, if timeout <= 0
+    if seconds <= 0:
+        raise Warning(
+            "The specified timeout index is <= 0, so the function will immediately timeout!"
+        )
 
     def decorator(func):
-        def _handle_timeout(signum, frame):
-            raise TimeoutError(
-                f"Function '{func.__name__}' timed out after {seconds} seconds"
-            )
-
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # set the signal handler and an interval timer
-            signal.signal(signal.SIGALRM, _handle_timeout)
-            signal.setitimer(signal.ITIMER_REAL, seconds)
-            try:
-                result = func(*args, **kwargs)
-            finally:
-                # Cancel the timer
-                signal.setitimer(signal.ITIMER_REAL, 0)
-            return result
+            result = [
+                TimeoutError(
+                    f"Function '{func.__name__}' timed out after {seconds} seconds"
+                )
+            ]
+            timer = threading.Timer(
+                seconds,
+                lambda: result.append(
+                    TimeoutError(
+                        f"Function '{func.__name__}' timed out after {seconds} seconds"
+                    )
+                ),
+            )
+
+            def target():
+                try:
+                    result[0] = func(*args, **kwargs)
+                except Exception as e:
+                    result[0] = e
+
+            thread = threading.Thread(target=target)
+            thread.start()
+            timer.start()
+            thread.join(seconds)
+            timer.cancel()
+
+            if isinstance(result[0], Exception):
+                raise result[0]
+            return result[0]
 
         return wrapper
 
