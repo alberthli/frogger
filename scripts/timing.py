@@ -155,7 +155,6 @@ for pair in model_sampler_pairs:
             xtol_rel=1e-6,
             xtol_abs=1e-6,
             maxeval=1000,
-            maxtime=60.0,
         ).create()
         end = time.time()
         print(f"    setup time: {end - start}")

@@ -11,6 +11,7 @@ from frogger.sampling import (
     HeuristicFR3AlgrICSampler,
 )
 from frogger.solvers import Frogger, FroggerConfig
+from frogger.utils import timeout
 
 # loading object
 obj_name = "001_chips_can"
@@ -43,9 +44,8 @@ frogger = FroggerConfig(
     xtol_rel=1e-6,
     xtol_abs=1e-6,
     maxeval=1000,
-    maxtime=60.0,
 ).create()
 print("Model compiled! Generating grasp...")
-q_star = frogger.generate_grasp()
+q_star = timeout(60.0)(frogger.generate_grasp)()
 print("Grasp generated!")
 model.viz_config(q_star)
