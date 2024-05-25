@@ -25,7 +25,8 @@ def timeout(seconds: float) -> callable:
     Parameters
     ----------
     seconds : float
-        The number of seconds to wait before raising a TimeoutError.
+        The number of seconds to wait before raising a TimeoutError. If seconds is 0.0,
+        then there is NO timeout!
 
     Returns
     -------
