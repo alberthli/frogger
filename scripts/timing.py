@@ -193,6 +193,7 @@ for pair in model_sampler_pairs:
             d_min=0.001,
             d_pen=0.005,
             l_bar_cutoff=0.3,
+            ignore_mass_inertia=True,  # don't use obj mass/inertia at all
             viz=VIZ,
             custom_coll_callback=custom_coll_callback,
         ).create()
