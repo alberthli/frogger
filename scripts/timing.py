@@ -146,6 +146,9 @@ for pair in model_sampler_pairs:
                 are allowed some penetration with the object!
                 """
                 # organizing names
+                has_tip = (
+                    "FROGGERCOL" in name_A or "FROGGERCOL" in name_B
+                )  # MUST MANUALLY DO THIS!
                 has_palm = "palm" in name_A or "palm" in name_B
                 has_ds = (
                     "ds_collision" in name_A or "ds_collision" in name_B
@@ -158,32 +161,29 @@ for pair in model_sampler_pairs:
                 )  # metacarpal geoms, thumb only
                 has_obj = "obj" in name_A or "obj" in name_B
 
-                # MUST MANUALLY DO THIS!
-                has_tip = "FROGGERCOL" in name_A or "FROGGERCOL" in name_B
-
                 # provide custom bounds on different geom pairs
-                if has_palm and has_obj:
+                if has_tip and has_obj:
+                    # allow tips to penetrate object - MUST MANUALLY DO THIS!
+                    return -model.d_pen
+                elif has_palm and has_obj:
                     return 0.01  # ensure at least 1cm separation
                 elif has_ds and has_obj:
                     return 0.002  # ensure at least 2mm separation
-                elif has_md and has_obj:
+                elif has_md and has_obj:  # noqa: SIM114
                     return 0.005  # ensure at least 5mm separation
                 elif has_px and has_obj:  # noqa: SIM114
-                    return 0.01  # ensure at least 1cm separation
+                    return 0.005  # ensure at least 5mm separation
                 elif has_bs and has_obj:  # noqa: SIM114
                     return 0.01  # ensure at least 1cm separation
                 elif has_mp and has_obj:  # noqa: SIM114
                     return 0.01  # ensure at least 1cm separation
-                elif has_tip and has_obj:
-                    return (
-                        -model.d_pen
-                    )  # allow tips to penetrate object - MUST MANUALLY DO THIS!
                 else:
                     return model.d_min  # default case: use d_min
 
             custom_coll_callback = _custom_coll_callback
         else:
             custom_coll_callback = None
+        custom_coll_callback = None
 
         # loading model and sampler
         model = ModelConfig(
