@@ -73,6 +73,7 @@ class RobotModel:
         )  # these will be class functions
         self.custom_compute_g = cfg.__class__.custom_compute_g
         self.custom_compute_h = cfg.__class__.custom_compute_h
+        self.coll_callback = cfg.custom_coll_callback
         self.n_g_extra = cfg.n_g_extra
         self.n_h_extra = cfg.n_h_extra
         self.cfg = cfg
@@ -431,17 +432,15 @@ class RobotModel:
 
             # only allow tip/obj collision w/ small penetration
             names = [inspector.GetName(id_A), inspector.GetName(id_B)]
-            has_tip = "FROGGERCOL" in names[0] or "FROGGERCOL" in names[1]
-            has_obj = "obj_collision" in names[0] or "obj_collision" in names[1]
-            d_pen = self.d_pen
-            if has_tip and has_obj:
-                self.g[self.n_bounds + i] = -sd - d_pen  # allow tips to penetrate obj
-            else:
-                self.g[self.n_bounds + i] = d_min - sd  # other pairs must respect d_min
+            self.g[self.n_bounds + i] = -sd + self.coll_callback(
+                self, names[0], names[1]
+            )
             Dgi = -(J_A - J_B).T @ nrml
             self.Dg[self.n_bounds + i, :] = Dgi
 
             # updating the most interpenetrating pairs for each link allowing collision
+            has_tip = "FROGGERCOL" in names[0] or "FROGGERCOL" in names[1]
+            has_obj = "obj_collision" in names[0] or "obj_collision" in names[1]
             if has_tip and has_obj:
                 bA, bB = fA.body(), fB.body()  # bodies associated with collision geoms
                 body_name_A, body_name_B = bA.name(), bB.name()
@@ -876,6 +875,40 @@ class RobotModel:
                 print(names)
 
 
+def default_coll_callback(model: RobotModel, name_A: str, name_B: str) -> float:
+    """Default collision callback that returns the constraint violation expression.
+
+    WARNING: for now, if you overwrite this, you MUST ensure manually that the fingertips
+    are allowed some penetration with the object!
+
+    Parameters
+    ----------
+    model : RobotModel
+        The robot model.
+    name_A : str
+        The name of the first collision geometry.
+    name_B : str
+        The name of the second collision geometry.
+
+    Returns
+    -------
+    float
+        The constraint violation expression. In particular, safe distance constraints for
+        a pair of geoms are expressed as g(sd, name_A, name_B) = -sd + margin <= 0. This
+        function returns the value of the margin. POSITIVE margins are distances that the
+        geoms must be separated by. NEGATIVE margins indicate allowable penetrations.
+    """
+    # by default we allow penetration between special geoms marked with FROGGERCOL and obj
+    has_tip = "FROGGERCOL" in name_A or "FROGGERCOL" in name_B
+    has_obj = "obj_collision" in name_A or "obj_collision" in name_B
+    d_pen = model.d_pen  # allowable penetration distance
+    d_min = model.d_min  # default minimum distance
+    if has_tip and has_obj:
+        return -d_pen  # allow tips to penetrate obj
+    else:
+        return d_min  # other pairs must respect d_min
+
+
 @dataclass(kw_only=True)
 class RobotModelConfig:
     """A configuration for a robot model.
@@ -907,6 +940,9 @@ class RobotModelConfig:
         A custom inequality constraint function that returns extra inequality constraints.
     custom_compute_h : Callable[[RobotModel], Tuple[np.ndarray, np.ndarray]] | None
         A custom equality constraint function that returns extra equality constraints.
+    custom_coll_callback : Callable[[RobotModel, str, str], float]
+        A custom collision callback that takes in the robot, and the names of two collision
+        geometries and returns the lower bound on allowable separation between geoms.
     n_g_extra : int, default=1
         The number of "extra" inequality constraints. Extra is defined as anything that is
         not a box constraint or a collision constraint.
@@ -945,6 +981,7 @@ class RobotModelConfig:
     custom_compute_h: Callable[
         [RobotModel], Tuple[np.ndarray, np.ndarray]
     ] | None = None
+    custom_coll_callback: Callable[[RobotModel, str, str], float] | None = None
     n_g_extra: int = 1
     n_h_extra: int = 0
 
@@ -963,6 +1000,10 @@ class RobotModelConfig:
         # handling default values manually, since derived classes have different ones
         if self.name is None:
             self.name = "robot"
+
+        # assigning default collision callback
+        if self.custom_coll_callback is None:
+            self.custom_coll_callback = default_coll_callback
 
     def create_pre_warmstart(self, model: RobotModel) -> None:
         """Entrypoint into the create() function before the warm start."""
