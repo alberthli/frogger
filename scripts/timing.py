@@ -10,6 +10,7 @@ from frogger import ROOT
 from frogger.baselines import WuBaselineConfig
 from frogger.metrics import ferrari_canny_L1, min_weight_metric
 from frogger.objects import MeshObject, MeshObjectConfig
+from frogger.robots.robot_core import RobotModel
 from frogger.robots.robots import (
     AlgrModelConfig,
     BH280ModelConfig,
@@ -129,6 +130,60 @@ for pair in model_sampler_pairs:
             clean=False,
         ).create()
 
+        # example showing how to use the custom collision callback
+        if "Allegro" in model_name:
+
+            def _custom_coll_callback(
+                model: RobotModel, name_A: str, name_B: str
+            ) -> float:
+                """A custom collision callback.
+
+                Given two collision geom names, indicates what the lower bound on separation
+                should be between them in meters.
+
+                WARNING: for now, if you overwrite this, you MUST ensure manually that the fingertips
+                are allowed some penetration with the object!
+                """
+                # organizing names
+                has_palm = "palm" in name_A or "palm" in name_B
+                has_ds = (
+                    "ds_collision" in name_A or "ds_collision" in name_B
+                )  # non-tip distal geoms
+                has_md = "md" in name_A or "md" in name_B  # medial geoms
+                has_px = "px" in name_A or "px" in name_B  # proximal geoms
+                has_bs = "bs" in name_A or "bs" in name_B  # base geoms
+                has_mp = (
+                    "mp" in name_A or "mp" in name_B
+                )  # metacarpal geoms, thumb only
+                has_obj = "obj" in name_A or "obj" in name_B
+
+                # MUST MANUALLY DO THIS!
+                has_tip = "FROGGERCOL" in name_A or "FROGGERCOL" in name_B
+
+                # provide custom bounds on different geom pairs
+                if has_palm and has_obj:
+                    return 0.01  # ensure at least 1cm separation
+                elif has_ds and has_obj:
+                    return 0.002  # ensure at least 2mm separation
+                elif has_md and has_obj:
+                    return 0.005  # ensure at least 5mm separation
+                elif has_px and has_obj:  # noqa: SIM114
+                    return 0.01  # ensure at least 1cm separation
+                elif has_bs and has_obj:  # noqa: SIM114
+                    return 0.01  # ensure at least 1cm separation
+                elif has_mp and has_obj:  # noqa: SIM114
+                    return 0.01  # ensure at least 1cm separation
+                elif has_tip and has_obj:
+                    return (
+                        -model.d_pen
+                    )  # allow tips to penetrate object - MUST MANUALLY DO THIS!
+                else:
+                    return model.d_min  # default case: use d_min
+
+            custom_coll_callback = _custom_coll_callback
+        else:
+            custom_coll_callback = None
+
         # loading model and sampler
         model = ModelConfig(
             obj=obj,
@@ -138,6 +193,7 @@ for pair in model_sampler_pairs:
             d_pen=0.005,
             l_bar_cutoff=0.3,
             viz=VIZ,
+            custom_coll_callback=custom_coll_callback,
         ).create()
         sampler = Sampler(
             model,
