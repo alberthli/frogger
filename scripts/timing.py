@@ -127,6 +127,7 @@ for pair in model_sampler_pairs:
             X_WO=X_WO,
             mesh=mesh,
             name=obj_name,
+            enforce_watertight=True,  # you can turn off the check for watertightness
             clean=False,
         ).create()
 

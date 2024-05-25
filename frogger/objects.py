@@ -37,6 +37,8 @@ class ObjectDescriptionConfig:
         Upper bounds of the object in the object frame. Defaults to None.
     mass : float | None, default=None
         A known mass of the object.
+    enforce_watertight : bool, default=False
+        Whether to enforce checks on whether the mesh is watertight.
     name : str, default="abstract"
         The name of the object.
     """
@@ -45,6 +47,7 @@ class ObjectDescriptionConfig:
     lb_O: np.ndarray | None = None
     ub_O: np.ndarray | None = None
     mass: float | None = None
+    enforce_watertight: bool = False
 
     # fields with overridden defaults in child classes
     name: str | None = None
@@ -72,6 +75,7 @@ class ObjectDescription(ABC):
         self.ub_O = cfg.ub_O
         self.mass = cfg.mass
         self.name = cfg.name
+        self.enforce_watertight = cfg.enforce_watertight
 
         # mesh objects compute the SDF and its gradients differently
         if not isinstance(self, MeshObject):
@@ -392,7 +396,8 @@ class ObjectDescription(ABC):
         self.mesh_scale = np.mean(_mesh_viz.edges_unique_length)
 
         # if the meshes aren't watertight, then mesh pre-processing should be fixed
-        assert _mesh_viz.is_watertight
+        if self.enforce_watertight:
+            assert _mesh_viz.is_watertight
         pth = "/tmp/mesh_viz.obj"  # export the visual mesh
         _mesh_viz.export(pth)
         mesh_viz = Mesh(pth)
