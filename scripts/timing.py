@@ -1,5 +1,6 @@
 import time
 import warnings
+from concurrent.futures import TimeoutError
 
 import numpy as np
 import trimesh
@@ -21,6 +22,7 @@ from frogger.sampling import (
     HeuristicFR3AlgrICSampler,
 )
 from frogger.solvers import Frogger, FroggerConfig
+from frogger.utils import timeout
 
 # [Feb. 22, 2024] suppress annoying torch warning about LUSolve from qpth
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -87,6 +89,7 @@ obj_names = [
 
 tot_setup_time = 0.0
 tot_gen_time = 0.0
+TIMEOUT_PERIOD_SEC = 60.0  # [EDIT THIS] the number of seconds to wait before timing out
 NUM_SAMPLES = 1  # [EDIT THIS] number of grasps to sample per object
 EVAL = True  # [EDIT THIS] whether to eval the grasps on min-weight/Ferrari-Canny
 VIZ = False  # [EDIT THIS] whether to visualize the results every grasp
@@ -152,7 +155,6 @@ for pair in model_sampler_pairs:
             xtol_rel=1e-6,
             xtol_abs=1e-6,
             maxeval=1000,
-            maxtime=60.0,
         ).create()
         end = time.time()
         print(f"    setup time: {end - start}")
@@ -162,7 +164,15 @@ for pair in model_sampler_pairs:
         sub_time = 0.0
         for _ in range(NUM_SAMPLES):
             start = time.time()
-            q_star = frogger.generate_grasp()  # only time generation
+            try:
+                q_star = timeout(TIMEOUT_PERIOD_SEC)(
+                    frogger.generate_grasp
+                )()  # only time generation
+            except TimeoutError:
+                print(
+                    f"        Grasp generation timed out after {TIMEOUT_PERIOD_SEC} seconds!"
+                )
+                continue
             end = time.time()
             sub_time += end - start
 

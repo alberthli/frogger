@@ -34,8 +34,6 @@ class FroggerConfig:
         Absolute tolerance for the optimization in nlopt.
     maxeval : int, default=1000
         Maximum number of evaluations for the optimization in nlopt.
-    maxtime : float, default=60.0
-        Maximum time for the optimization in nlopt.
     """
 
     model: RobotModel
@@ -48,7 +46,6 @@ class FroggerConfig:
     xtol_rel: float = 1e-6
     xtol_abs: float = 1e-6
     maxeval: int = 1000
-    maxtime: float | None = 60.0
 
     def create(self) -> "Frogger":
         """Creates the solver."""
@@ -74,7 +71,6 @@ class Frogger:
         xtol_rel = cfg.xtol_rel
         xtol_abs = cfg.xtol_abs
         maxeval = cfg.maxeval
-        maxtime = cfg.maxtime
 
         # constraint setup
         # TODO(ahl): expose tolerances for extra constraints
@@ -104,8 +100,6 @@ class Frogger:
         opt.set_min_objective(f)
         opt.add_inequality_mconstraint(g, tol_ineq)
         opt.add_equality_mconstraint(h, tol_eq)
-        if maxtime is not None:
-            opt.set_maxtime(maxtime)
 
         # setting attributes
         self.opt = opt

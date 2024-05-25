@@ -35,6 +35,7 @@ from frogger.objects import MeshObjectConfig
 from frogger.robots.robots import AlgrModelConfig
 from frogger.sampling import HeuristicAlgrICSampler
 from frogger.solvers import FroggerConfig
+from frogger.utils import timeout
 
 # loading object
 obj_name = "001_chips_can"
@@ -70,7 +71,7 @@ frogger = FroggerConfig(
 ).create()
 
 print("Model compiled! Generating grasp...")
-q_star = frogger.generate_grasp()
+q_star = timeout(60.0)(frogger.generate_grasp)()  # our timeout util allows arbitrary timeouts for any func!
 print("Grasp generated!")
 model.viz_config(q_star)
 ```
